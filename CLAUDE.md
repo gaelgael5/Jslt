@@ -39,7 +39,9 @@ Patterns repris du .NET :
   depuis l'arbre ANTLR (choix « B2 » ; le .NET re-parse la chaîne à l'exécution).
 - **Moteur JSONPath** : port de `Bb.JPaths` (RFC 9535), pas de dépendance tierce.
 - **Registre de fonctions** par **nom** (pas de résolution par types comme le
-  .NET, inutile en Python dynamique).
+  .NET, inutile en Python dynamique). Un paramètre peut être marqué « chemin »
+  via `path_args=(indices)` sur `@jslt_function` : il est alors reçu comme
+  `JsonPath` compilé (non évalué), ce qui permet des fonctions comme `distinct`.
 - **Scope de variables** : chaîne de résolveurs lexicale (port de
   `VariableResolver`/`VariableManager`).
 
@@ -61,8 +63,8 @@ Patterns repris du .NET :
   `empty`) et fonctions de chemin (`size()`…).
 - Fonctions d'E-S (`csv`, `http`, `hash`, `randoms`, `group`, `sql`).
 - Sérialisation `ToString` (round-trip AST → source).
-- `distinct(source, path)` : nécessite de passer un chemin **non évalué** comme
-  argument (mécanisme non encore porté).
+
+Fonctions portées : `sum`, `concat`, `convert` (casts), `distinct`.
 
 ## Développement
 

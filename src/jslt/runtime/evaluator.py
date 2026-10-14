@@ -181,7 +181,14 @@ class JsltEvaluationVisitor(JsltJsonVisitor):
         function = self.context.functions.get(node.name)
         if function is None:
             raise JsltError(f"fonction inconnue : {node.name}")
-        arguments = [argument.accept(self) for argument in node.arguments]
+        path_args = self.context.functions.path_args_of(node.name)
+        arguments = []
+        for index, argument in enumerate(node.arguments):
+            if index in path_args and isinstance(argument, JsltPath):
+                # Argument « chemin » : passé compilé (non évalué), cf. distinct.
+                arguments.append(argument.compiled)
+            else:
+                arguments.append(argument.accept(self))
         return function(self.context, *arguments)
 
     def visit_switch(self, node: JsltSwitch) -> Any:
