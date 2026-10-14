@@ -34,6 +34,30 @@ VALID_TEMPLATES = [
     pytest.param('{ "sum": $.a + $.b }', id="operation-binaire"),
 ]
 
+# Sous-ensemble des templates valides dont la construction d'AST est déjà portée
+# (Phase 1 — cas « défaut »). Les autres constructions (JSONPath, fonctions,
+# variables, opérateurs, casts) parsent au niveau ANTLR mais ne construisent pas
+# encore d'AST : voir test_ast_build_not_yet_supported.
+PHASE1_TEMPLATES = [
+    pytest.param('{ "n": "x" }', id="objet-propriete-string"),
+    pytest.param('{"n":"x"}', id="sans-espaces"),
+    pytest.param("{ }", id="objet-vide"),
+    pytest.param("[ ]", id="tableau-vide"),
+    pytest.param('{ "propertyName": 6 }', id="valeur-entier"),
+    pytest.param('{ "propertyName": 6.7 }', id="valeur-decimal"),
+    pytest.param('{ "flag": true }', id="valeur-booleen"),
+    pytest.param('{ "nothing": null }', id="valeur-null"),
+]
+
+# Constructions qui parsent (ANTLR) mais dont l'AST n'est pas encore porté.
+NOT_YET_BUILT_TEMPLATES = [
+    pytest.param('{ "name": $.n }', id="jsonpath"),
+    pytest.param('{ "prices": sum($..n) }', id="appel-fonction"),
+    pytest.param('{ "a": var: }', id="variable"),
+    pytest.param('{ "casted": $.n #integer }', id="cast"),
+    pytest.param('{ "sum": $.a + $.b }', id="operation-binaire"),
+]
+
 # Templates qui doivent être rejetés.
 INVALID_TEMPLATES = [
     pytest.param('{ "n": "x" ', id="accolade-non-fermee"),
@@ -49,10 +73,19 @@ def test_valid_template_parses(template: str) -> None:
     assert tree is not None
 
 
-@pytest.mark.parametrize("template", VALID_TEMPLATES)
-def test_jslttemplate_parse_accepts_valid(template: str) -> None:
-    # L'API publique accepte les templates valides sans lever.
-    assert JsltTemplate.parse(template) is not None
+@pytest.mark.parametrize("template", PHASE1_TEMPLATES)
+def test_jslttemplate_parse_builds_phase1(template: str) -> None:
+    # L'API publique construit l'AST des constructions portées en Phase 1.
+    assert JsltTemplate.parse(template).ast is not None
+
+
+@pytest.mark.parametrize("template", NOT_YET_BUILT_TEMPLATES)
+def test_ast_build_not_yet_supported(template: str) -> None:
+    # Les constructions des phases suivantes parsent au niveau ANTLR…
+    assert parse_to_tree(template) is not None
+    # …mais leur construction d'AST lève explicitement NotImplementedError.
+    with pytest.raises(NotImplementedError):
+        JsltTemplate.parse(template)
 
 
 @pytest.mark.parametrize("template", INVALID_TEMPLATES)
@@ -69,9 +102,7 @@ def test_syntax_error_reports_position() -> None:
     assert err.column is not None
 
 
-def test_transform_not_yet_implemented() -> None:
-    # Garde-fou : tant que la transformation n'est pas portée, l'API l'annonce
-    # explicitement plutôt que de renvoyer un résultat faux.
+def test_parse_builds_ast() -> None:
+    # L'API publique construit un AST exploitable à partir d'un template valide.
     template = JsltTemplate.parse('{ "n": "x" }')
-    with pytest.raises(NotImplementedError):
-        template.transform({})
+    assert template.ast is not None

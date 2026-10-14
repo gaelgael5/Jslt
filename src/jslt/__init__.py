@@ -4,11 +4,12 @@ API publique :
 
     >>> from jslt import JsltTemplate
     >>> template = JsltTemplate.parse('{ "name": "x" }')
-    >>> template.transform({})            # (disponible à partir de la Phase 1)
+    >>> template.transform({})
+    {'name': 'x'}
 
 État d'avancement du portage (cœur) :
     * Phase 0 — analyse syntaxique (parser ANTLR)                [FAIT]
-    * Phase 1 — AST + transformation « défaut »                 [à venir]
+    * Phase 1 — AST + transformation « défaut »                 [FAIT]
     * Phase 2 — variables + JSONPath simple                     [à venir]
     * Phase 3 — boucles, opérateurs, casts                      [à venir]
     * Phase 4 — fonctions intégrées + when/switch               [à venir]
@@ -19,10 +20,18 @@ from __future__ import annotations
 
 from typing import Any
 
-from .errors import JsltError, JsltSyntaxError
+from .ast import JsltBase
+from .errors import JsltError, JsltSemanticError, JsltSyntaxError
 from .parsing import parse_to_tree
+from .parsing.script_builder_visitor import ScriptBuilderVisitor
+from .runtime import JsltEvaluationVisitor, RuntimeContext, Sources
 
-__all__ = ["JsltError", "JsltSyntaxError", "JsltTemplate"]
+__all__ = [
+    "JsltError",
+    "JsltSemanticError",
+    "JsltSyntaxError",
+    "JsltTemplate",
+]
 
 __version__ = "0.0.1"
 
@@ -33,13 +42,18 @@ class JsltTemplate:
     On n'instancie pas la classe directement : on passe par :meth:`parse`.
     """
 
-    def __init__(self, parse_tree: Any, source: str) -> None:
-        self._parse_tree = parse_tree
+    def __init__(self, ast: JsltBase, source: str) -> None:
+        self._ast = ast
         self._source = source
+
+    @property
+    def ast(self) -> JsltBase:
+        """AST jslt construit à partir du template."""
+        return self._ast
 
     @classmethod
     def parse(cls, template: str) -> JsltTemplate:
-        """Analyse un template jslt.
+        """Analyse un template jslt et construit son AST.
 
         Args:
             template: le template jslt sous forme de chaîne.
@@ -49,19 +63,22 @@ class JsltTemplate:
 
         Raises:
             JsltSyntaxError: si le template est syntaxiquement invalide.
+            JsltSemanticError: si le template est sémantiquement invalide.
         """
         tree = parse_to_tree(template)
-        return cls(tree, template)
+        builder = ScriptBuilderVisitor()
+        ast = builder.visit(tree)
+        return cls(ast, template)
 
-    def transform(self, source: Any) -> Any:
-        """Applique le template au document JSON source et renvoie le résultat.
+    def transform(self, source: Any = None) -> Any:
+        """Applique le template au document source et renvoie le résultat.
 
         Args:
             source: le document source (structures Python issues de ``json.loads``).
 
         Returns:
-            Le document transformé.
+            Le document transformé (structures Python).
         """
-        raise NotImplementedError(
-            "La transformation sera implémentée à partir de la Phase 1 du portage."
-        )
+        context = RuntimeContext(Sources(source))
+        evaluator = JsltEvaluationVisitor(context)
+        return self._ast.accept(evaluator)

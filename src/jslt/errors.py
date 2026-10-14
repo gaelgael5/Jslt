@@ -7,6 +7,18 @@ class JsltError(Exception):
     """Classe de base de toutes les erreurs jslt."""
 
 
+class JsltSemanticError(JsltError):
+    """Erreur sémantique détectée lors de la construction de l'AST.
+
+    Par exemple : nom de propriété dupliqué, valeur manquante. Distincte d'une
+    erreur purement syntaxique (:class:`JsltSyntaxError`).
+    """
+
+    def __init__(self, message: str, *, location: object | None = None) -> None:
+        self.location = location
+        super().__init__(message)
+
+
 class JsltSyntaxError(JsltError):
     """Erreur de syntaxe lors de l'analyse d'un template jslt.
 
