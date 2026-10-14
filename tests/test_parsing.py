@@ -58,12 +58,13 @@ PHASE1_TEMPLATES = [
     pytest.param('{ "prices": sum($.n) }', id="appel-fonction"),
     pytest.param('{ "chain": $.a -> sum() }', id="chainage"),
     pytest.param('{ "casted": $.n #integer }', id="cast"),
+    pytest.param('{ "w": when($.a) { "case1": 1, "default": 0 } }', id="when-switch"),
 ]
 
 # Constructions qui parsent (ANTLR) mais dont l'AST n'est pas encore porté.
 NOT_YET_BUILT_TEMPLATES = [
     pytest.param('{ "deep": $..n }', id="jsonpath-descente-recursive"),
-    pytest.param('{ "w": when($.a) { "case1": 1 } }', id="when-switch"),
+    pytest.param('{ "wild": $.* }', id="jsonpath-wildcard"),
 ]
 
 # Templates qui doivent être rejetés.

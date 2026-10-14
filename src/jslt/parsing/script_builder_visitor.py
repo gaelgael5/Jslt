@@ -27,6 +27,8 @@ from jslt.ast import (
     JsltOperator,
     JsltPath,
     JsltProperty,
+    JsltSwitch,
+    JsltSwitchCase,
     JsltVariable,
     OperationEnum,
 )
@@ -330,17 +332,40 @@ class ScriptBuilderVisitor(JsltParserVisitor):
         # jsonfunctionCall : jsonfunctionName ( jsonValueList? ) jsonType? obj?
         name = ctx.jsonfunctionName().getText()
 
-        if ctx.obj() is not None:
-            # when/switch s'écrivent when(expr){ cas } → construction d'un JsltSwitch.
-            raise NotImplementedError("when / switch : Phase 4c")
-
         arguments: list = []
         if ctx.jsonValueList() is not None:
             arguments = self.visit(ctx.jsonValueList())
 
+        # when/switch s'écrivent when(expr){ cas } : un bloc objet suit l'appel.
+        if ctx.obj() is not None:
+            if name.lower() not in ("when", "switch"):
+                raise JsltSemanticError(
+                    f"argument objet invalide pour la fonction {name}",
+                    location=TextLocation.from_ctx(ctx),
+                )
+            if len(arguments) != 1:
+                raise JsltSemanticError(
+                    "when / switch n'accepte qu'un seul argument",
+                    location=TextLocation.from_ctx(ctx),
+                )
+            return self._build_when(arguments[0], self.visit(ctx.obj()), ctx)
+
         call = JsltFunctionCall(name, arguments)
         call.location = TextLocation.from_ctx(ctx)
         return self._with_optional_cast(call, ctx.jsonType())
+
+    def _build_when(self, expression, block: JsltObject, ctx) -> JsltSwitch:
+        """Construit un JsltSwitch depuis when(expr){ cas } (port de BuildWhen)."""
+        switch = JsltSwitch(expression)
+        switch.location = TextLocation.from_ctx(ctx)
+        for case in block.properties:
+            if case.name.lower() == "default":
+                switch.default = case.value
+            else:
+                right = JsltConstant(case.name, JsltKind.STRING)
+                right.location = case.location
+                switch.cases.append(JsltSwitchCase(right_expression=right, block=case.value))
+        return switch
 
     def visitJsonValueList(self, ctx: JsltParser.JsonValueListContext) -> Any:
         return [self.visit(value) for value in ctx.jsonValue()]

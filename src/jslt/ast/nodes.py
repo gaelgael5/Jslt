@@ -241,6 +241,51 @@ class JsltFunctionCall(JsltBase):
         return f"JsltFunctionCall({self.name!r}, {self.arguments!r})"
 
 
+class JsltSwitchCase(JsltBase):
+    """Un cas d'un switch/when (port de ``Bb.Jslt.Asts.JsltSwitchCase``).
+
+    ``right_expression`` est la valeur comparée à l'expression du switch ; ``block``
+    est le résultat produit si le cas correspond.
+    """
+
+    def __init__(self, right_expression: JsltBase, block: JsltBase) -> None:
+        super().__init__()
+        self.right_expression = right_expression
+        self.block = block
+
+    def accept(self, visitor: JsltJsonVisitor) -> Any:
+        return visitor.visit_case(self)
+
+    def __repr__(self) -> str:
+        return f"JsltSwitchCase({self.right_expression!r} -> {self.block!r})"
+
+
+class JsltSwitch(JsltBase):
+    """Switch / when (port de ``Bb.Jslt.Asts.JsltSwitch``).
+
+    Construit depuis la syntaxe ``when(expr) { "cas1": …, "default": … }`` :
+    l'expression est comparée (``==``) à chaque nom de cas ; le bloc du premier
+    cas correspondant est produit, sinon ``default`` (sinon ``null``).
+    """
+
+    def __init__(
+        self,
+        expression: JsltBase,
+        cases: list[JsltSwitchCase] | None = None,
+        default: JsltBase | None = None,
+    ) -> None:
+        super().__init__()
+        self.expression = expression
+        self.cases: list[JsltSwitchCase] = list(cases) if cases else []
+        self.default = default
+
+    def accept(self, visitor: JsltJsonVisitor) -> Any:
+        return visitor.visit_switch(self)
+
+    def __repr__(self) -> str:
+        return f"JsltSwitch({self.expression!r}, {self.cases!r}, default={self.default!r})"
+
+
 class JsltBinaryOperator(JsltBase):
     """Opérateur binaire (port de ``Bb.Jslt.Asts.JsltBinaryOperator``)."""
 

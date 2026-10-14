@@ -15,6 +15,8 @@ from .nodes import (
     JsltOperator,
     JsltPath,
     JsltProperty,
+    JsltSwitch,
+    JsltSwitchCase,
     JsltVariable,
 )
 from .operation import OperationEnum
@@ -33,6 +35,8 @@ __all__ = [
     "JsltOperator",
     "JsltPath",
     "JsltProperty",
+    "JsltSwitch",
+    "JsltSwitchCase",
     "JsltVariable",
     "OperationEnum",
     "TagEnum",

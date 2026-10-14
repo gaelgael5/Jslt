@@ -26,6 +26,8 @@ from jslt.ast import (
     JsltOperator,
     JsltPath,
     JsltProperty,
+    JsltSwitch,
+    JsltSwitchCase,
     JsltVariable,
     OperationEnum,
 )
@@ -181,6 +183,21 @@ class JsltEvaluationVisitor(JsltJsonVisitor):
             raise JsltError(f"fonction inconnue : {node.name}")
         arguments = [argument.accept(self) for argument in node.arguments]
         return function(self.context, *arguments)
+
+    def visit_switch(self, node: JsltSwitch) -> Any:
+        """Évalue un switch/when : premier cas dont la valeur égale l'expression,
+        sinon ``default`` (sinon ``None``)."""
+        left = node.expression.accept(self)
+        for case in node.cases:
+            right = case.right_expression.accept(self)
+            if apply_binary(left, OperationEnum.EQUAL, right) is True:
+                return case.accept(self)
+        if node.default is not None:
+            return node.default.accept(self)
+        return None
+
+    def visit_case(self, node: JsltSwitchCase) -> Any:
+        return node.block.accept(self) if node.block is not None else None
 
     def visit_jvariable(self, node: JsltVariable) -> Any:
         """Résout une référence de variable depuis le scope courant.

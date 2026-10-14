@@ -14,6 +14,8 @@ Correspondance des méthodes (.NET -> Python) :
     VisitBinaryOperator -> visit_binary_operator
     VisitUnaryOperator  -> visit_unary_operator
     VisitFunction       -> visit_function
+    VisitSwitch         -> visit_switch
+    VisitCase           -> visit_case
 
 L'interface est volontairement enrichie phase par phase, au rythme de l'ajout
 des nœuds AST (variables, chemins, fonctions, opérateurs, switch…), pour éviter
@@ -35,6 +37,8 @@ if TYPE_CHECKING:
         JsltOperator,
         JsltPath,
         JsltProperty,
+        JsltSwitch,
+        JsltSwitchCase,
         JsltVariable,
     )
 
@@ -68,6 +72,12 @@ class JsltJsonVisitor(ABC):
 
     @abstractmethod
     def visit_function(self, node: JsltFunctionCall) -> Any: ...
+
+    @abstractmethod
+    def visit_switch(self, node: JsltSwitch) -> Any: ...
+
+    @abstractmethod
+    def visit_case(self, node: JsltSwitchCase) -> Any: ...
 
 
 class JsltBaseVisitor(JsltJsonVisitor):
@@ -153,4 +163,18 @@ class JsltBaseVisitor(JsltJsonVisitor):
             node.source.accept(self)
         for argument in node.arguments:
             argument.accept(self)
+        return node
+
+    def visit_switch(self, node: JsltSwitch) -> Any:
+        node.expression.accept(self)
+        for case in node.cases:
+            case.accept(self)
+        if node.default is not None:
+            node.default.accept(self)
+        return node
+
+    def visit_case(self, node: JsltSwitchCase) -> Any:
+        node.right_expression.accept(self)
+        if node.block is not None:
+            node.block.accept(self)
         return node
