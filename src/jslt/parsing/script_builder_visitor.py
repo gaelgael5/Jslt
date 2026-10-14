@@ -17,7 +17,15 @@ from typing import Any
 
 from jslt._antlr.JsltParser import JsltParser
 from jslt._antlr.JsltParserVisitor import JsltParserVisitor
-from jslt.ast import JsltArray, JsltConstant, JsltKind, JsltObject, JsltPath, JsltProperty
+from jslt.ast import (
+    JsltArray,
+    JsltConstant,
+    JsltKind,
+    JsltObject,
+    JsltPath,
+    JsltProperty,
+    JsltVariable,
+)
 from jslt.ast.location import TextLocation
 from jslt.errors import JsltSemanticError
 from jslt.jsonpath import (
@@ -118,6 +126,12 @@ class ScriptBuilderVisitor(JsltParserVisitor):
                 location=TextLocation.from_ctx(ctx),
             )
 
+        # Une clé finissant par ':' déclare une variable (port de VisitPair .NET).
+        if name.endswith(":"):
+            variable = JsltVariable(name=name[:-1], value=value)
+            variable.location = TextLocation.from_ctx(ctx)
+            return variable
+
         prop = JsltProperty(name=name, value=value)
         prop.location = TextLocation.from_ctx(ctx)
         return prop
@@ -197,7 +211,7 @@ class ScriptBuilderVisitor(JsltParserVisitor):
         if ctx.jsltJsonpath() is not None:
             return self.visit(ctx.jsltJsonpath())
         if ctx.variable() is not None:
-            raise NotImplementedError("variable : Phase 2")
+            return self.visit(ctx.variable())
 
         if ctx.jsonValueBoolean() is not None:
             return self.visit(ctx.jsonValueBoolean())
@@ -212,16 +226,31 @@ class ScriptBuilderVisitor(JsltParserVisitor):
 
         raise NotImplementedError("item jslt non pris en charge en Phase 1")
 
+    # -------------------------------------------------------------- variables
+    def visitVariable(self, ctx: JsltParser.VariableContext) -> Any:
+        # variable : VARIABLE_NAME jsonType?  (référence ; le ':' final est inclus)
+        if ctx.jsonType() is not None:
+            raise NotImplementedError("cast de type sur une variable : Phase 3")
+        name = ctx.VARIABLE_NAME().getText()
+        variable = JsltVariable(name=name.removesuffix(":"))
+        variable.location = TextLocation.from_ctx(ctx)
+        return variable
+
     # --------------------------------------------------------------- jsonpath
     def visitJsltJsonpath(self, ctx: JsltParser.JsltJsonpathContext) -> Any:
         # jsltJsonpath : VARIABLE_NAME? jsonpath jsonType?
-        if ctx.VARIABLE_NAME() is not None:
-            raise NotImplementedError("projection d'un chemin sur une variable : Phase 2b")
         if ctx.jsonType() is not None:
             raise NotImplementedError("cast de type sur un chemin : Phase 3")
 
+        variable_name = None
+        if ctx.VARIABLE_NAME() is not None:
+            variable_text = ctx.VARIABLE_NAME().getText()
+            variable_name = variable_text.removesuffix(":")
+
         compiled = self._build_json_path(ctx.jsonpath())
-        node = JsltPath(value=ctx.jsonpath().getText(), compiled=compiled)
+        node = JsltPath(
+            value=ctx.jsonpath().getText(), compiled=compiled, variable=variable_name
+        )
         node.location = TextLocation.from_ctx(ctx)
         return node
 

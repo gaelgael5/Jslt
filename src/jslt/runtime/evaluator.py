@@ -23,6 +23,7 @@ from jslt.ast import (
     JsltObject,
     JsltPath,
     JsltProperty,
+    JsltVariable,
 )
 
 from .context import RuntimeContext
@@ -35,10 +36,25 @@ class JsltEvaluationVisitor(JsltJsonVisitor):
         self.context = context
 
     def visit_object(self, node: JsltObject) -> dict[str, Any]:
-        result: dict[str, Any] = {}
-        for prop in node.properties:
-            result[prop.name] = prop.value.accept(self) if prop.value is not None else None
-        return result
+        variables = list(node.variables)
+        previous_scope = None
+        if variables:
+            # Les variables sont évaluées hâtivement, dans un scope propre à
+            # l'objet (chaîné au scope parent), avant les propriétés — l'ordre
+            # déclaration/usage dans l'objet est donc indifférent.
+            previous_scope = self.context.push_scope()
+            for variable in variables:
+                value = variable.value.accept(self) if variable.value is not None else None
+                self.context.variables.add(variable.name, value)
+
+        try:
+            result: dict[str, Any] = {}
+            for prop in node.properties:
+                result[prop.name] = prop.value.accept(self) if prop.value is not None else None
+            return result
+        finally:
+            if previous_scope is not None:
+                self.context.restore_scope(previous_scope)
 
     def visit_array(self, node: JsltArray) -> list[Any]:
         return [item.accept(self) for item in node.items]
@@ -50,16 +66,34 @@ class JsltEvaluationVisitor(JsltJsonVisitor):
         return node.value
 
     def visit_jpath(self, node: JsltPath) -> Any:
-        """Applique le chemin JSONPath à la source courante.
+        """Applique le chemin JSONPath à sa racine.
+
+        La racine est la valeur de la variable source (forme ``name:$.path``)
+        lorsque ``node.variable`` est défini, sinon la source courante.
 
         Sémantique de ``RuntimeContext.GetContentByJPath`` (.NET) :
             * 0 correspondance -> ``None``
             * 1 correspondance -> la valeur
             * N correspondances -> la liste des valeurs
         """
-        values = node.compiled.select_values(self.context.current_source)
+        if node.variable is not None:
+            _, root = self.context.variables.get(node.variable)
+        else:
+            root = self.context.current_source
+
+        values = node.compiled.select_values(root)
         if not values:
             return None
         if len(values) == 1:
             return values[0]
         return values
+
+    def visit_jvariable(self, node: JsltVariable) -> Any:
+        """Résout une référence de variable depuis le scope courant.
+
+        Conforme à ``RuntimeContext.GetVariable`` (.NET) : une variable inconnue
+        résout à ``None`` (le moteur .NET émet en plus un avertissement non
+        bloquant, à rebrancher quand le canal de diagnostic existera).
+        """
+        _, value = self.context.variables.get(node.name)
+        return value

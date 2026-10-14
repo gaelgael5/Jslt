@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from .variables import VariableManager
+
 
 class Sources:
     """Jeu de documents source d'une transformation.
@@ -34,15 +36,30 @@ class Sources:
 class RuntimeContext:
     """État d'exécution porté le long du parcours de l'AST.
 
-    Contient le document source courant et l'environnement de variables. Les
-    variables ne sont pas encore alimentées (Phase 2) mais l'état est en place.
+    Contient le document source courant et le scope de variables courant (chaîne
+    de résolveurs, cf. :mod:`jslt.runtime.variables`).
     """
 
     def __init__(self, sources: Sources | None = None) -> None:
         self.sources = sources if sources is not None else Sources()
-        self.variables: dict[str, Any] = {}
+        self.variables = VariableManager()
 
     @property
     def current_source(self) -> Any:
         """Document source courant (racine, en l'absence de boucle active)."""
         return self.sources.source
+
+    def push_scope(self) -> VariableManager:
+        """Empile un nouveau scope de variables chaîné au scope courant.
+
+        Renvoie le scope *précédent* : l'appelant le conserve et le restaure en
+        fin de portée (voir l'évaluateur), ce qui évite d'exposer le chaînage
+        interne.
+        """
+        previous = self.variables
+        self.variables = VariableManager(previous)
+        return previous
+
+    def restore_scope(self, previous: VariableManager) -> None:
+        """Restaure un scope précédemment renvoyé par :meth:`push_scope`."""
+        self.variables = previous

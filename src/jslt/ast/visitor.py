@@ -10,6 +10,7 @@ Correspondance des méthodes (.NET -> Python) :
     VisitProperty -> visit_property
     VisitConstant -> visit_constant
     VisitJPath    -> visit_jpath
+    VisitJVariable-> visit_jvariable
 
 L'interface est volontairement enrichie phase par phase, au rythme de l'ajout
 des nœuds AST (variables, chemins, fonctions, opérateurs, switch…), pour éviter
@@ -22,7 +23,14 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from .nodes import JsltArray, JsltConstant, JsltObject, JsltPath, JsltProperty
+    from .nodes import (
+        JsltArray,
+        JsltConstant,
+        JsltObject,
+        JsltPath,
+        JsltProperty,
+        JsltVariable,
+    )
 
 
 class JsltJsonVisitor(ABC):
@@ -42,6 +50,9 @@ class JsltJsonVisitor(ABC):
 
     @abstractmethod
     def visit_jpath(self, node: JsltPath) -> Any: ...
+
+    @abstractmethod
+    def visit_jvariable(self, node: JsltVariable) -> Any: ...
 
 
 class JsltBaseVisitor(JsltJsonVisitor):
@@ -92,4 +103,13 @@ class JsltBaseVisitor(JsltJsonVisitor):
             node.where.accept(self)
         if node.source is not None:
             node.source.accept(self)
+        return node
+
+    def visit_jvariable(self, node: JsltVariable) -> Any:
+        if node.where is not None:
+            node.where.accept(self)
+        if node.source is not None:
+            node.source.accept(self)
+        if node.value is not None:
+            node.value.accept(self)
         return node

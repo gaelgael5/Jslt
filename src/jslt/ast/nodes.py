@@ -96,6 +96,34 @@ class JsltProperty(JsltBase):
         return f"JsltProperty({self.name!r} : {self.value!r})"
 
 
+class JsltVariable(JsltProperty):
+    """Variable jslt (port de ``Bb.Jslt.Asts.JsltVariable``).
+
+    En .NET, une variable *est* une propriété (``JsltVariable : JsltProperty``) :
+        * déclaration — ``value`` renseignée, clé ``"name:"`` dans un objet ;
+        * référence — ``value`` à ``None``, forme ``name:`` en position de valeur.
+    """
+
+    def __init__(self, name: str | None = None, value: JsltBase | None = None) -> None:
+        super().__init__(name=name, value=value)
+        self.kind = JsltKind.JVARIABLE
+        self.target_type: Any = None
+        self.to_destruct: bool = False
+
+    @property
+    def is_reference(self) -> bool:
+        """Vrai si c'est une référence (sans valeur), faux pour une déclaration."""
+        return self.value is None
+
+    def accept(self, visitor: JsltJsonVisitor) -> Any:
+        return visitor.visit_jvariable(self)
+
+    def __repr__(self) -> str:
+        if self.value is None:
+            return f"JsltVariable(ref {self.name!r})"
+        return f"JsltVariable({self.name!r} : {self.value!r})"
+
+
 class JsltObject(JsltBase):
     """Objet jslt (port de ``Bb.Jslt.Asts.JsltObject``).
 
@@ -110,13 +138,22 @@ class JsltObject(JsltBase):
         self.kind = JsltKind.OBJECT
         self.name: str | None = None
         self._items: dict[str, JsltProperty] = {}
+        self._variables: dict[str, JsltVariable] = {}
 
     @property
     def properties(self):
         return self._items.values()
 
+    @property
+    def variables(self):
+        """Variables déclarées dans l'objet (port de ``JsltObject.Variables``)."""
+        return self._variables.values()
+
     def append(self, item: JsltProperty) -> JsltObject:
-        """Ajoute une propriété, en aiguillant les clés spéciales."""
+        """Ajoute une propriété ou variable, en aiguillant les clés spéciales."""
+        if isinstance(item, JsltVariable):
+            self._variables[item.name] = item
+            return self
         name = item.name
         if name == SOURCE_KEY:
             self.source = item.value
@@ -147,17 +184,20 @@ class JsltPath(JsltBase):
     ``value`` conserve le texte d'origine pour la sérialisation et le debug.
     """
 
-    def __init__(self, value: str, compiled: JsonPath) -> None:
+    def __init__(self, value: str, compiled: JsonPath, variable: str | None = None) -> None:
         super().__init__()
         self.kind = JsltKind.JPATH
         self.value = value
         self.compiled = compiled
+        #: Variable source du chemin (forme ``name:$.path``) ; None = source courante.
+        self.variable = variable
 
     def accept(self, visitor: JsltJsonVisitor) -> Any:
         return visitor.visit_jpath(self)
 
     def __repr__(self) -> str:
-        return f"JsltPath({self.value!r})"
+        prefix = f"{self.variable}:" if self.variable else ""
+        return f"JsltPath({prefix}{self.value!r})"
 
 
 class JsltArray(JsltBase):

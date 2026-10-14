@@ -10,7 +10,8 @@ API publique :
 État d'avancement du portage (cœur) :
     * Phase 0 — analyse syntaxique (parser ANTLR)                [FAIT]
     * Phase 1 — AST + transformation « défaut »                 [FAIT]
-    * Phase 2 — variables + JSONPath simple                     [à venir]
+    * Phase 2a — JSONPath simple                                 [FAIT]
+    * Phase 2b — variables (déclaration, référence, projection)  [FAIT]
     * Phase 3 — boucles, opérateurs, casts                      [à venir]
     * Phase 4 — fonctions intégrées + when/switch               [à venir]
     * Phase 5 — JSONPath avancé                                 [à venir]

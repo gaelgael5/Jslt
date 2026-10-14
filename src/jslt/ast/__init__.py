@@ -6,7 +6,7 @@ Port de ``Bb.Jslt.Asts`` et des contrats de visiteur associés.
 from .base import JsltBase, TagEnum
 from .kind import JsltKind
 from .location import TextLocation
-from .nodes import JsltArray, JsltConstant, JsltObject, JsltPath, JsltProperty
+from .nodes import JsltArray, JsltConstant, JsltObject, JsltPath, JsltProperty, JsltVariable
 from .visitor import JsltBaseVisitor, JsltJsonVisitor
 
 __all__ = [
@@ -19,6 +19,7 @@ __all__ = [
     "JsltObject",
     "JsltPath",
     "JsltProperty",
+    "JsltVariable",
     "TagEnum",
     "TextLocation",
 ]
