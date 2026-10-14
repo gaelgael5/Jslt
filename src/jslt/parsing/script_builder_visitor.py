@@ -35,6 +35,11 @@ from jslt.ast import (
 from jslt.ast.location import TextLocation
 from jslt.errors import JsltSemanticError
 from jslt.jsonpath import (
+    FilterBinary,
+    FilterLiteral,
+    FilterPath,
+    FilterSelector,
+    FilterUnary,
     IndexSelector,
     JsonPath,
     NameSelector,
@@ -92,6 +97,13 @@ _PRECEDENCE = {
     OperationEnum.AND_EXCLUSIVE: 2,
     OperationEnum.OR_EXCLUSIVE: 1,
     OperationEnum.COALESCE: 0,
+}
+
+# Précédence des opérateurs dans un filtre JSONPath ?(...) : comparaison > & > |.
+_FILTER_PRECEDENCE = {
+    "==": 2, "!=": 2, "<": 2, "<=": 2, ">": 2, ">=": 2,
+    "&": 1,
+    "|": 0,
 }
 
 
@@ -420,7 +432,7 @@ class ScriptBuilderVisitor(JsltParserVisitor):
         if ctx.WILDCARD_SUBSCRIPT() is not None:
             return WildcardSelector()
         if ctx.subscriptableArguments() is not None:
-            raise NotImplementedError("fonction de chemin : Phase 5b")
+            raise NotImplementedError("fonction de chemin (size, contains…) : étape ultérieure")
         return NameSelector(ctx.jsonPath_identifier().getText())
 
     def _build_subscript_selector(self, ctx: JsltParser.SubscriptablesContext):
@@ -436,9 +448,76 @@ class ScriptBuilderVisitor(JsltParserVisitor):
         if st.sliceable() is not None:
             return self._build_slice_selector(st.sliceable())
         if st.QUESTION() is not None:
-            raise NotImplementedError("filtre '?(...)' : Phase 5b")
+            return FilterSelector(self._build_filter(st.expressions()))
 
         raise NotImplementedError("sélecteur de chemin non pris en charge")
+
+    # --------------------------------------------------------- filtres ?(...)
+    def _build_filter(self, ctx: JsltParser.ExpressionsContext):
+        # expressions : NT? expression (binaryOperator expression)+ | ( expression )
+        operands = [self._build_filter_expression(e) for e in ctx.expression()]
+        operators = [op.getText() for op in ctx.binaryOperator()]
+        unsupported = [op for op in operators if op not in _FILTER_PRECEDENCE]
+        if unsupported:
+            raise NotImplementedError(
+                f"opérateur(s) de filtre non pris en charge : {', '.join(unsupported)}"
+            )
+        node = operands[0] if len(operands) == 1 else self._fold_filter(operands, operators)
+        if ctx.NT() is not None:
+            node = FilterUnary(node)
+        return node
+
+    def _build_filter_expression(self, ctx: JsltParser.ExpressionContext):
+        # expression : jsonpath__ | NT expression | ( expression )
+        if ctx.NT() is not None:
+            return FilterUnary(self._build_filter_expression(ctx.expression()))
+        if ctx.jsonpath__() is not None:
+            return self._build_filter_operand(ctx.jsonpath__())
+        return self._build_filter_expression(ctx.expression())
+
+    def _build_filter_operand(self, ctx: JsltParser.Jsonpath__Context):
+        # jsonpath__ : jsonpath_ | value
+        if ctx.jsonpath_() is not None:
+            return self._build_filter_path(ctx.jsonpath_())
+        return FilterLiteral(self._literal_value(ctx.value()))
+
+    def _build_filter_path(self, ctx: JsltParser.Jsonpath_Context) -> FilterPath:
+        # jsonpath_ : (DOLLAR | CURRENT_VALUE) jsonpath_subscript?
+        is_current = ctx.CURRENT_VALUE() is not None
+        segments: list[PathSegment] = []
+        subscript = ctx.jsonpath_subscript()
+        while subscript is not None:
+            segments.append(self._build_segment(subscript))
+            subscript = subscript.jsonpath_subscript()
+        return FilterPath(JsonPath(PathScope.GLOBAL, segments), is_current=is_current)
+
+    def _literal_value(self, ctx: JsltParser.ValueContext):
+        # value : STRING | IDQUOTED | signedNumber | TRUE | FALSE | NULL | obj | array | variable
+        if ctx.STRING() is not None:
+            return self._unescape(self._strip_quotes(ctx.STRING().getText(), '"'))
+        if ctx.IDQUOTED() is not None:
+            return self._strip_quotes(ctx.IDQUOTED().getText(), "'")
+        if ctx.TRUE() is not None:
+            return True
+        if ctx.FALSE() is not None:
+            return False
+        if ctx.NULL() is not None:
+            return None
+        if ctx.signedNumber() is not None:
+            text = ctx.signedNumber().getText()
+            return float(text) if ("." in text or "e" in text or "E" in text) else int(text)
+        raise NotImplementedError("littéral de filtre non pris en charge (objet/tableau/variable)")
+
+    @staticmethod
+    def _fold_filter(operands, operators):
+        operands = list(operands)
+        operators = list(operators)
+        while operators:
+            best = max(range(len(operators)), key=lambda i: (_FILTER_PRECEDENCE[operators[i]], -i))
+            combined = FilterBinary(operands[best], operators[best], operands[best + 1])
+            operands[best : best + 2] = [combined]
+            del operators[best]
+        return operands[0]
 
     @staticmethod
     def _build_slice_selector(ctx: JsltParser.SliceableContext):

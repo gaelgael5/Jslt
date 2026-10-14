@@ -18,7 +18,11 @@ API publique :
     * Phase 4b — casts (#type via convert)                       [FAIT]
     * Phase 4c — when / switch                                   [FAIT]
     * Phase 5a — JSONPath : wildcard, descente .., slices        [FAIT]
-    * Phase 5b — JSONPath : filtres ?(...) + fonctions de chemin [à venir]
+    * Phase 5b — JSONPath : filtres ?(...) (comparaisons/logiques)[FAIT]
+
+Restent hors périmètre « cœur » (extensibles) : opérateurs ensemblistes de
+filtre (in/nin/subsetof/contains/size/empty) et fonctions de chemin, ainsi que
+les fonctions d'E-S (csv, http, hash, randoms, group, sql).
 """
 
 from __future__ import annotations
