@@ -188,37 +188,31 @@ class ScriptBuilderVisitor(JsltParserVisitor):
 
     # ---------------------------------------------------------------- scalars
     def visitJsonValueString(self, ctx: JsltParser.JsonValueStringContext) -> Any:
-        if ctx.jsonType() is not None:
-            raise NotImplementedError("cast de type sur une chaîne : Phase 3")
         text = self._unescape(self._string_text(ctx.string()))
         node = JsltConstant(text, JsltKind.STRING)
         node.location = TextLocation.from_ctx(ctx)
-        return node
+        return self._with_optional_cast(node, ctx.jsonType())
 
     def visitJsonValueInteger(self, ctx: JsltParser.JsonValueIntegerContext) -> Any:
-        if ctx.jsonType() is not None:
-            raise NotImplementedError("cast de type sur un entier : Phase 3")
-        node = JsltConstant(int(ctx.getText()), JsltKind.INTEGER)
+        # Ne lire que le token INT : ctx.getText() inclurait un éventuel #type.
+        node = JsltConstant(int(ctx.INT().getText()), JsltKind.INTEGER)
         node.location = TextLocation.from_ctx(ctx)
-        return node
+        return self._with_optional_cast(node, ctx.jsonType())
 
     def visitJsonValueNumber(self, ctx: JsltParser.JsonValueNumberContext) -> Any:
-        if ctx.jsonType() is not None:
-            raise NotImplementedError("cast de type sur un nombre : Phase 3")
-        text = ctx.getText()
+        number = ctx.signedNumber() if ctx.signedNumber() is not None else ctx.signedInt()
+        text = number.getText()
         if "." in text or "e" in text or "E" in text:
             node = JsltConstant(float(text), JsltKind.FLOAT)
         else:
             node = JsltConstant(int(text), JsltKind.INTEGER)
         node.location = TextLocation.from_ctx(ctx)
-        return node
+        return self._with_optional_cast(node, ctx.jsonType())
 
     def visitJsonValueBoolean(self, ctx: JsltParser.JsonValueBooleanContext) -> Any:
-        if ctx.jsonType() is not None:
-            raise NotImplementedError("cast de type sur un booléen : Phase 3")
-        node = JsltConstant(ctx.getText().lower() == "true", JsltKind.BOOLEAN)
+        node = JsltConstant(ctx.TRUE() is not None, JsltKind.BOOLEAN)
         node.location = TextLocation.from_ctx(ctx)
-        return node
+        return self._with_optional_cast(node, ctx.jsonType())
 
     def visitJsonValueNull(self, ctx: JsltParser.JsonValueNullContext) -> Any:
         node = JsltConstant(None, JsltKind.NULL)
@@ -227,9 +221,6 @@ class ScriptBuilderVisitor(JsltParserVisitor):
 
     # ------------------------------------------------------- jsonLt (chaînage)
     def visitJsonLtOperations(self, ctx: JsltParser.JsonLtOperationsContext) -> Any:
-        if ctx.jsonType() is not None:
-            raise NotImplementedError("cast de type sur une expression : Phase 4")
-
         operands = [self.visit(sub) for sub in ctx.jsonLtOperation()]
         operators = [self.visit(op) for op in ctx.operation()]
 
@@ -238,23 +229,35 @@ class ScriptBuilderVisitor(JsltParserVisitor):
         # Négation éventuelle portant sur toute l'expression (NT en tête).
         if ctx.NT() is not None:
             node = self._negate(node, ctx)
-        return node
+        return self._with_optional_cast(node, ctx.jsonType())
 
     def visitJsonLtOperation(self, ctx: JsltParser.JsonLtOperationContext) -> Any:
-        if ctx.jsonType() is not None:
-            raise NotImplementedError("cast de type : Phase 4")
-
         item = ctx.jsonLtItem()
         node = self.visit(item) if item is not None else self.visit(ctx.jsonLtOperation())
 
         if ctx.NT() is not None:
             node = self._negate(node, ctx)
-        return node
+        return self._with_optional_cast(node, ctx.jsonType())
 
     def _negate(self, node, ctx) -> JsltOperator:
         operator = JsltOperator(node, OperationEnum.NOT)
         operator.location = TextLocation.from_ctx(ctx)
         return operator
+
+    def _with_optional_cast(self, node, json_type_ctx):
+        """Enveloppe ``node`` dans un appel ``convert`` si un cast ``#type`` suit.
+
+        Port de ``GetConverter`` .NET : un cast devient ``convert(node, type)``.
+        Le type est porté par une constante (nom du type, ex. ``integer``).
+        """
+        if json_type_ctx is None:
+            return node
+        type_name = json_type_ctx.getText().lstrip("#")
+        type_const = JsltConstant(type_name, JsltKind.TYPE)
+        type_const.location = TextLocation.from_ctx(json_type_ctx)
+        call = JsltFunctionCall("convert", [node, type_const])
+        call.location = TextLocation.from_ctx(json_type_ctx)
+        return call
 
     def _fold_operators(self, operands, operators, ctx):
         """Construit l'arbre d'opérateurs par précédence standard (associativité
@@ -317,12 +320,10 @@ class ScriptBuilderVisitor(JsltParserVisitor):
     # -------------------------------------------------------------- variables
     def visitVariable(self, ctx: JsltParser.VariableContext) -> Any:
         # variable : VARIABLE_NAME jsonType?  (référence ; le ':' final est inclus)
-        if ctx.jsonType() is not None:
-            raise NotImplementedError("cast de type sur une variable : Phase 3")
         name = ctx.VARIABLE_NAME().getText()
         variable = JsltVariable(name=name.removesuffix(":"))
         variable.location = TextLocation.from_ctx(ctx)
-        return variable
+        return self._with_optional_cast(variable, ctx.jsonType())
 
     # -------------------------------------------------------------- fonctions
     def visitJsonfunctionCall(self, ctx: JsltParser.JsonfunctionCallContext) -> Any:
@@ -332,9 +333,6 @@ class ScriptBuilderVisitor(JsltParserVisitor):
         if ctx.obj() is not None:
             # when/switch s'écrivent when(expr){ cas } → construction d'un JsltSwitch.
             raise NotImplementedError("when / switch : Phase 4c")
-        if ctx.jsonType() is not None:
-            # f(...) #type → cast via la fonction convert.
-            raise NotImplementedError("cast de type sur un appel de fonction : Phase 4b")
 
         arguments: list = []
         if ctx.jsonValueList() is not None:
@@ -342,7 +340,7 @@ class ScriptBuilderVisitor(JsltParserVisitor):
 
         call = JsltFunctionCall(name, arguments)
         call.location = TextLocation.from_ctx(ctx)
-        return call
+        return self._with_optional_cast(call, ctx.jsonType())
 
     def visitJsonValueList(self, ctx: JsltParser.JsonValueListContext) -> Any:
         return [self.visit(value) for value in ctx.jsonValue()]
@@ -350,9 +348,6 @@ class ScriptBuilderVisitor(JsltParserVisitor):
     # --------------------------------------------------------------- jsonpath
     def visitJsltJsonpath(self, ctx: JsltParser.JsltJsonpathContext) -> Any:
         # jsltJsonpath : VARIABLE_NAME? jsonpath jsonType?
-        if ctx.jsonType() is not None:
-            raise NotImplementedError("cast de type sur un chemin : Phase 3")
-
         variable_name = None
         if ctx.VARIABLE_NAME() is not None:
             variable_text = ctx.VARIABLE_NAME().getText()
@@ -363,7 +358,7 @@ class ScriptBuilderVisitor(JsltParserVisitor):
             value=ctx.jsonpath().getText(), compiled=compiled, variable=variable_name
         )
         node.location = TextLocation.from_ctx(ctx)
-        return node
+        return self._with_optional_cast(node, ctx.jsonType())
 
     def _build_json_path(self, ctx: JsltParser.JsonpathContext) -> JsonPath:
         # jsonpath : DOLLAR jsonpath_subscript?

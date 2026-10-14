@@ -15,7 +15,7 @@ API publique :
     * Phase 3a — boucles ($source / $where)                      [FAIT]
     * Phase 3b — opérateurs (arithmétique, comparaison, logique) [FAIT]
     * Phase 4a — fonctions (registre) + chaînage ->              [FAIT]
-    * Phase 4b — casts (#type via convert)                       [à venir]
+    * Phase 4b — casts (#type via convert)                       [FAIT]
     * Phase 4c — when / switch                                   [à venir]
     * Phase 5 — JSONPath avancé                                  [à venir]
 """

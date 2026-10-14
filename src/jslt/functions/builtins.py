@@ -3,12 +3,14 @@
 Portage d'un sous-ensemble des ``CustomServices`` .NET. Chaque fonction reçoit le
 contexte d'exécution en premier argument, puis les arguments JSON évalués.
 
-Couverture actuelle (Phase 4a) : ``sum``, ``concat``. D'autres fonctions pures
-(distinct, count…) viendront ensuite ; les fonctions d'E-S restent hors cœur.
+Couverture actuelle : ``sum``, ``concat`` (4a) et ``convert`` (4b, support des
+casts ``#type``). D'autres fonctions pures (distinct, count…) viendront ensuite ;
+les fonctions d'E-S restent hors cœur.
 """
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from jslt.errors import JsltError
@@ -62,3 +64,57 @@ def _to_text(value: Any) -> str:
     if value is False:
         return "False"
     return str(value)
+
+
+# Valeurs par défaut par type cible (port de ``targetType.GetDefaultValue()``).
+_DEFAULTS = {"integer": 0, "decimal": 0.0, "string": "", "boolean": False}
+
+
+def _coerce_number(value: Any) -> float | int:
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, (int, float)):
+        return value
+    if isinstance(value, str):
+        try:
+            return int(value)
+        except ValueError:
+            return float(value)
+    raise JsltError(f"conversion numérique impossible : {value!r}")
+
+
+def _coerce_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return value != 0
+    if isinstance(value, str):
+        low = value.strip().lower()
+        if low in ("true", "false"):
+            return low == "true"
+    return bool(value)
+
+
+@jslt_function("convert")
+def execute_convert(ctx: Any, token: Any = None, target_type: str = "string") -> Any:
+    """Convertit une valeur vers un type cible (port de ``ExecuteConvert``).
+
+    ``target_type`` est le nom du type issu d'un cast ``#type`` (``integer``,
+    ``decimal``, ``string``, ``boolean``, et de façon simplifiée ``uri`` /
+    ``uuid`` / ``datetime`` / ``time`` rendus en chaîne).
+    """
+    if token is None:
+        return _DEFAULTS.get(target_type)
+
+    # Valeurs non scalaires : sérialisées en chaîne (comme le .NET).
+    if isinstance(token, (dict, list)):
+        return json.dumps(token, ensure_ascii=False, separators=(",", ":"))
+
+    if target_type == "integer":
+        return int(_coerce_number(token))
+    if target_type == "decimal":
+        return float(_coerce_number(token))
+    if target_type == "boolean":
+        return _coerce_bool(token)
+    # string, et types temporels/identifiants rendus en texte (simplifié).
+    return _to_text(token)
