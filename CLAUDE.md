@@ -65,7 +65,11 @@ Patterns repris du .NET :
 - Fonctions d'E-S (`csv`, `http`, `hash`, `randoms`, `group`, `sql`).
 - Sérialisation `ToString` (round-trip AST → source).
 
-Fonctions portées : `sum`, `concat`, `convert` (casts), `distinct`.
+Fonctions portées : `sum`, `concat`, `convert` (casts), `distinct` ; chaînes
+(`upper`, `lower`, `trim`, `split`, `startswith`, `endswith`, `stringcontains`) ;
+maths (`abs`, `floor`, `round`, `min`, `max`). Quirks .NET conservés :
+`floor`/`round`/`min`/`max` renvoient un flottant, `round` = arrondi bancaire,
+`min`/`max` sont binaires.
 
 ## Développement
 

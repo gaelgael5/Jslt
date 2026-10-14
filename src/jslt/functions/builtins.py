@@ -11,6 +11,7 @@ les fonctions d'E-S restent hors cœur.
 from __future__ import annotations
 
 import json
+import math
 from typing import Any
 
 from jslt.errors import JsltError
@@ -64,6 +65,98 @@ def _to_text(value: Any) -> str:
     if value is False:
         return "False"
     return str(value)
+
+
+# --------------------------------------------------------------------- chaînes
+# Convention .NET pour ces fonctions : None -> None, chaîne -> résultat, sinon
+# False (valeur non chaîne).
+
+
+def _string_result(token: Any, fn):
+    if token is None:
+        return None
+    if isinstance(token, str):
+        return fn(token)
+    return False
+
+
+@jslt_function("upper")
+def execute_upper(ctx: Any, token: Any = None) -> Any:
+    return _string_result(token, str.upper)
+
+
+@jslt_function("lower")
+def execute_lower(ctx: Any, token: Any = None) -> Any:
+    return _string_result(token, str.lower)
+
+
+@jslt_function("trim")
+def execute_trim(ctx: Any, token: Any = None, txt: str | None = None) -> Any:
+    return _string_result(token, lambda s: s.strip(txt) if txt else s.strip())
+
+
+@jslt_function("split")
+def execute_split(ctx: Any, token: Any = None, charset: str = "") -> Any:
+    if token is None:
+        return None
+    if isinstance(token, str):
+        return token.split(charset[0]) if charset else [token]
+    return []
+
+
+@jslt_function("startswith")
+def execute_startswith(ctx: Any, token: Any = None, txt: str = "") -> Any:
+    return _string_result(token, lambda s: s.startswith(txt))
+
+
+@jslt_function("endswith")
+def execute_endswith(ctx: Any, token: Any = None, txt: str = "") -> Any:
+    return _string_result(token, lambda s: s.endswith(txt))
+
+
+@jslt_function("stringcontains")
+def execute_stringcontains(ctx: Any, token: Any = None, contain_str: str = "") -> Any:
+    return _string_result(token, lambda s: contain_str in s)
+
+
+# ----------------------------------------------------------------------- maths
+# Convention .NET : une valeur non numérique (ou None) donne None.
+
+
+def _number_result(token: Any, fn):
+    if isinstance(token, bool) or not isinstance(token, (int, float)):
+        return None
+    return fn(token)
+
+
+@jslt_function("abs")
+def execute_abs(ctx: Any, token: Any = None) -> Any:
+    return _number_result(token, abs)  # conserve int/float comme en .NET
+
+
+@jslt_function("floor")
+def execute_floor(ctx: Any, token: Any = None) -> Any:
+    return _number_result(token, lambda n: float(math.floor(n)))  # .NET Math.Floor -> double
+
+
+@jslt_function("round")
+def execute_round(ctx: Any, token: Any = None) -> Any:
+    # .NET Math.Round : arrondi bancaire (demi vers pair), comme round() de Python.
+    return _number_result(token, lambda n: float(round(n)))
+
+
+@jslt_function("min")
+def execute_min(ctx: Any, left: Any = None, right: Any = None) -> Any:
+    if isinstance(left, bool) or not isinstance(left, (int, float)):
+        return None
+    return float(min(left, _coerce_number(right)))  # .NET renvoie un double
+
+
+@jslt_function("max")
+def execute_max(ctx: Any, left: Any = None, right: Any = None) -> Any:
+    if isinstance(left, bool) or not isinstance(left, (int, float)):
+        return None
+    return float(max(left, _coerce_number(right)))  # .NET renvoie un double
 
 
 # Valeurs par défaut par type cible (port de ``targetType.GetDefaultValue()``).
