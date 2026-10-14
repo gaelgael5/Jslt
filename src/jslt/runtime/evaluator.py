@@ -21,6 +21,7 @@ from jslt.ast import (
     JsltConstant,
     JsltJsonVisitor,
     JsltObject,
+    JsltPath,
     JsltProperty,
 )
 
@@ -47,3 +48,18 @@ class JsltEvaluationVisitor(JsltJsonVisitor):
 
     def visit_constant(self, node: JsltConstant) -> Any:
         return node.value
+
+    def visit_jpath(self, node: JsltPath) -> Any:
+        """Applique le chemin JSONPath à la source courante.
+
+        Sémantique de ``RuntimeContext.GetContentByJPath`` (.NET) :
+            * 0 correspondance -> ``None``
+            * 1 correspondance -> la valeur
+            * N correspondances -> la liste des valeurs
+        """
+        values = node.compiled.select_values(self.context.current_source)
+        if not values:
+            return None
+        if len(values) == 1:
+            return values[0]
+        return values

@@ -17,9 +17,16 @@ from typing import Any
 
 from jslt._antlr.JsltParser import JsltParser
 from jslt._antlr.JsltParserVisitor import JsltParserVisitor
-from jslt.ast import JsltArray, JsltConstant, JsltKind, JsltObject, JsltProperty
+from jslt.ast import JsltArray, JsltConstant, JsltKind, JsltObject, JsltPath, JsltProperty
 from jslt.ast.location import TextLocation
 from jslt.errors import JsltSemanticError
+from jslt.jsonpath import (
+    IndexSelector,
+    JsonPath,
+    NameSelector,
+    PathScope,
+    PathSegment,
+)
 
 # Clés spéciales reconnues dans un objet (port de la logique .NET VisitObj).
 _SOURCE_NAMES = {"$", "$source"}
@@ -188,7 +195,7 @@ class ScriptBuilderVisitor(JsltParserVisitor):
         if ctx.jsonfunctionCall() is not None:
             raise NotImplementedError("appel de fonction : Phase 4")
         if ctx.jsltJsonpath() is not None:
-            raise NotImplementedError("chemin JSONPath : Phase 2")
+            return self.visit(ctx.jsltJsonpath())
         if ctx.variable() is not None:
             raise NotImplementedError("variable : Phase 2")
 
@@ -204,6 +211,75 @@ class ScriptBuilderVisitor(JsltParserVisitor):
             return self.visit(ctx.jsonValueNull())
 
         raise NotImplementedError("item jslt non pris en charge en Phase 1")
+
+    # --------------------------------------------------------------- jsonpath
+    def visitJsltJsonpath(self, ctx: JsltParser.JsltJsonpathContext) -> Any:
+        # jsltJsonpath : VARIABLE_NAME? jsonpath jsonType?
+        if ctx.VARIABLE_NAME() is not None:
+            raise NotImplementedError("projection d'un chemin sur une variable : Phase 2b")
+        if ctx.jsonType() is not None:
+            raise NotImplementedError("cast de type sur un chemin : Phase 3")
+
+        compiled = self._build_json_path(ctx.jsonpath())
+        node = JsltPath(value=ctx.jsonpath().getText(), compiled=compiled)
+        node.location = TextLocation.from_ctx(ctx)
+        return node
+
+    def _build_json_path(self, ctx: JsltParser.JsonpathContext) -> JsonPath:
+        # jsonpath : DOLLAR jsonpath_subscript?
+        segments: list[PathSegment] = []
+        subscript = ctx.jsonpath_subscript()
+        while subscript is not None:
+            segments.append(self._build_segment(subscript))
+            subscript = subscript.jsonpath_subscript()
+        return JsonPath(PathScope.GLOBAL, segments)
+
+    def _build_segment(self, ctx: JsltParser.Jsonpath_subscriptContext) -> PathSegment:
+        # jsonpath_subscript :
+        #     RECURSIVE_DESCENT (subscriptableBareword | subscriptables) jsonpath_subscript?
+        #   | SUBSCRIPT subscriptableBareword jsonpath_subscript?
+        #   | subscriptables jsonpath_subscript?
+        if ctx.RECURSIVE_DESCENT() is not None:
+            raise NotImplementedError("descente récursive '..' : Phase 5")
+
+        if ctx.SUBSCRIPT() is not None:
+            selector = self._build_bareword_selector(ctx.subscriptableBareword())
+            return PathSegment([selector], is_shorthand=True)
+
+        return PathSegment([self._build_subscript_selector(ctx.subscriptables())])
+
+    @staticmethod
+    def _build_bareword_selector(ctx: JsltParser.SubscriptableBarewordContext):
+        # subscriptableBareword : jsonPath_identifier subscriptableArguments? | WILDCARD_SUBSCRIPT
+        if ctx.WILDCARD_SUBSCRIPT() is not None:
+            raise NotImplementedError("wildcard '*' : Phase 5")
+        if ctx.subscriptableArguments() is not None:
+            raise NotImplementedError("fonction de chemin : Phase 5")
+        return NameSelector(ctx.jsonPath_identifier().getText())
+
+    def _build_subscript_selector(self, ctx: JsltParser.SubscriptablesContext):
+        # subscriptables : BRACKET_LEFT subscriptable BRACKET_RIGHT
+        st = ctx.subscriptable()
+
+        if st.STRING() is not None:
+            return NameSelector(self._unescape(self._strip_quotes(st.STRING().getText(), '"')))
+        if st.IDQUOTED() is not None:
+            return NameSelector(self._strip_quotes(st.IDQUOTED().getText(), "'"))
+        if st.sliceable() is not None:
+            sliceable = st.sliceable()
+            if sliceable.signedNumber() is not None:
+                return IndexSelector(int(sliceable.signedNumber().getText()))
+            raise NotImplementedError("slice '[a:b]' : Phase 5")
+        if st.WILDCARD_SUBSCRIPT() is not None:
+            raise NotImplementedError("wildcard '[*]' : Phase 5")
+
+        raise NotImplementedError("sélecteur de chemin non pris en charge en Phase 2a")
+
+    @staticmethod
+    def _strip_quotes(text: str, quote: str) -> str:
+        if len(text) >= 2 and text.startswith(quote) and text.endswith(quote):
+            return text[1:-1]
+        return text
 
     # ---------------------------------------------------------------- helpers
     @staticmethod

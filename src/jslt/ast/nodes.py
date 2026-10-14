@@ -21,6 +21,8 @@ from .base import JsltBase
 from .kind import JsltKind
 
 if TYPE_CHECKING:
+    from jslt.jsonpath import JsonPath
+
     from .visitor import JsltJsonVisitor
 
 # Noms de propriétés spéciales reconnues dans un objet (port de
@@ -134,6 +136,28 @@ class JsltObject(JsltBase):
 
     def __repr__(self) -> str:
         return f"JsltObject({list(self._items.values())!r})"
+
+
+class JsltPath(JsltBase):
+    """Chemin JSONPath (port de ``Bb.Jslt.Asts.JsltPath``).
+
+    En .NET le nœud ne stocke que la chaîne brute (``Value``), re-parsée à
+    l'exécution. Ici — choix B2 — le chemin est compilé une seule fois à la
+    construction de l'AST : ``compiled`` porte le :class:`jslt.jsonpath.JsonPath`,
+    ``value`` conserve le texte d'origine pour la sérialisation et le debug.
+    """
+
+    def __init__(self, value: str, compiled: JsonPath) -> None:
+        super().__init__()
+        self.kind = JsltKind.JPATH
+        self.value = value
+        self.compiled = compiled
+
+    def accept(self, visitor: JsltJsonVisitor) -> Any:
+        return visitor.visit_jpath(self)
+
+    def __repr__(self) -> str:
+        return f"JsltPath({self.value!r})"
 
 
 class JsltArray(JsltBase):
