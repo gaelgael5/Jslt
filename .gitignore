@@ -221,3 +221,6 @@ __marimo__/
 
 # Répertoire local de clones Git (non versionné)
 /.net/
+
+# Outil ANTLR (binaire téléchargé par scripts/generate_parser.sh)
+/tools/*.jar

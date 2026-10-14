@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jslt"
+version = "0.0.1"
+description = "Portage Python du langage JSLT (JSON Stylesheet Language Transformations) — transformation JSON vers JSON pilotée par template."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Gael Beard", email = "gaelgael5@gmail.com" }]
+keywords = ["json", "transform", "template", "jslt", "jsonpath"]
+dependencies = [
+    "antlr4-python3-runtime==4.13.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/gaelgael5/Jslt"
+Repository = "https://github.com/gaelgael5/Jslt"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+    "ruff>=0.4",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+jslt = ["_antlr/*.tokens", "_antlr/*.interp"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# Le code généré par ANTLR n'est pas soumis au lint.
+exclude = ["src/jslt/_antlr/*"]
