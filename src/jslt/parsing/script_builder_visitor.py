@@ -99,9 +99,9 @@ _PRECEDENCE = {
     OperationEnum.COALESCE: 0,
 }
 
-# Précédence des opérateurs dans un filtre JSONPath ?(...) : comparaison > & > |.
+# Précédence des opérateurs dans un filtre JSONPath ?(...) : comparaison/in > & > |.
 _FILTER_PRECEDENCE = {
-    "==": 2, "!=": 2, "<": 2, "<=": 2, ">": 2, ">=": 2,
+    "==": 2, "!=": 2, "<": 2, "<=": 2, ">": 2, ">=": 2, "in": 2,
     "&": 1,
     "|": 0,
 }
@@ -506,7 +506,22 @@ class ScriptBuilderVisitor(JsltParserVisitor):
         if ctx.signedNumber() is not None:
             text = ctx.signedNumber().getText()
             return float(text) if ("." in text or "e" in text or "E" in text) else int(text)
-        raise NotImplementedError("littéral de filtre non pris en charge (objet/tableau/variable)")
+        if ctx.array() is not None:
+            return self._const_from_node(self.visit(ctx.array()))
+        if ctx.obj() is not None:
+            return self._const_from_node(self.visit(ctx.obj()))
+        raise NotImplementedError("littéral de filtre non pris en charge (variable)")
+
+    def _const_from_node(self, node):
+        """Convertit un sous-arbre AST **constant** (tableau/objet/constante) en
+        valeur Python, pour un littéral de filtre (ex. ``@.n in [1, 2, 3]``)."""
+        if isinstance(node, JsltConstant):
+            return node.value
+        if isinstance(node, JsltArray):
+            return [self._const_from_node(item) for item in node.items]
+        if isinstance(node, JsltObject):
+            return {prop.name: self._const_from_node(prop.value) for prop in node.properties}
+        raise NotImplementedError("littéral de filtre non constant non pris en charge")
 
     @staticmethod
     def _fold_filter(operands, operators):

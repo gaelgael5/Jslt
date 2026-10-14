@@ -6,10 +6,12 @@ arbre d'expressions évalué pour chaque élément du nœud filtré :
 
     * opérandes : chemin ``@...`` (élément courant) / ``$...`` (racine) ou littéral ;
     * comparaisons : ``== != < <= > >=`` ;
-    * logiques : ``&`` (et), ``|`` (ou), ``!`` (négation).
+    * logiques : ``&`` (et), ``|`` (ou), ``!`` (négation) ;
+    * appartenance : ``in`` (port de ``InOperator``).
 
-Les opérateurs ensemblistes (``in``, ``nin``, ``subsetof``, ``contains``,
-``size``, ``empty``) relèvent d'une étape ultérieure.
+Les autres opérateurs ensemblistes de la grammaire (``nin``, ``subsetof``,
+``contains``, ``size``, ``empty``) ne sont pas implémentés — ils ne le sont pas
+non plus dans le moteur de filtre .NET.
 """
 
 from __future__ import annotations
@@ -100,6 +102,14 @@ class FilterBinary(FilterExpression):
 
         left = self.left.evaluate(root, current)
         right = self.right.evaluate(root, current)
+
+        if self.operator == "in":
+            # Appartenance : la droite est une collection (port de InOperator).
+            if isinstance(right, dict):
+                return left in right.values()
+            if isinstance(right, list):
+                return left in right
+            return False
         comparator = _COMPARATORS[self.operator]
         try:
             return comparator(left, right)

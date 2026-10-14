@@ -59,8 +59,9 @@ Patterns repris du .NET :
 
 ## Hors périmètre « cœur » (extensible, non porté)
 
-- Opérateurs ensemblistes de filtre (`in`/`nin`/`subsetof`/`contains`/`size`/
-  `empty`) et fonctions de chemin (`size()`…).
+- Opérateurs ensemblistes de filtre `nin`/`subsetof`/`contains`/`size`/`empty`
+  (non implémentés côté .NET non plus) et fonctions de chemin (`size()`…). Le
+  filtre `in` **est** porté.
 - Fonctions d'E-S (`csv`, `http`, `hash`, `randoms`, `group`, `sql`).
 - Sérialisation `ToString` (round-trip AST → source).
 

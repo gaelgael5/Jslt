@@ -56,3 +56,39 @@ def test_filter_in_loop() -> None:
     # Un filtre alimente couramment une boucle.
     template = '[ { "$source": $.items[?(@.ok == true)], "v": $.n } ]'
     assert JsltTemplate.parse(template).transform(SRC) == [{"v": 1}, {"v": 3}]
+
+
+IN_SRC = {"items": [{"n": 1}, {"n": 2}, {"n": 3}, {"n": 4}], "allowed": [2, 4]}
+
+IN_CASES = [
+    pytest.param(
+        '{ "r": $.items[?(@.n in [2, 4])] }',
+        {"r": [{"n": 2}, {"n": 4}]},
+        id="in-litteral-tableau",
+    ),
+    pytest.param(
+        '{ "r": $.items[?(@.n in $.allowed)] }',
+        {"r": [{"n": 2}, {"n": 4}]},
+        id="in-chemin",
+    ),
+    pytest.param('{ "r": $.items[?(@.n in [3])] }', {"r": {"n": 3}}, id="in-un-match"),
+]
+
+
+@pytest.mark.parametrize("template, expected", IN_CASES)
+def test_filter_in(template: str, expected) -> None:
+    assert JsltTemplate.parse(template).transform(IN_SRC) == expected
+
+
+@pytest.mark.parametrize(
+    "template",
+    [
+        '{ "r": $.a[?(@.x contains 1)] }',
+        '{ "r": $.a[?(@.x nin [1])] }',
+        '{ "r": $.a[?(@.x subsetof [1])] }',
+    ],
+)
+def test_unsupported_set_operators_raise(template: str) -> None:
+    # Non implémentés côté .NET non plus : NotImplementedError explicite.
+    with pytest.raises(NotImplementedError):
+        JsltTemplate.parse(template)
