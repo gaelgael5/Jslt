@@ -8,7 +8,13 @@ d'indice ; wildcard, slice, descente récursive et filtres viendront en Phase 5.
 from .node import Node
 from .path import JsonPath, PathScope
 from .segment import PathSegment
-from .selectors import IndexSelector, ISelector, NameSelector
+from .selectors import (
+    IndexSelector,
+    ISelector,
+    NameSelector,
+    SliceSelector,
+    WildcardSelector,
+)
 
 __all__ = [
     "ISelector",
@@ -18,4 +24,6 @@ __all__ = [
     "Node",
     "PathScope",
     "PathSegment",
+    "SliceSelector",
+    "WildcardSelector",
 ]

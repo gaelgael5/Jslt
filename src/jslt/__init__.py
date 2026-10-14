@@ -17,7 +17,8 @@ API publique :
     * Phase 4a — fonctions (registre) + chaînage ->              [FAIT]
     * Phase 4b — casts (#type via convert)                       [FAIT]
     * Phase 4c — when / switch                                   [FAIT]
-    * Phase 5 — JSONPath avancé (wildcard, slices, .., filtres)  [à venir]
+    * Phase 5a — JSONPath : wildcard, descente .., slices        [FAIT]
+    * Phase 5b — JSONPath : filtres ?(...) + fonctions de chemin [à venir]
 """
 
 from __future__ import annotations

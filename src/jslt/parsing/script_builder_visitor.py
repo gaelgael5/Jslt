@@ -40,6 +40,8 @@ from jslt.jsonpath import (
     NameSelector,
     PathScope,
     PathSegment,
+    SliceSelector,
+    WildcardSelector,
 )
 
 # Clés spéciales reconnues dans un objet (port de la logique .NET VisitObj).
@@ -400,7 +402,11 @@ class ScriptBuilderVisitor(JsltParserVisitor):
         #   | SUBSCRIPT subscriptableBareword jsonpath_subscript?
         #   | subscriptables jsonpath_subscript?
         if ctx.RECURSIVE_DESCENT() is not None:
-            raise NotImplementedError("descente récursive '..' : Phase 5")
+            if ctx.subscriptableBareword() is not None:
+                selector = self._build_bareword_selector(ctx.subscriptableBareword())
+            else:
+                selector = self._build_subscript_selector(ctx.subscriptables())
+            return PathSegment([selector], is_recursive=True)
 
         if ctx.SUBSCRIPT() is not None:
             selector = self._build_bareword_selector(ctx.subscriptableBareword())
@@ -412,9 +418,9 @@ class ScriptBuilderVisitor(JsltParserVisitor):
     def _build_bareword_selector(ctx: JsltParser.SubscriptableBarewordContext):
         # subscriptableBareword : jsonPath_identifier subscriptableArguments? | WILDCARD_SUBSCRIPT
         if ctx.WILDCARD_SUBSCRIPT() is not None:
-            raise NotImplementedError("wildcard '*' : Phase 5")
+            return WildcardSelector()
         if ctx.subscriptableArguments() is not None:
-            raise NotImplementedError("fonction de chemin : Phase 5")
+            raise NotImplementedError("fonction de chemin : Phase 5b")
         return NameSelector(ctx.jsonPath_identifier().getText())
 
     def _build_subscript_selector(self, ctx: JsltParser.SubscriptablesContext):
@@ -425,15 +431,29 @@ class ScriptBuilderVisitor(JsltParserVisitor):
             return NameSelector(self._unescape(self._strip_quotes(st.STRING().getText(), '"')))
         if st.IDQUOTED() is not None:
             return NameSelector(self._strip_quotes(st.IDQUOTED().getText(), "'"))
-        if st.sliceable() is not None:
-            sliceable = st.sliceable()
-            if sliceable.signedNumber() is not None:
-                return IndexSelector(int(sliceable.signedNumber().getText()))
-            raise NotImplementedError("slice '[a:b]' : Phase 5")
         if st.WILDCARD_SUBSCRIPT() is not None:
-            raise NotImplementedError("wildcard '[*]' : Phase 5")
+            return WildcardSelector()
+        if st.sliceable() is not None:
+            return self._build_slice_selector(st.sliceable())
+        if st.QUESTION() is not None:
+            raise NotImplementedError("filtre '?(...)' : Phase 5b")
 
-        raise NotImplementedError("sélecteur de chemin non pris en charge en Phase 2a")
+        raise NotImplementedError("sélecteur de chemin non pris en charge")
+
+    @staticmethod
+    def _build_slice_selector(ctx: JsltParser.SliceableContext):
+        # sliceable : signedNumber | sliceableLeft | sliceableRight | sliceableBinary
+        if ctx.signedNumber() is not None:
+            return IndexSelector(int(ctx.signedNumber().getText()))
+        if ctx.sliceableLeft() is not None:  # 'start:'
+            start = int(ctx.sliceableLeft().signedNumber().getText())
+            return SliceSelector(start, None)
+        if ctx.sliceableRight() is not None:  # ':end'
+            end = int(ctx.sliceableRight().signedNumber().getText())
+            return SliceSelector(None, end)
+        # sliceableBinary : 'start:end'
+        numbers = ctx.sliceableBinary().signedNumber()
+        return SliceSelector(int(numbers[0].getText()), int(numbers[1].getText()))
 
     @staticmethod
     def _strip_quotes(text: str, quote: str) -> str:

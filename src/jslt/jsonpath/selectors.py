@@ -2,10 +2,9 @@
 
 Port de ``Bb.JPaths`` (ISelector, NameSelector, IndexSelector).
 
-Couverture actuelle (Phase 2a) : sélecteur de nom (``.name`` / ``['name']``) et
-sélecteur d'indice (``[0]``, indices négatifs gérés comme en .NET). Les
-sélecteurs wildcard (``*``), slice (``a:b``) et filtre (``?(...)``) arriveront en
-Phase 5.
+Couverture : sélecteur de nom (``.name`` / ``['name']``), indice (``[0]``,
+négatifs), wildcard (``*`` / ``[*]``) et slice (``[a:b]``). Le sélecteur de
+filtre (``?(...)``) arrive en Phase 5b.
 """
 
 from __future__ import annotations
@@ -74,3 +73,84 @@ class IndexSelector(ISelector):
 
     def __repr__(self) -> str:
         return f"IndexSelector({self.index})"
+
+
+class WildcardSelector(ISelector):
+    """Sélecteur wildcard ``*`` (port de ``Bb.JPaths.WildcardSelector``).
+
+    Sélectionne toutes les valeurs d'un objet ou tous les éléments d'un tableau.
+    """
+
+    def evaluate(self, match: Node, root: Any) -> Iterable[Node]:
+        node = match.value
+        if isinstance(node, dict):
+            for key, member in node.items():
+                yield match.child(member, key)
+        elif isinstance(node, list):
+            for i, member in enumerate(node):
+                yield match.child(member, i)
+
+    def build_string(self) -> str:
+        return "*"
+
+    def __repr__(self) -> str:
+        return "WildcardSelector()"
+
+
+class SliceSelector(ISelector):
+    """Sélecteur de tranche ``[start:end:step]`` (port de ``Bb.JPaths.SliceSelector``).
+
+    Implémente l'algorithme de bornes du RFC 9535 (indices négatifs, pas négatif).
+    """
+
+    def __init__(self, start: int | None, end: int | None, step: int | None = None) -> None:
+        self.start = start
+        self.end = end
+        self.step = step
+
+    def evaluate(self, match: Node, root: Any) -> Iterable[Node]:
+        node = match.value
+        if not isinstance(node, list):
+            return
+        if self.step == 0:
+            return
+
+        count = len(node)
+        step = self.step if self.step is not None else 1
+        start = self.start if self.start is not None else (0 if step >= 0 else count)
+        end = self.end if self.end is not None else (count if step >= 0 else -count - 1)
+        lower, upper = self._bounds(start, end, step, count)
+
+        if step > 0:
+            i = lower
+            while i < upper:
+                yield match.child(node[i], i)
+                i += step
+        else:
+            i = upper
+            while lower < i:
+                yield match.child(node[i], i)
+                i += step
+
+    @staticmethod
+    def _normalize(index: int, length: int) -> int:
+        return index if index >= 0 else length + index
+
+    @classmethod
+    def _bounds(cls, start: int, end: int, step: int, length: int) -> tuple[int, int]:
+        start = cls._normalize(start, length)
+        end = cls._normalize(end, length)
+        if step >= 0:
+            lower = min(max(start, 0), length)
+            upper = min(max(end, 0), length)
+        else:
+            upper = min(max(start, -1), length - 1)
+            lower = min(max(end, -1), length - 1)
+        return lower, upper
+
+    def build_string(self) -> str:
+        base = f"{self.start if self.start is not None else ''}:{self.end if self.end is not None else ''}"
+        return base if self.step is None else f"{base}:{self.step}"
+
+    def __repr__(self) -> str:
+        return f"SliceSelector({self.start}, {self.end}, {self.step})"
