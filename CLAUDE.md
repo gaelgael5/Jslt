@@ -1,0 +1,86 @@
+# CLAUDE.md — jslt (portage Python)
+
+Portage Python du langage **JSLT** (JSON Stylesheet Language Transformations),
+initialement en .NET : [Black-Beard-Sdk/jslt](https://github.com/Black-Beard-Sdk/jslt).
+Le code .NET de référence est cloné (hors versionnement) sous `.net/` quand il
+est présent.
+
+## Principe directeur
+
+Reproduire **fidèlement les patterns** du moteur .NET tout en restant
+idiomatique Python. Fidèle au **comportement et aux tests** du .NET, **pas à ses
+bugs** (voir « Écarts volontaires »).
+
+## Architecture (miroir du .NET)
+
+```
+texte template
+  └─ parser ANTLR (grammaire grammar/*.g4)      src/jslt/_antlr/ (généré, versionné)
+       └─ arbre d'analyse ANTLR
+            └─ ScriptBuilderVisitor               src/jslt/parsing/ (arbre ANTLR -> AST)
+                 └─ AST (pattern Visitor)         src/jslt/ast/
+                      └─ interpréteur (tree-walk)  src/jslt/runtime/
+                           ├─ JSONPath             src/jslt/jsonpath/ (port de Bb.JPaths)
+                           └─ fonctions            src/jslt/functions/ (registre par nom)
+```
+
+Patterns repris du .NET :
+- **Visitor à double dispatch** : chaque nœud `JsltBase` a `accept(visitor)` qui
+  appelle `visitor.visit_xxx(self)`. Méthodes mappées 1:1 aux noms .NET
+  (`VisitObject` → `visit_object`), documentées dans `ast/visitor.py`.
+- **Deux couches de visiteurs** : `ScriptBuilderVisitor` (hérite du visiteur
+  ANTLR généré, construit l'AST) puis les visiteurs sur l'AST (évaluation…).
+- **Interpréteur d'AST** au lieu de la génération/compilation de code (Roslyn)
+  du .NET — plus simple et portable, même comportement.
+
+## Décisions de conception
+
+- **Parser** : un seul, via la grammaire ANTLR. Le JSONPath est compilé une fois
+  depuis l'arbre ANTLR (choix « B2 » ; le .NET re-parse la chaîne à l'exécution).
+- **Moteur JSONPath** : port de `Bb.JPaths` (RFC 9535), pas de dépendance tierce.
+- **Registre de fonctions** par **nom** (pas de résolution par types comme le
+  .NET, inutile en Python dynamique).
+- **Scope de variables** : chaîne de résolveurs lexicale (port de
+  `VariableResolver`/`VariableManager`).
+
+## Écarts volontaires vs .NET (documentés)
+
+- Règle `WS` réactivée dans la grammaire (le .NET tolérait les espaces via la
+  récupération d'erreur ANTLR) — équivalent, mais parsing strict.
+- Bug `VisitJsonValueInteger` (renvoyait 0) **non** reproduit.
+- Précédence des opérateurs **standard** (le .NET regroupait par parité, non
+  testé).
+- `^` = XOR entier, `&`/`|` = ET/OU bit-à-bit, `&&` = ET booléen (fidèles) ;
+  `||` = OU booléen (corrige un copier-coller fautif .NET qui faisait un ET).
+- Casts temporels (`uri`/`uuid`/`datetime`/`time`) rendus en chaîne (simplifié) ;
+  `integer`/`decimal`/`string`/`boolean` complets.
+
+## Hors périmètre « cœur » (extensible, non porté)
+
+- Opérateurs ensemblistes de filtre (`in`/`nin`/`subsetof`/`contains`/`size`/
+  `empty`) et fonctions de chemin (`size()`…).
+- Fonctions d'E-S (`csv`, `http`, `hash`, `randoms`, `group`, `sql`).
+- Sérialisation `ToString` (round-trip AST → source).
+- `distinct(source, path)` : nécessite de passer un chemin **non évalué** comme
+  argument (mécanisme non encore porté).
+
+## Développement
+
+```bash
+pip install -e ".[dev]"      # runtime ANTLR + pytest + ruff
+pytest                       # tests
+ruff check src tests         # lint (le code généré _antlr/ est exclu)
+bash scripts/generate_parser.sh   # régénère le parser après modif des grammar/*.g4 (Java requis)
+```
+
+Le parser généré (`src/jslt/_antlr/`) est **versionné** : la librairie s'utilise
+sans l'outil ANTLR. La grammaire `grammar/*.g4` fait foi.
+
+## Conventions
+
+- snake_case côté code maison ; les overrides du visiteur ANTLR restent en
+  camelCase (API imposée par le générateur).
+- Toute fonctionnalité portée s'accompagne de tests, dont, quand c'est possible,
+  des cas repris de `Black.Beard.Jslt.UnitTests` comme oracle de conformité.
+- Les constructions non encore portées lèvent `NotImplementedError` avec un
+  message explicite plutôt que de produire un résultat faux.
