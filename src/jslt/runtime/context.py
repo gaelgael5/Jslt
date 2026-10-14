@@ -43,11 +43,24 @@ class RuntimeContext:
     def __init__(self, sources: Sources | None = None) -> None:
         self.sources = sources if sources is not None else Sources()
         self.variables = VariableManager()
+        # Pile de la source courante (``RootSource`` en .NET). Le sommet est la
+        # source contre laquelle les chemins JSONPath se résolvent ; elle change
+        # dans les boucles et les objets porteurs d'un ``$source``.
+        self._source_stack: list[Any] = [self.sources.source]
 
     @property
     def current_source(self) -> Any:
-        """Document source courant (racine, en l'absence de boucle active)."""
-        return self.sources.source
+        """Source courante : sommet de la pile (racine en l'absence de boucle)."""
+        return self._source_stack[-1]
+
+    def push_source(self, source: Any) -> None:
+        """Empile une nouvelle source courante (entrée dans une boucle / un $source)."""
+        self._source_stack.append(source)
+
+    def pop_source(self) -> None:
+        """Dépile la source courante pour revenir à la précédente."""
+        if len(self._source_stack) > 1:
+            self._source_stack.pop()
 
     def push_scope(self) -> VariableManager:
         """Empile un nouveau scope de variables chaîné au scope courant.

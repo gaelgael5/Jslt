@@ -12,9 +12,10 @@ API publique :
     * Phase 1 — AST + transformation « défaut »                 [FAIT]
     * Phase 2a — JSONPath simple                                 [FAIT]
     * Phase 2b — variables (déclaration, référence, projection)  [FAIT]
-    * Phase 3 — boucles, opérateurs, casts                      [à venir]
-    * Phase 4 — fonctions intégrées + when/switch               [à venir]
-    * Phase 5 — JSONPath avancé                                 [à venir]
+    * Phase 3a — boucles ($source / $where)                      [FAIT]
+    * Phase 3b — opérateurs (arithmétique, comparaison, logique) [à venir]
+    * Phase 4 — fonctions + when/switch + casts (#type)          [à venir]
+    * Phase 5 — JSONPath avancé                                  [à venir]
 """
 
 from __future__ import annotations
