@@ -216,6 +216,31 @@ class JsltArray(JsltBase):
         return f"JsltArray({self.items!r})"
 
 
+class JsltFunctionCall(JsltBase):
+    """Appel de fonction (port de ``Bb.Jslt.Asts.JsltFunctionCall``).
+
+    Simplification vs .NET : les arguments sont une liste unique de nœuds (le
+    .NET distingue ``Arguments`` et ``ArgumentsBis`` pour les besoins de sa
+    génération de code). ``inject`` insère un argument à une position donnée, ce
+    qui sert au chaînage ``->`` (injection de l'opérande gauche en tête).
+    """
+
+    def __init__(self, name: str, arguments: list[JsltBase] | None = None) -> None:
+        super().__init__()
+        self.kind = JsltKind.FUNCTION
+        self.name = name
+        self.arguments: list[JsltBase] = list(arguments) if arguments else []
+
+    def inject(self, argument: JsltBase, position: int = 0) -> None:
+        self.arguments.insert(position, argument)
+
+    def accept(self, visitor: JsltJsonVisitor) -> Any:
+        return visitor.visit_function(self)
+
+    def __repr__(self) -> str:
+        return f"JsltFunctionCall({self.name!r}, {self.arguments!r})"
+
+
 class JsltBinaryOperator(JsltBase):
     """Opérateur binaire (port de ``Bb.Jslt.Asts.JsltBinaryOperator``)."""
 

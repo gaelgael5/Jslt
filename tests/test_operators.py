@@ -53,7 +53,4 @@ def test_operators(template: str, expected) -> None:
     assert JsltTemplate.parse(template).transform(SRC) == expected
 
 
-def test_chain_not_yet_supported() -> None:
-    # Le chaînage -> (injection d'argument de fonction) relève de la Phase 4.
-    with pytest.raises(NotImplementedError):
-        JsltTemplate.parse('{ "r": $.a -> sum() }')
+# Le chaînage `->` est couvert en Phase 4a (voir tests/test_functions.py).

@@ -21,6 +21,7 @@ from jslt.ast import (
     JsltArray,
     JsltBinaryOperator,
     JsltConstant,
+    JsltFunctionCall,
     JsltKind,
     JsltObject,
     JsltOperator,
@@ -266,18 +267,35 @@ class ScriptBuilderVisitor(JsltParserVisitor):
             # Opérateur de plus forte précédence, le plus à gauche à égalité.
             best = max(range(len(operators)), key=lambda i: (_PRECEDENCE[operators[i]], -i))
             left, right = operands[best], operands[best + 1]
-            combined = JsltBinaryOperator(left, operators[best], right)
-            combined.location = TextLocation.from_ctx(ctx)
+            if operators[best] is OperationEnum.CHAIN:
+                combined = self._apply_chain(left, right, ctx)
+            else:
+                combined = JsltBinaryOperator(left, operators[best], right)
+                combined.location = TextLocation.from_ctx(ctx)
             operands[best : best + 2] = [combined]
             del operators[best]
         return operands[0]
+
+    @staticmethod
+    def _apply_chain(left, right, ctx):
+        """Chaînage ``left -> f(...)`` : injecte ``left`` en tête des arguments de f.
+
+        Port de l'``Inject`` du .NET (VisitJsonLtOperations, cas Chain).
+        """
+        if not isinstance(right, JsltFunctionCall):
+            raise JsltSemanticError(
+                "l'opérande droit de '->' doit être un appel de fonction",
+                location=TextLocation.from_ctx(ctx),
+            )
+        right.inject(left, 0)
+        return right
 
     def visitOperation(self, ctx: JsltParser.OperationContext) -> Any:
         return _OPERATION_TOKENS[ctx.getText()]
 
     def visitJsonLtItem(self, ctx: JsltParser.JsonLtItemContext) -> Any:
         if ctx.jsonfunctionCall() is not None:
-            raise NotImplementedError("appel de fonction : Phase 4")
+            return self.visit(ctx.jsonfunctionCall())
         if ctx.jsltJsonpath() is not None:
             return self.visit(ctx.jsltJsonpath())
         if ctx.variable() is not None:
@@ -305,6 +323,29 @@ class ScriptBuilderVisitor(JsltParserVisitor):
         variable = JsltVariable(name=name.removesuffix(":"))
         variable.location = TextLocation.from_ctx(ctx)
         return variable
+
+    # -------------------------------------------------------------- fonctions
+    def visitJsonfunctionCall(self, ctx: JsltParser.JsonfunctionCallContext) -> Any:
+        # jsonfunctionCall : jsonfunctionName ( jsonValueList? ) jsonType? obj?
+        name = ctx.jsonfunctionName().getText()
+
+        if ctx.obj() is not None:
+            # when/switch s'écrivent when(expr){ cas } → construction d'un JsltSwitch.
+            raise NotImplementedError("when / switch : Phase 4c")
+        if ctx.jsonType() is not None:
+            # f(...) #type → cast via la fonction convert.
+            raise NotImplementedError("cast de type sur un appel de fonction : Phase 4b")
+
+        arguments: list = []
+        if ctx.jsonValueList() is not None:
+            arguments = self.visit(ctx.jsonValueList())
+
+        call = JsltFunctionCall(name, arguments)
+        call.location = TextLocation.from_ctx(ctx)
+        return call
+
+    def visitJsonValueList(self, ctx: JsltParser.JsonValueListContext) -> Any:
+        return [self.visit(value) for value in ctx.jsonValue()]
 
     # --------------------------------------------------------------- jsonpath
     def visitJsltJsonpath(self, ctx: JsltParser.JsltJsonpathContext) -> Any:

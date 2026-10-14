@@ -20,6 +20,7 @@ from jslt.ast import (
     JsltBase,
     JsltBinaryOperator,
     JsltConstant,
+    JsltFunctionCall,
     JsltJsonVisitor,
     JsltObject,
     JsltOperator,
@@ -28,6 +29,7 @@ from jslt.ast import (
     JsltVariable,
     OperationEnum,
 )
+from jslt.errors import JsltError
 
 from .context import RuntimeContext
 from .operators import apply_binary, apply_unary
@@ -172,6 +174,13 @@ class JsltEvaluationVisitor(JsltJsonVisitor):
 
     def visit_unary_operator(self, node: JsltOperator) -> Any:
         return apply_unary(node.operator, node.left.accept(self))
+
+    def visit_function(self, node: JsltFunctionCall) -> Any:
+        function = self.context.functions.get(node.name)
+        if function is None:
+            raise JsltError(f"fonction inconnue : {node.name}")
+        arguments = [argument.accept(self) for argument in node.arguments]
+        return function(self.context, *arguments)
 
     def visit_jvariable(self, node: JsltVariable) -> Any:
         """Résout une référence de variable depuis le scope courant.

@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from jslt.functions import FunctionRegistry, default_registry
+
 from .variables import VariableManager
 
 
@@ -40,9 +42,12 @@ class RuntimeContext:
     de résolveurs, cf. :mod:`jslt.runtime.variables`).
     """
 
-    def __init__(self, sources: Sources | None = None) -> None:
+    def __init__(
+        self, sources: Sources | None = None, functions: FunctionRegistry | None = None
+    ) -> None:
         self.sources = sources if sources is not None else Sources()
         self.variables = VariableManager()
+        self.functions = functions if functions is not None else default_registry
         # Pile de la source courante (``RootSource`` en .NET). Le sommet est la
         # source contre laquelle les chemins JSONPath se résolvent ; elle change
         # dans les boucles et les objets porteurs d'un ``$source``.
