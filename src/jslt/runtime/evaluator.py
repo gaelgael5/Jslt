@@ -18,15 +18,19 @@ from typing import Any
 from jslt.ast import (
     JsltArray,
     JsltBase,
+    JsltBinaryOperator,
     JsltConstant,
     JsltJsonVisitor,
     JsltObject,
+    JsltOperator,
     JsltPath,
     JsltProperty,
     JsltVariable,
+    OperationEnum,
 )
 
 from .context import RuntimeContext
+from .operators import apply_binary, apply_unary
 
 
 class JsltEvaluationVisitor(JsltJsonVisitor):
@@ -151,6 +155,23 @@ class JsltEvaluationVisitor(JsltJsonVisitor):
         if len(values) == 1:
             return values[0]
         return values
+
+    def visit_binary_operator(self, node: JsltBinaryOperator) -> Any:
+        left = node.left.accept(self)
+
+        # Coalesce : la gauche si elle n'est pas null, sinon la droite (la droite
+        # n'est évaluée que si nécessaire — comme en .NET).
+        if node.operator is OperationEnum.COALESCE:
+            return left if left is not None else node.right.accept(self)
+
+        if node.operator is OperationEnum.CHAIN:
+            raise NotImplementedError("opérateur de chaînage '->' : Phase 4")
+
+        right = node.right.accept(self)
+        return apply_binary(left, node.operator, right)
+
+    def visit_unary_operator(self, node: JsltOperator) -> Any:
+        return apply_unary(node.operator, node.left.accept(self))
 
     def visit_jvariable(self, node: JsltVariable) -> Any:
         """Résout une référence de variable depuis le scope courant.

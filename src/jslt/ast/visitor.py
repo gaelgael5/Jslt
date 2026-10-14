@@ -11,6 +11,8 @@ Correspondance des méthodes (.NET -> Python) :
     VisitConstant -> visit_constant
     VisitJPath    -> visit_jpath
     VisitJVariable-> visit_jvariable
+    VisitBinaryOperator -> visit_binary_operator
+    VisitUnaryOperator  -> visit_unary_operator
 
 L'interface est volontairement enrichie phase par phase, au rythme de l'ajout
 des nœuds AST (variables, chemins, fonctions, opérateurs, switch…), pour éviter
@@ -25,8 +27,10 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from .nodes import (
         JsltArray,
+        JsltBinaryOperator,
         JsltConstant,
         JsltObject,
+        JsltOperator,
         JsltPath,
         JsltProperty,
         JsltVariable,
@@ -53,6 +57,12 @@ class JsltJsonVisitor(ABC):
 
     @abstractmethod
     def visit_jvariable(self, node: JsltVariable) -> Any: ...
+
+    @abstractmethod
+    def visit_binary_operator(self, node: JsltBinaryOperator) -> Any: ...
+
+    @abstractmethod
+    def visit_unary_operator(self, node: JsltOperator) -> Any: ...
 
 
 class JsltBaseVisitor(JsltJsonVisitor):
@@ -112,4 +122,21 @@ class JsltBaseVisitor(JsltJsonVisitor):
             node.source.accept(self)
         if node.value is not None:
             node.value.accept(self)
+        return node
+
+    def visit_binary_operator(self, node: JsltBinaryOperator) -> Any:
+        if node.where is not None:
+            node.where.accept(self)
+        if node.source is not None:
+            node.source.accept(self)
+        node.left.accept(self)
+        node.right.accept(self)
+        return node
+
+    def visit_unary_operator(self, node: JsltOperator) -> Any:
+        if node.where is not None:
+            node.where.accept(self)
+        if node.source is not None:
+            node.source.accept(self)
+        node.left.accept(self)
         return node

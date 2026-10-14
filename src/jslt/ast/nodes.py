@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Any
 
 from .base import JsltBase
 from .kind import JsltKind
+from .operation import OperationEnum
 
 if TYPE_CHECKING:
     from jslt.jsonpath import JsonPath
@@ -213,3 +214,36 @@ class JsltArray(JsltBase):
 
     def __repr__(self) -> str:
         return f"JsltArray({self.items!r})"
+
+
+class JsltBinaryOperator(JsltBase):
+    """Opérateur binaire (port de ``Bb.Jslt.Asts.JsltBinaryOperator``)."""
+
+    def __init__(self, left: JsltBase, operator: OperationEnum, right: JsltBase) -> None:
+        super().__init__()
+        self.kind = JsltKind.OPERATOR
+        self.left = left
+        self.operator = operator
+        self.right = right
+
+    def accept(self, visitor: JsltJsonVisitor) -> Any:
+        return visitor.visit_binary_operator(self)
+
+    def __repr__(self) -> str:
+        return f"JsltBinaryOperator({self.left!r} {self.operator.name} {self.right!r})"
+
+
+class JsltOperator(JsltBase):
+    """Opérateur unaire (port de ``Bb.Jslt.Asts.JsltOperator``), ex. la négation ``!``."""
+
+    def __init__(self, left: JsltBase, operator: OperationEnum) -> None:
+        super().__init__()
+        self.kind = JsltKind.OPERATOR
+        self.left = left
+        self.operator = operator
+
+    def accept(self, visitor: JsltJsonVisitor) -> Any:
+        return visitor.visit_unary_operator(self)
+
+    def __repr__(self) -> str:
+        return f"JsltOperator({self.operator.name} {self.left!r})"

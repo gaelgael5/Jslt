@@ -19,12 +19,15 @@ from jslt._antlr.JsltParser import JsltParser
 from jslt._antlr.JsltParserVisitor import JsltParserVisitor
 from jslt.ast import (
     JsltArray,
+    JsltBinaryOperator,
     JsltConstant,
     JsltKind,
     JsltObject,
+    JsltOperator,
     JsltPath,
     JsltProperty,
     JsltVariable,
+    OperationEnum,
 )
 from jslt.ast.location import TextLocation
 from jslt.errors import JsltSemanticError
@@ -39,6 +42,52 @@ from jslt.jsonpath import (
 # Clés spéciales reconnues dans un objet (port de la logique .NET VisitObj).
 _SOURCE_NAMES = {"$", "$source"}
 _WHERE_NAMES = {"?", "$where"}
+
+# Texte d'opérateur -> OperationEnum (port de VisitOperation .NET).
+_OPERATION_TOKENS = {
+    "==": OperationEnum.EQUAL,
+    ">=": OperationEnum.GREATER_THAN_OR_EQUAL,
+    ">": OperationEnum.GREATER_THAN,
+    "<=": OperationEnum.LESS_THAN_OR_EQUAL,
+    "<": OperationEnum.LESS_THAN,
+    "!=": OperationEnum.NOT_EQUAL,
+    "+": OperationEnum.ADD,
+    "-": OperationEnum.SUBTRACT,
+    "/": OperationEnum.DIVIDE,
+    "%": OperationEnum.MODULO,
+    "*": OperationEnum.MULTIPLY,
+    "^": OperationEnum.POWER,
+    "&": OperationEnum.AND,
+    "&&": OperationEnum.AND_EXCLUSIVE,
+    "|": OperationEnum.OR,
+    "||": OperationEnum.OR_EXCLUSIVE,
+    "??": OperationEnum.COALESCE,
+    "->": OperationEnum.CHAIN,
+}
+
+# Précédence standard (valeur haute = lie plus fort), associativité gauche.
+# L'algorithme .NET regroupait par parité (non testé) ; on retient une
+# précédence classique — choix propre documenté.
+_PRECEDENCE = {
+    OperationEnum.CHAIN: 8,
+    OperationEnum.MULTIPLY: 7,
+    OperationEnum.DIVIDE: 7,
+    OperationEnum.MODULO: 7,
+    OperationEnum.POWER: 7,
+    OperationEnum.ADD: 6,
+    OperationEnum.SUBTRACT: 6,
+    OperationEnum.LESS_THAN: 5,
+    OperationEnum.LESS_THAN_OR_EQUAL: 5,
+    OperationEnum.GREATER_THAN: 5,
+    OperationEnum.GREATER_THAN_OR_EQUAL: 5,
+    OperationEnum.EQUAL: 4,
+    OperationEnum.NOT_EQUAL: 4,
+    OperationEnum.AND: 3,
+    OperationEnum.OR: 3,
+    OperationEnum.AND_EXCLUSIVE: 2,
+    OperationEnum.OR_EXCLUSIVE: 1,
+    OperationEnum.COALESCE: 0,
+}
 
 
 class ScriptBuilderVisitor(JsltParserVisitor):
@@ -177,33 +226,54 @@ class ScriptBuilderVisitor(JsltParserVisitor):
 
     # ------------------------------------------------------- jsonLt (chaînage)
     def visitJsonLtOperations(self, ctx: JsltParser.JsonLtOperationsContext) -> Any:
-        operations = ctx.operation()
-        sub_operations = ctx.jsonLtOperation()
+        if ctx.jsonType() is not None:
+            raise NotImplementedError("cast de type sur une expression : Phase 4")
 
-        if operations:
-            raise NotImplementedError("opérateurs binaires : Phase 3")
+        operands = [self.visit(sub) for sub in ctx.jsonLtOperation()]
+        operators = [self.visit(op) for op in ctx.operation()]
+
+        node = operands[0] if len(operands) == 1 else self._fold_operators(operands, operators, ctx)
+
+        # Négation éventuelle portant sur toute l'expression (NT en tête).
         if ctx.NT() is not None:
-            raise NotImplementedError("opérateur de négation : Phase 3")
-        if len(sub_operations) != 1:
-            raise NotImplementedError("expression entre parenthèses : Phase 3")
-
-        return self.visit(sub_operations[0])
+            node = self._negate(node, ctx)
+        return node
 
     def visitJsonLtOperation(self, ctx: JsltParser.JsonLtOperationContext) -> Any:
         if ctx.jsonType() is not None:
-            raise NotImplementedError("cast de type : Phase 3")
-        if ctx.NT() is not None:
-            raise NotImplementedError("opérateur de négation : Phase 3")
+            raise NotImplementedError("cast de type : Phase 4")
 
         item = ctx.jsonLtItem()
-        if item is not None:
-            return self.visit(item)
+        node = self.visit(item) if item is not None else self.visit(ctx.jsonLtOperation())
 
-        sub = ctx.jsonLtOperation()
-        if sub is not None:
-            return self.visit(sub)
+        if ctx.NT() is not None:
+            node = self._negate(node, ctx)
+        return node
 
-        raise NotImplementedError("opération jslt non prise en charge en Phase 1")
+    def _negate(self, node, ctx) -> JsltOperator:
+        operator = JsltOperator(node, OperationEnum.NOT)
+        operator.location = TextLocation.from_ctx(ctx)
+        return operator
+
+    def _fold_operators(self, operands, operators, ctx):
+        """Construit l'arbre d'opérateurs par précédence standard (associativité
+        gauche). L'algorithme .NET regroupait par parité (non testé) ; on retient
+        une précédence classique, correcte et lisible.
+        """
+        operands = list(operands)
+        operators = list(operators)
+        while operators:
+            # Opérateur de plus forte précédence, le plus à gauche à égalité.
+            best = max(range(len(operators)), key=lambda i: (_PRECEDENCE[operators[i]], -i))
+            left, right = operands[best], operands[best + 1]
+            combined = JsltBinaryOperator(left, operators[best], right)
+            combined.location = TextLocation.from_ctx(ctx)
+            operands[best : best + 2] = [combined]
+            del operators[best]
+        return operands[0]
+
+    def visitOperation(self, ctx: JsltParser.OperationContext) -> Any:
+        return _OPERATION_TOKENS[ctx.getText()]
 
     def visitJsonLtItem(self, ctx: JsltParser.JsonLtItemContext) -> Any:
         if ctx.jsonfunctionCall() is not None:

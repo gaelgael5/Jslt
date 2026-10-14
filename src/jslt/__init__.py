@@ -13,7 +13,7 @@ API publique :
     * Phase 2a — JSONPath simple                                 [FAIT]
     * Phase 2b — variables (déclaration, référence, projection)  [FAIT]
     * Phase 3a — boucles ($source / $where)                      [FAIT]
-    * Phase 3b — opérateurs (arithmétique, comparaison, logique) [à venir]
+    * Phase 3b — opérateurs (arithmétique, comparaison, logique) [FAIT]
     * Phase 4 — fonctions + when/switch + casts (#type)          [à venir]
     * Phase 5 — JSONPath avancé                                  [à venir]
 """
