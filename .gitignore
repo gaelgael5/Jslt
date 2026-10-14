@@ -218,3 +218,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Répertoire local de clones Git (non versionné)
+/.net/
