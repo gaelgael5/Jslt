@@ -86,9 +86,25 @@ Patterns repris du .NET :
   API publique exportée au top-level `jslt` : `jslt_function`, `FunctionRegistry`,
   `FunctionInfo`, `default_registry`, `load_plugins`.
 
-C'est le mécanisme sur lequel s'appuieront les **paquets additionnels** à porter
-(E-S : `csv`, bases de données, Elasticsearch, `http`…), hors cœur, chacun comme
-plugin séparé.
+C'est le mécanisme sur lequel s'appuient les **paquets additionnels** (E-S), hors
+cœur, chacun comme **distribution séparée** dans un **monorepo** :
+
+- `packages/jslt-csv/` — **premier plugin** : fonction `loadcsv` (port de
+  `ServiceCsv`). Distribution `jslt-csv`, dépend de `jslt`, déclare l'entry point
+  `jslt.functions`. Installer le paquet suffit à exposer `loadcsv` dans les templates.
+- À venir (même modèle) : bases de données, Elasticsearch, `http`, `loadmcsv`…
+
+Modèle de packaging (cf. pytest) : **monorepo, distributions indépendantes,
+découverte par entry points**. Le cœur reste à la racine ; chaque plugin a son
+`packages/<nom>/pyproject.toml`, son `src/`, ses tests, sa release (tag dédié,
+p.ex. `jslt-csv-vX.Y.Z` → `.github/workflows/release-jslt-csv.yml`).
+
+```bash
+pip install -e ".[dev]"            # cœur + outils
+pip install -e packages/jslt-csv   # plugin (dépend du cœur)
+pytest && pytest packages/jslt-csv/tests
+ruff check src tests packages
+```
 
 ## Hors périmètre « cœur » (extensible, non porté)
 

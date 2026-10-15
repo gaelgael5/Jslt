@@ -87,6 +87,9 @@ Les **plugins tiers** sont auto-découverts via le groupe d'entry points
 `jslt.functions` (installer le paquet suffit). Détails et contrat de plugin dans le
 [guide, §Extensibilité](docs/guide.md#16-extensibilité--fonctions-et-plugins).
 
+**Plugins officiels** (monorepo, distributions séparées) :
+- [`jslt-csv`](packages/jslt-csv/) — lecture de fichiers CSV (`loadcsv`).
+
 ## Architecture
 
 Le pipeline suit celui du moteur .NET, **sans** son étage de génération /

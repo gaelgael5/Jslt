@@ -86,6 +86,9 @@ default_registry.describe("double").signature()   # 'double(x)'
 group (installing the package is enough). Details and the plugin contract in the
 [guide, §Extensibility](docs/guide.en.md#16-extensibility-functions-and-plugins).
 
+**Official plugins** (monorepo, separate distributions):
+- [`jslt-csv`](packages/jslt-csv/) — reading CSV files (`loadcsv`).
+
 ## Architecture
 
 The pipeline mirrors the .NET engine, **without** its code
