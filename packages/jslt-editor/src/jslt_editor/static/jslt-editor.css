@@ -1,0 +1,114 @@
+/*!
+ * Styles de <jslt-editor>. Thème clair/sombre via prefers-color-scheme.
+ * Les couleurs sont des variables surchargeables (--jslt-ed-*).
+ */
+jslt-editor {
+  --jslt-ed-bg: #f7f7f8;
+  --jslt-ed-fg: #1a1a1a;
+  --jslt-ed-border: #ddd;
+  --jslt-ed-string: #0a7d33;
+  --jslt-ed-number: #a2600b;
+  --jslt-ed-keyword: #9a1fb0;
+  --jslt-ed-function: #2d6cdf;
+  --jslt-ed-path: #c0392b;
+  --jslt-ed-cast: #8a6d00;
+  --jslt-ed-operator: #555;
+  --jslt-ed-punct: #777;
+  --jslt-ed-ac-bg: #fff;
+  --jslt-ed-ac-active: #e8f0ff;
+  --jslt-ed-font: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --jslt-ed-size: 13px;
+  --jslt-ed-min-height: 180px;
+  display: block;
+}
+@media (prefers-color-scheme: dark) {
+  jslt-editor {
+    --jslt-ed-bg: #23262d;
+    --jslt-ed-fg: #e8e8ea;
+    --jslt-ed-border: #333842;
+    --jslt-ed-string: #7ec699;
+    --jslt-ed-number: #e0a85a;
+    --jslt-ed-keyword: #d79be8;
+    --jslt-ed-function: #6ea0ff;
+    --jslt-ed-path: #ff7a6b;
+    --jslt-ed-cast: #d7c35a;
+    --jslt-ed-operator: #aaa;
+    --jslt-ed-punct: #999;
+    --jslt-ed-ac-bg: #2b2f37;
+    --jslt-ed-ac-active: #334;
+  }
+}
+
+jslt-editor .jslt-editor {
+  position: relative;
+  border: 1px solid var(--jslt-ed-border);
+  border-radius: 8px;
+  background: var(--jslt-ed-bg);
+  overflow: hidden;
+}
+
+/* La zone de saisie et la couche colorée se superposent exactement. */
+jslt-editor .jslt-highlight,
+jslt-editor .jslt-input {
+  margin: 0;
+  padding: 10px;
+  border: 0;
+  font-family: var(--jslt-ed-font);
+  font-size: var(--jslt-ed-size);
+  line-height: 1.5;
+  tab-size: 2;
+  white-space: pre;
+  overflow: auto;
+}
+jslt-editor .jslt-highlight {
+  position: absolute;
+  inset: 0;
+  color: var(--jslt-ed-fg);
+  pointer-events: none;
+}
+jslt-editor .jslt-highlight code { font: inherit; }
+jslt-editor .jslt-input {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-height: var(--jslt-ed-min-height);
+  resize: vertical;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--jslt-ed-fg);
+  outline: none;
+}
+jslt-editor .jslt-input::selection { background: rgba(120, 150, 255, 0.35); }
+
+jslt-editor .tok-string { color: var(--jslt-ed-string); }
+jslt-editor .tok-number { color: var(--jslt-ed-number); }
+jslt-editor .tok-keyword { color: var(--jslt-ed-keyword); font-weight: 600; }
+jslt-editor .tok-function { color: var(--jslt-ed-function); }
+jslt-editor .tok-path { color: var(--jslt-ed-path); }
+jslt-editor .tok-cast { color: var(--jslt-ed-cast); }
+jslt-editor .tok-operator { color: var(--jslt-ed-operator); }
+jslt-editor .tok-punct { color: var(--jslt-ed-punct); }
+
+jslt-editor .jslt-ac {
+  position: absolute;
+  z-index: 10;
+  max-height: 220px;
+  overflow: auto;
+  min-width: 220px;
+  background: var(--jslt-ed-ac-bg);
+  border: 1px solid var(--jslt-ed-border);
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+  font-family: var(--jslt-ed-font);
+  font-size: var(--jslt-ed-size);
+}
+jslt-editor .jslt-ac-item {
+  padding: 6px 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+jslt-editor .jslt-ac-item.active { background: var(--jslt-ed-ac-active); }
+jslt-editor .jslt-ac-sig { color: var(--jslt-ed-fg); }
+jslt-editor .jslt-ac-desc { color: var(--jslt-ed-operator); font-size: 11px; }

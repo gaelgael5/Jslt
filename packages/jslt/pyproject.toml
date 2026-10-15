@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jslt"
+dynamic = ["version"]
+description = "Portage Python du langage JSLT (JSON Stylesheet Language Transformations) — transformation JSON vers JSON pilotée par template."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "Gael Beard", email = "gaelgael5@gmail.com" }]
+keywords = ["json", "transform", "template", "jslt", "jsonpath"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: Markup",
+    "Typing :: Typed",
+]
+dependencies = [
+    "antlr4-python3-runtime==4.13.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/gaelgael5/Jslt"
+Repository = "https://github.com/gaelgael5/Jslt"
+Documentation = "https://github.com/gaelgael5/Jslt/blob/main/docs/guide.md"
+Issues = "https://github.com/gaelgael5/Jslt/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+    "ruff>=0.4",
+    "build>=1",
+]
+
+[tool.setuptools.dynamic]
+# Version single-source : lue depuis jslt.__version__ (littéral, pas d'import).
+version = { attr = "jslt.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+# Marqueur de typage (PEP 561) + artefacts ANTLR versionnés.
+jslt = ["py.typed", "_antlr/*.tokens", "_antlr/*.interp"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# Le code généré par ANTLR n'est pas soumis au lint.
+exclude = ["src/jslt/_antlr/*"]

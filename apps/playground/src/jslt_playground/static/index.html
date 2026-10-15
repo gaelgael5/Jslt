@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>jslt — playground</title>
+  <link rel="stylesheet" href="jslt-editor/jslt-editor.css" />
+  <script type="module" src="jslt-editor/jslt-editor.js"></script>
+  <style>
+    :root {
+      --bg: #fff; --fg: #1a1a1a; --muted: #666; --border: #ddd;
+      --accent: #2d6cdf; --err: #c0392b; --panel: #f7f7f8;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #1b1d22; --fg: #e8e8ea; --muted: #9aa0a6; --border: #333842;
+              --accent: #6ea0ff; --err: #ff7a6b; --panel: #23262d; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+           background: var(--bg); color: var(--fg); }
+    header { padding: 12px 20px; border-bottom: 1px solid var(--border); display: flex;
+             align-items: center; gap: 12px; flex-wrap: wrap; }
+    header h1 { font-size: 18px; margin: 0; margin-right: auto; }
+    header .sub { color: var(--muted); font-size: 12px; width: 100%; }
+    select, button, input[type="search"] {
+      font: inherit; font-size: 14px; border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 10px; background: var(--panel); color: var(--fg);
+    }
+    button.primary { background: var(--accent); color: #fff; border: 0; font-weight: 600; cursor: pointer; }
+    button { cursor: pointer; }
+    button:disabled { opacity: .6; cursor: default; }
+    main { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 16px; }
+    @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
+    .panel { display: flex; flex-direction: column; min-width: 0; }
+    .panel > label { font-size: 12px; font-weight: 600; color: var(--muted);
+                     text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+    textarea, pre { font-family: var(--mono); font-size: 13px; border: 1px solid var(--border);
+                    border-radius: 8px; padding: 10px; background: var(--panel); color: var(--fg); }
+    textarea { resize: vertical; min-height: 180px; }
+    pre { margin: 0; min-height: 180px; overflow: auto; white-space: pre-wrap; word-break: break-word; }
+    pre.error { color: var(--err); }
+    .full { grid-column: 1 / -1; }
+    .hint { color: var(--muted); font-size: 12px; }
+    details.ref { grid-column: 1 / -1; border: 1px solid var(--border); border-radius: 8px;
+                  background: var(--panel); padding: 8px 12px; }
+    details.ref summary { cursor: pointer; font-weight: 600; }
+    .ref-list { margin-top: 10px; max-height: 260px; overflow: auto; display: grid; gap: 6px; }
+    .ref-item { font-family: var(--mono); font-size: 12px; }
+    .ref-item .sig { color: var(--accent); }
+    .ref-item .desc { color: var(--muted); }
+    #funcSearch { width: 100%; margin-top: 8px; }
+
+    details.dbg { grid-column: 1 / -1; border: 1px solid var(--border); border-radius: 8px;
+                  background: var(--panel); padding: 8px 12px; }
+    details.dbg summary { cursor: pointer; font-weight: 600; }
+    .dbg-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+    .dbg-bar input[type="text"] { flex: 1; min-width: 160px; }
+    .dbg-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 10px; }
+    @media (max-width: 760px) { .dbg-grid { grid-template-columns: 1fr; } }
+    .steps { max-height: 300px; overflow: auto; border: 1px solid var(--border); border-radius: 8px; }
+    .step { font-family: var(--mono); font-size: 12px; padding: 3px 8px; cursor: pointer;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: 0; }
+    .step.active { background: var(--accent); color: #fff; }
+    .step .bp { color: var(--err); font-weight: 700; }
+    .step .k { color: var(--muted); }
+    .step-detail { font-family: var(--mono); font-size: 12px; }
+    .step-detail h4 { margin: 8px 0 4px; font-size: 11px; color: var(--muted);
+                      text-transform: uppercase; letter-spacing: .04em; }
+    .step-detail pre { min-height: 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>jslt · playground</h1>
+    <select id="examples" title="Charger un exemple"><option value="">Exemples…</option></select>
+    <label class="hint"><input type="checkbox" id="auto" checked /> auto</label>
+    <button class="primary" id="run">Transformer</button>
+    <button id="share">Partager</button>
+    <span class="sub">template jslt + JSON source → résultat (moteur cœur ; fonctions d'E-S désactivées)</span>
+  </header>
+
+  <main>
+    <div class="panel">
+      <label for="template">Template jslt</label>
+      <jslt-editor id="template" catalog-url="api/functions"></jslt-editor>
+    </div>
+    <div class="panel">
+      <label for="source">JSON source</label>
+      <textarea id="source" spellcheck="false"></textarea>
+    </div>
+
+    <div class="panel full">
+      <label for="output">Résultat</label>
+      <pre id="output"></pre>
+    </div>
+
+    <details class="ref">
+      <summary>Fonctions disponibles</summary>
+      <input type="search" id="funcSearch" placeholder="Filtrer les fonctions…" />
+      <div class="ref-list" id="funcList"></div>
+    </details>
+
+    <details class="dbg">
+      <summary>Débogage (pas à pas)</summary>
+      <div class="dbg-bar">
+        <input type="text" id="bpFuncs" placeholder="Arrêt sur fonctions (ex. sum, upper)" />
+        <button id="trace">Tracer</button>
+        <button id="prevStep" title="Étape précédente">◀ Préc</button>
+        <button id="nextStep" title="Étape suivante">Suiv ▶</button>
+        <button id="nextBp" title="Prochain point d'arrêt">⏭ Point d'arrêt</button>
+        <span class="hint" id="stepInfo"></span>
+      </div>
+      <div class="dbg-grid">
+        <div class="steps" id="steps"></div>
+        <div class="step-detail">
+          <h4>Source courante</h4>
+          <pre id="stepSource"></pre>
+          <h4>Valeur produite</h4>
+          <pre id="stepResult"></pre>
+        </div>
+      </div>
+    </details>
+  </main>
+
+  <script>
+    const DEFAULT_TEMPLATE = '{\n  "name": $.user.name,\n  "year": $.user.age + 1\n}';
+    const DEFAULT_SOURCE = '{\n  "user": { "name": "Alice", "age": 30 }\n}';
+
+    const $template = document.getElementById("template");
+    const $source = document.getElementById("source");
+    const $output = document.getElementById("output");
+    const $run = document.getElementById("run");
+    const $share = document.getElementById("share");
+    const $auto = document.getElementById("auto");
+    const $examples = document.getElementById("examples");
+    const $funcList = document.getElementById("funcList");
+    const $funcSearch = document.getElementById("funcSearch");
+
+    // --- encodage d'état pour le partage par URL (UTF-8 safe) ----------------
+    const b64encode = (s) => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
+    const b64decode = (b) => new TextDecoder().decode(Uint8Array.from(atob(b), (c) => c.charCodeAt(0)));
+
+    function loadFromHash() {
+      const m = /[#&]s=([^&]+)/.exec(location.hash);
+      if (!m) return false;
+      try {
+        const state = JSON.parse(b64decode(decodeURIComponent(m[1])));
+        $template.value = state.t || "";
+        $source.value = state.s || "";
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function share() {
+      const state = { t: $template.value, s: $source.value };
+      location.hash = "s=" + encodeURIComponent(b64encode(JSON.stringify(state)));
+      navigator.clipboard?.writeText(location.href).then(
+        () => flash($share, "Lien copié ✓"),
+        () => flash($share, "URL mise à jour"),
+      );
+    }
+    function flash(btn, msg) {
+      const old = btn.textContent;
+      btn.textContent = msg;
+      setTimeout(() => (btn.textContent = old), 1400);
+    }
+
+    // --- transformation ------------------------------------------------------
+    let timer = null;
+    async function run() {
+      $run.disabled = true;
+      $output.classList.remove("error");
+      try {
+        const resp = await fetch("api/transform", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ template: $template.value, source: $source.value }),
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          $output.textContent = JSON.stringify(data.result, null, 2);
+        } else {
+          $output.classList.add("error");
+          $output.textContent = data.error || "Erreur HTTP " + resp.status;
+        }
+      } catch (e) {
+        $output.classList.add("error");
+        $output.textContent = String(e);
+      } finally {
+        $run.disabled = false;
+      }
+    }
+    function autoRun() {
+      if (!$auto.checked) return;
+      clearTimeout(timer);
+      timer = setTimeout(run, 400);
+    }
+
+    // --- exemples ------------------------------------------------------------
+    async function loadExamples() {
+      try {
+        const { examples } = await (await fetch("api/examples")).json();
+        for (const [i, ex] of examples.entries()) {
+          const opt = document.createElement("option");
+          opt.value = String(i);
+          opt.textContent = ex.name;
+          $examples.appendChild(opt);
+        }
+        $examples._data = examples;
+      } catch {
+        /* exemples indisponibles */
+      }
+    }
+
+    // --- référence des fonctions --------------------------------------------
+    let catalog = [];
+    async function loadFunctions() {
+      try {
+        const data = await (await fetch("api/functions")).json();
+        catalog = data.functions || [];
+        renderFunctions();
+      } catch {
+        /* référence indisponible */
+      }
+    }
+    function renderFunctions() {
+      const needle = $funcSearch.value.trim().toLowerCase();
+      const items = catalog.filter(
+        (f) => !needle || f.name.toLowerCase().includes(needle),
+      );
+      $funcList.innerHTML = items
+        .map(
+          (f) =>
+            `<div class="ref-item"><span class="sig">${f.signature || f.name}</span>` +
+            (f.description ? ` — <span class="desc">${f.description}</span>` : "") +
+            `</div>`,
+        )
+        .join("");
+    }
+
+    // --- câblage -------------------------------------------------------------
+    $run.addEventListener("click", run);
+    $share.addEventListener("click", share);
+    $template.addEventListener("input", autoRun);
+    $source.addEventListener("input", autoRun);
+    $funcSearch.addEventListener("input", renderFunctions);
+    $examples.addEventListener("change", () => {
+      const ex = ($examples._data || [])[Number($examples.value)];
+      if (!ex) return;
+      $template.value = ex.template;
+      $source.value = ex.source;
+      run();
+    });
+    document.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") run();
+    });
+
+    // --- débogage pas à pas --------------------------------------------------
+    const $bpFuncs = document.getElementById("bpFuncs");
+    const $trace = document.getElementById("trace");
+    const $steps = document.getElementById("steps");
+    const $stepSource = document.getElementById("stepSource");
+    const $stepResult = document.getElementById("stepResult");
+    const $stepInfo = document.getElementById("stepInfo");
+    const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    let dbgSteps = [];
+    let dbgIndex = -1;
+
+    async function trace() {
+      const break_functions = $bpFuncs.value.split(",").map((s) => s.trim()).filter(Boolean);
+      try {
+        const resp = await fetch("api/debug", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ template: $template.value, source: $source.value, break_functions }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          dbgSteps = [];
+          renderSteps();
+          $stepInfo.textContent = data.error || "Erreur " + resp.status;
+          return;
+        }
+        dbgSteps = data.steps || [];
+        renderSteps();
+        $stepInfo.textContent = (data.error ? "⚠ " + data.error + " · " : "") + dbgSteps.length + " étapes";
+        selectStep(dbgSteps.length ? 0 : -1);
+      } catch (e) {
+        $stepInfo.textContent = String(e);
+      }
+    }
+    function renderSteps() {
+      $steps.innerHTML = dbgSteps
+        .map((s, i) => {
+          const indent = "  ".repeat(Math.max(0, s.depth));
+          const loc = s.line != null ? s.line + ":" + (s.column ?? 0) : "—";
+          const bp = s.breakpoint ? '<span class="bp">● </span>' : "";
+          return `<div class="step" data-i="${i}">${bp}<span class="k">${loc} ${s.kind}</span> ${indent}${esc(s.expression || "")}</div>`;
+        })
+        .join("");
+    }
+    function selectStep(i) {
+      dbgIndex = i;
+      for (const el of $steps.querySelectorAll(".step"))
+        el.classList.toggle("active", Number(el.dataset.i) === i);
+      const s = dbgSteps[i];
+      if (!s) {
+        $stepSource.textContent = "";
+        $stepResult.textContent = "";
+        return;
+      }
+      $stepSource.textContent = JSON.stringify(s.source, null, 2);
+      $stepResult.textContent = JSON.stringify(s.result, null, 2);
+      $steps.querySelector(`.step[data-i="${i}"]`)?.scrollIntoView({ block: "nearest" });
+      $stepInfo.textContent = i + 1 + "/" + dbgSteps.length;
+    }
+    $trace.addEventListener("click", trace);
+    $steps.addEventListener("click", (e) => {
+      const row = e.target.closest(".step");
+      if (row) selectStep(Number(row.dataset.i));
+    });
+    document.getElementById("prevStep").addEventListener("click", () => {
+      if (dbgIndex > 0) selectStep(dbgIndex - 1);
+    });
+    document.getElementById("nextStep").addEventListener("click", () => {
+      if (dbgIndex < dbgSteps.length - 1) selectStep(dbgIndex + 1);
+    });
+    document.getElementById("nextBp").addEventListener("click", () => {
+      for (let i = dbgIndex + 1; i < dbgSteps.length; i++) {
+        if (dbgSteps[i].breakpoint) return selectStep(i);
+      }
+    });
+
+    // --- init ----------------------------------------------------------------
+    if (!loadFromHash()) {
+      $template.value = DEFAULT_TEMPLATE;
+      $source.value = DEFAULT_SOURCE;
+    }
+    loadExamples();
+    loadFunctions();
+    run();
+  </script>
+</body>
+</html>
