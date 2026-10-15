@@ -28,6 +28,7 @@ jobs:
           pip install -e packages/jslt-xml
           pip install -e packages/jslt-db
           pip install -e packages/jslt-http
+          pip install -e packages/jslt-elastic
 
       - name: Lint (ruff)
         run: ruff check src tests packages
@@ -38,4 +39,4 @@ jobs:
       - name: Tests — plugins (pytest)
         run: >-
           pytest -q packages/jslt-csv/tests packages/jslt-xml/tests
-          packages/jslt-db/tests packages/jslt-http/tests
+          packages/jslt-db/tests packages/jslt-http/tests packages/jslt-elastic/tests

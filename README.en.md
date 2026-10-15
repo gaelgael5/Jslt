@@ -91,6 +91,7 @@ group (installing the package is enough). Details and the plugin contract in the
 - [`jslt-xml`](packages/jslt-xml/) — reading XML files (`loadxml`).
 - [`jslt-db`](packages/jslt-db/) — reading from SQL databases (`connectsql`, `readsql`).
 - [`jslt-http`](packages/jslt-http/) — HTTP calls (`http`, `httpget`).
+- [`jslt-elastic`](packages/jslt-elastic/) — Elasticsearch search (`esconnect`, `essearch`).
 
 ## Architecture
 

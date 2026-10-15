@@ -92,6 +92,7 @@ Les **plugins tiers** sont auto-découverts via le groupe d'entry points
 - [`jslt-xml`](packages/jslt-xml/) — lecture de fichiers XML (`loadxml`).
 - [`jslt-db`](packages/jslt-db/) — lecture en base SQL (`connectsql`, `readsql`).
 - [`jslt-http`](packages/jslt-http/) — appels HTTP (`http`, `httpget`).
+- [`jslt-elastic`](packages/jslt-elastic/) — recherche Elasticsearch (`esconnect`, `essearch`).
 
 ## Architecture
 

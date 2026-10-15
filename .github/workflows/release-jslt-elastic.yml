@@ -1,0 +1,83 @@
+name: Release jslt-elastic
+
+# Publie le plugin jslt-elastic sur PyPI à chaque tag `jslt-elastic-vX.Y.Z`, via
+# Trusted Publishing (OIDC). Release indépendante du cœur et des autres plugins.
+#
+# Prérequis PyPI (une fois) : créer le projet "jslt-elastic" + déclarer un Trusted
+# Publisher GitHub Actions (repo gaelgael5/Jslt, workflow release-jslt-elastic.yml,
+# environment jslt-elastic).
+#
+# Déclencher :  git tag jslt-elastic-v0.1.0 && git push origin jslt-elastic-v0.1.0
+
+on:
+  push:
+    tags: ["jslt-elastic-v*.*.*"]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: packages/jslt-elastic
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install core + plugin + tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e "${{ github.workspace }}[dev]"
+          pip install -e .
+      - name: Lint (ruff)
+        run: ruff check src tests
+      - name: Tests (pytest)
+        run: pytest -q
+      - name: Vérifier que le tag correspond à la version du plugin
+        run: |
+          pkg_version="$(python -c 'import jslt_elastic; print(jslt_elastic.__version__)')"
+          tag_version="${GITHUB_REF_NAME#jslt-elastic-v}"
+          echo "package=$pkg_version  tag=$tag_version"
+          if [ "$pkg_version" != "$tag_version" ]; then
+            echo "::error::Le tag ($tag_version) ne correspond pas à jslt_elastic.__version__ ($pkg_version)"
+            exit 1
+          fi
+
+  build:
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Build sdist + wheel
+        run: |
+          python -m pip install --upgrade pip build twine
+          python -m build
+      - name: Vérifier les distributions (twine check)
+        run: python -m twine check dist/*
+      - name: Publier les artefacts de build
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-jslt-elastic
+          path: packages/jslt-elastic/dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: jslt-elastic
+    permissions:
+      id-token: write # requis par Trusted Publishing (OIDC)
+    steps:
+      - name: Récupérer les distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-jslt-elastic
+          path: dist/
+      - name: Publier sur PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

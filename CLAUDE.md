@@ -100,7 +100,11 @@ cœur, chacun comme **distribution séparée** dans un **monorepo** :
 - `packages/jslt-http/` — fonctions `http` / `httpget`. Appel formalisé en objet
   Fetch/`RequestInit` (`{method,url,headers,query,body}` → `{status,headers,body}`)
   via `httpx`. Distribution `jslt-http`, dépend de `jslt` + `httpx`.
-- À venir (même modèle) : Elasticsearch, `loadmcsv`…
+- `packages/jslt-elastic/` — fonctions `esconnect` / `essearch` (recherche
+  Elasticsearch → `_source` des hits) via le client officiel `elasticsearch`
+  (importé paresseusement). Distribution `jslt-elastic`, dépend de `jslt` +
+  `elasticsearch`.
+- À venir (même modèle) : `loadmcsv`…
 
 Modèle de packaging (cf. pytest) : **monorepo, distributions indépendantes,
 découverte par entry points**. Le cœur reste à la racine ; chaque plugin a son
