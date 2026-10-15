@@ -21,7 +21,21 @@ import pytest
 
 from jslt import JsltTemplate
 
-DOCS = Path(__file__).resolve().parent.parent / "docs"
+
+def _find_docs() -> Path:
+    """Localise le dossier ``docs/`` du projet (à la racine du dépôt).
+
+    Robuste à l'emplacement du paquet dans le monorepo : remonte les parents
+    jusqu'à trouver un ``docs/guide.md``.
+    """
+    for parent in Path(__file__).resolve().parents:
+        candidate = parent / "docs"
+        if (candidate / "guide.md").is_file():
+            return candidate
+    raise FileNotFoundError("dossier docs/ introuvable (docs/guide.md attendu)")
+
+
+DOCS = _find_docs()
 # Guides versionnés (français canonique + doublage anglais) : mêmes triplets.
 GUIDES = sorted(DOCS.glob("guide*.md"))
 

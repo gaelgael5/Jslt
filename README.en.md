@@ -22,7 +22,7 @@ template.transform({"user": {"name": "Alice", "age": 30}})
 ## Installation
 
 ```bash
-pip install -e ".[dev]"   # from the repo; also installs pytest + ruff
+pip install -e "packages/jslt[dev]"   # from the repo; also installs pytest + ruff
 ```
 
 The only runtime dependency is `antlr4-python3-runtime`. The generated parser is
@@ -98,7 +98,8 @@ group (installing the package is enough). Details and the plugin contract in the
 The pipeline mirrors the .NET engine, **without** its code
 generation / compilation stage (Roslyn): in Python the transformation is carried
 out by an **AST interpreter** (tree-walking), simpler and more portable, with
-identical behavior.
+identical behavior. The core is the `packages/jslt/` package (paths below are
+relative to it); the I/O plugins are the other `packages/jslt-*/`.
 
 ```
 template text
@@ -120,14 +121,14 @@ evaluation and serialization). Details and deliberate deviations in
 ## Development
 
 ```bash
-pip install -e ".[dev]"
-pytest                       # test suite
-ruff check src tests         # lint (generated _antlr/ is excluded)
-bash scripts/generate_parser.sh   # regenerate the parser after editing grammar/*.g4 (Java required)
+pip install -e "packages/jslt[dev]"
+pytest packages/jslt/tests        # core test suite
+ruff check packages               # lint (generated _antlr/ is excluded)
+bash packages/jslt/scripts/generate_parser.sh   # regenerate the parser (Java required)
 ```
 
-The grammar is authoritative: `grammar/JsltLexer.g4` and `grammar/JsltParser.g4`
-are the language's source of truth, taken from the .NET repository.
+The grammar is authoritative: `packages/jslt/grammar/JsltLexer.g4` and
+`JsltParser.g4` are the language's source of truth, taken from the .NET repository.
 
 ## Scope
 

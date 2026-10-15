@@ -13,6 +13,9 @@ bugs** (voir « Écarts volontaires »).
 
 ## Architecture (miroir du .NET)
 
+Le **cœur** vit sous `packages/jslt/` (paquet `jslt`), au même niveau que les
+plugins. Chemins ci-dessous relatifs à `packages/jslt/` :
+
 ```
 texte template
   └─ parser ANTLR (grammaire grammar/*.g4)      src/jslt/_antlr/ (généré, versionné)
@@ -107,18 +110,21 @@ cœur, chacun comme **distribution séparée** dans un **monorepo** :
 - À venir (même modèle) : `loadmcsv`…
 
 Modèle de packaging (cf. pytest) : **monorepo, distributions indépendantes,
-découverte par entry points**. Le cœur reste à la racine ; chaque plugin a son
-`packages/<nom>/pyproject.toml`, son `src/`, ses tests, sa release (tag dédié,
-p.ex. `jslt-csv-vX.Y.Z` → `.github/workflows/release-jslt-csv.yml`).
+découverte par entry points**. Chaque paquet (cœur compris) a son
+`packages/<nom>/pyproject.toml`, son `src/`, ses tests, sa release (tag dédié :
+cœur `vX.Y.Z` → `release.yml` ; plugins `jslt-csv-vX.Y.Z` →
+`release-jslt-csv.yml`, etc.). À la racine : docs projet (`README*`, `docs/`,
+`CLAUDE.md`) et `.github/`.
 
 ```bash
-pip install -e ".[dev]"            # cœur + outils
-pip install -e packages/jslt-csv   # plugins (dépendent du cœur)
+pip install -e "packages/jslt[dev]"   # cœur + outils
+pip install -e packages/jslt-csv      # plugins (dépendent du cœur)
 pip install -e packages/jslt-xml
 pip install -e packages/jslt-db
 pip install -e packages/jslt-http
-pytest && pytest packages/jslt-*/tests
-ruff check src tests packages
+pip install -e packages/jslt-elastic
+pytest packages/jslt/tests && pytest packages/jslt-*/tests
+ruff check packages
 ```
 
 ## Hors périmètre « cœur » (extensible, non porté)
@@ -131,12 +137,12 @@ ruff check src tests packages
 - Fonctions d'E-S (`csv`, `http`, `hash`, `randoms`, `group`, `sql`).
 
 Sérialisation `ToString` (round-trip AST → source) : **portée** sous forme d'un
-visiteur dédié `SourceWriterVisitor` (`src/jslt/serialization.py`), exposée via
+visiteur dédié `SourceWriterVisitor` (`packages/jslt/src/jslt/serialization.py`), exposée via
 `JsltTemplate.to_source()`. Produit un template valide et ré-analysable,
 équivalent en comportement (pas identique au caractère près) ; un cast `x #type`
 se re-sérialise sous sa forme `convert(x, "type")`.
 
-Fonctions portées (modules dans `src/jslt/functions/`) :
+Fonctions portées (modules dans `packages/jslt/src/jslt/functions/`) :
 - cœur : `sum`, `concat`, `convert` (casts), `distinct`.
 - maths : `abs`, `floor`, `round`, `truncate`, `min`, `max`, `sqrt`, `pow`, `exp`,
   `logarithm`/`logarithm10`/`logarithm2`, trig (`sin`/`cos`/`tan`/`asin`/`acos`/
@@ -155,25 +161,29 @@ Fonctions encore non portées : `format`, `normalize`, `group`/`join`/`index`/
 
 ## Développement
 
+Le cœur est sous `packages/jslt/` (chemins ci-dessous relatifs à ce dossier) :
+
 ```bash
-pip install -e ".[dev]"      # runtime ANTLR + pytest + ruff
-pytest                       # tests
-ruff check src tests         # lint (le code généré _antlr/ est exclu)
-bash scripts/generate_parser.sh   # régénère le parser après modif des grammar/*.g4 (Java requis)
+pip install -e "packages/jslt[dev]"           # runtime ANTLR + pytest + ruff
+pytest packages/jslt/tests                    # tests du cœur
+ruff check packages                           # lint (le code généré _antlr/ est exclu)
+bash packages/jslt/scripts/generate_parser.sh # régénère le parser (Java requis)
 ```
 
-Le parser généré (`src/jslt/_antlr/`) est **versionné** : la librairie s'utilise
-sans l'outil ANTLR. La grammaire `grammar/*.g4` fait foi.
+Le parser généré (`packages/jslt/src/jslt/_antlr/`) est **versionné** : la
+librairie s'utilise sans l'outil ANTLR. La grammaire `packages/jslt/grammar/*.g4`
+fait foi.
 
 ### Packaging / publication
 
 ```bash
-python -m build              # construit sdist + wheel dans dist/
-python -m twine check dist/* # valide les distributions (métadonnées, README)
+cd packages/jslt && python -m build   # construit sdist + wheel dans dist/
+python -m twine check dist/*           # valide les distributions (métadonnées, README)
 ```
 
-- Version **single-source** : `jslt.__version__` (`src/jslt/__init__.py`), lue par
-  `[tool.setuptools.dynamic]`. Pour publier une version, bumper `__version__`.
+- Version **single-source** : `jslt.__version__`
+  (`packages/jslt/src/jslt/__init__.py`), lue par `[tool.setuptools.dynamic]`.
+  Pour publier une version, bumper `__version__`.
 - Publication **automatisée** (`.github/workflows/release.yml`) : pousser un tag
   `vX.Y.Z` (égal à `__version__`, vérifié par le workflow) build, teste, puis
   publie sur PyPI via **Trusted Publishing** (OIDC, aucun token stocké).

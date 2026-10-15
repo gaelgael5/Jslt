@@ -22,7 +22,7 @@ template.transform({"user": {"name": "Alice", "age": 30}})
 ## Installation
 
 ```bash
-pip install -e ".[dev]"   # depuis le dépôt ; installe aussi pytest + ruff
+pip install -e "packages/jslt[dev]"   # depuis le dépôt ; installe aussi pytest + ruff
 ```
 
 La seule dépendance d'exécution est `antlr4-python3-runtime`. Le parser généré
@@ -99,7 +99,8 @@ Les **plugins tiers** sont auto-découverts via le groupe d'entry points
 Le pipeline suit celui du moteur .NET, **sans** son étage de génération /
 compilation de code (Roslyn) : en Python, la transformation est réalisée par un
 **interpréteur d'AST** (tree-walking), plus simple et portable, à comportement
-identique.
+identique. Le cœur est le paquet `packages/jslt/` (chemins ci-dessous relatifs à
+ce dossier) ; les plugins d'E-S sont les autres `packages/jslt-*/`.
 
 ```
 texte template
@@ -121,14 +122,14 @@ aux noms .NET) et les **deux couches de visiteurs** (construction d'AST, puis
 ## Développement
 
 ```bash
-pip install -e ".[dev]"
-pytest                       # suite de tests
-ruff check src tests         # lint (le code généré _antlr/ est exclu)
-bash scripts/generate_parser.sh   # régénère le parser après modif grammar/*.g4 (Java requis)
+pip install -e "packages/jslt[dev]"
+pytest packages/jslt/tests        # suite de tests du cœur
+ruff check packages               # lint (le code généré _antlr/ est exclu)
+bash packages/jslt/scripts/generate_parser.sh   # régénère le parser (Java requis)
 ```
 
-La grammaire fait foi : `grammar/JsltLexer.g4` et `grammar/JsltParser.g4` sont la
-source de vérité du langage, reprise du dépôt .NET.
+La grammaire fait foi : `packages/jslt/grammar/JsltLexer.g4` et `JsltParser.g4`
+sont la source de vérité du langage, reprise du dépôt .NET.
 
 ## Périmètre
 
