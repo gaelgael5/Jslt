@@ -4,67 +4,108 @@ Portage Python du langage **JSLT — JSON Stylesheet Language Transformations** 
 un langage de **transformation JSON → JSON piloté par template**, initialement
 implémenté en .NET ([Black-Beard-Sdk/jslt](https://github.com/Black-Beard-Sdk/jslt)).
 
-Un template décrit la structure du JSON cible, avec des opérateurs : chemins
-JSONPath (`$.x`), variables (`var:`), fonctions (`sum(...)`), boucles
-(`[ { "$source": $.items } ]`), conditions (`when`), casts (`#integer`), etc.
+Un template décrit la **forme du JSON cible** ; ses valeurs sont des expressions
+qui lisent le document source : chemins JSONPath (`$.x`), variables (`var:`),
+fonctions (`sum(...)`), opérateurs (`+`, `==`, `??`…), boucles
+(`[ { "$source": $.items } ]`), conditions (`when`), casts (`#integer`).
 
 ```python
 from jslt import JsltTemplate
 
-template = JsltTemplate.parse('{ "name": $.n }')
-result = template.transform({"n": "Alice"})   # (disponible à partir de la Phase 1)
-# -> {"name": "Alice"}
+template = JsltTemplate.parse('{ "name": $.user.name, "year": $.user.age + 1 }')
+template.transform({"user": {"name": "Alice", "age": 30}})
+# -> {'name': 'Alice', 'year': 31}
 ```
 
-## État du portage
+## Installation
 
-Le portage se concentre sur le **cœur** du moteur (parser + AST + évaluation +
-JSONPath + fonctions intégrées). L'outillage périphérique du dépôt .NET
-(interface WPF, éditeur, stockage SQL…) n'est pas porté.
+```bash
+pip install -e ".[dev]"   # depuis le dépôt ; installe aussi pytest + ruff
+```
 
-| Phase | Contenu | État |
-|-------|---------|------|
-| 0 | Analyse syntaxique (parser ANTLR) | ✅ |
-| 1 | AST + transformation « défaut » | à venir |
-| 2 | Variables + JSONPath simple | à venir |
-| 3 | Boucles, opérateurs, casts | à venir |
-| 4 | Fonctions intégrées + `when`/switch | à venir |
-| 5 | JSONPath avancé (filtres, slices, descente) | à venir |
+La seule dépendance d'exécution est `antlr4-python3-runtime`. Le parser généré
+est **versionné** : aucun outil ANTLR (ni Java) n'est requis pour *utiliser* la
+librairie — seulement pour *régénérer* le parser après modification des
+grammaires.
+
+## En un coup d'œil
+
+| Capacité | Exemple de template | Source | Résultat |
+|---|---|---|---|
+| Constantes / structure | `{ "v": "Paris" }` | `{}` | `{"v": "Paris"}` |
+| JSONPath | `{ "n": $.user.name }` | `{"user":{"name":"A"}}` | `{"n": "A"}` |
+| Descente récursive | `{ "ids": $..id }` | `{"a":{"id":1},"b":{"id":2}}` | `{"ids":[1,2]}` |
+| Variables | `{ "u:": $.user, "n": u:$.name }` | `{"user":{"name":"B"}}` | `{"n":"B"}` |
+| Opérateurs | `{ "s": $.a + $.b }` | `{"a":1,"b":2}` | `{"s":3}` |
+| Coalescence | `{ "v": $.x ?? "def" }` | `{}` | `{"v":"def"}` |
+| Fonctions | `{ "t": sum($.n) }` | `{"n":[1,2,3]}` | `{"t":6}` |
+| Casts | `{ "i": $.s #integer }` | `{"s":"42"}` | `{"i":42}` |
+| `when` / `switch` | `{ "r": when($.x) { "a": 1, "default": 0 } }` | `{"x":"a"}` | `{"r":1}` |
+| Boucles | `[ { "$source": $.u, "n": $.name } ]` | `{"u":[{"name":"A"}]}` | `[{"n":"A"}]` |
+| Filtres JSONPath | `{ "g": $.items[?(@.n > 1)] }` | `{"items":[{"n":1},{"n":2}]}` | `{"g":[{"n":2}]}` |
+
+Le **[guide complet avec de nombreux exemples testables](docs/guide.md)** détaille
+chaque construction. Tous ses exemples sont exécutés par la suite de tests
+(`tests/test_guide_examples.py`), ils ne peuvent donc pas « pourrir ».
+
+## API publique
+
+```python
+from jslt import JsltTemplate
+
+tpl = JsltTemplate.parse(source_str)   # compile le template (lève JsltSyntaxError si invalide)
+tpl.transform(document)                # applique le template à un document (dict/list/scalaire)
+tpl.to_source()                        # re-sérialise l'AST en template ré-analysable (ToString)
+tpl.ast                                # l'AST (arbre de nœuds JsltBase)
+```
+
+Exceptions : `JsltError` (base), `JsltSyntaxError` (parsing), `JsltSemanticError`.
+Les constructions reconnues par la grammaire mais non encore portées lèvent
+`NotImplementedError` avec un message explicite (jamais un résultat faux).
 
 ## Architecture
 
-Le pipeline suit celui du moteur .NET, sans son étage de génération/compilation
-de code (Roslyn) : en Python, la transformation est réalisée par un
-**interpréteur d'AST** (tree-walking), plus simple et portable.
+Le pipeline suit celui du moteur .NET, **sans** son étage de génération /
+compilation de code (Roslyn) : en Python, la transformation est réalisée par un
+**interpréteur d'AST** (tree-walking), plus simple et portable, à comportement
+identique.
 
 ```
 texte template
-   └─ parser ANTLR (grammaire .g4)      src/jslt/_antlr/ (généré)
-        └─ arbre d'analyse ANTLR
-             └─ construction de l'AST    src/jslt/ast, src/jslt/parsing
-                  └─ interpréteur        src/jslt/runtime
-                       ├─ JSONPath       src/jslt/jsonpath
-                       └─ fonctions      src/jslt/functions
+  └─ parser ANTLR (grammaire grammar/*.g4)      src/jslt/_antlr/ (généré, versionné)
+       └─ arbre d'analyse ANTLR
+            └─ ScriptBuilderVisitor               src/jslt/parsing/ (arbre ANTLR → AST)
+                 └─ AST (pattern Visitor)         src/jslt/ast/
+                      └─ interpréteur (tree-walk)  src/jslt/runtime/
+                           ├─ JSONPath             src/jslt/jsonpath/ (port de Bb.JPaths, RFC 9535)
+                           └─ fonctions            src/jslt/functions/ (registre par nom)
 ```
+
+Patterns repris du .NET, notamment le **Visitor à double dispatch** (chaque nœud
+`JsltBase` a `accept(visitor)` qui appelle `visitor.visit_xxx(self)`, mappé 1:1
+aux noms .NET) et les **deux couches de visiteurs** (construction d'AST, puis
+évaluation et sérialisation). Détails et écarts volontaires dans
+[`CLAUDE.md`](CLAUDE.md).
 
 ## Développement
 
 ```bash
-# Installer la librairie + dépendances de dev (runtime ANTLR, pytest, ruff)
 pip install -e ".[dev]"
-
-# Lancer les tests
-pytest
-
-# Régénérer le parser après modification des grammaires (grammar/*.g4)
-#   nécessite Java ; télécharge l'outil ANTLR dans tools/ si absent
-bash scripts/generate_parser.sh
+pytest                       # suite de tests
+ruff check src tests         # lint (le code généré _antlr/ est exclu)
+bash scripts/generate_parser.sh   # régénère le parser après modif grammar/*.g4 (Java requis)
 ```
 
-La grammaire fait foi : les fichiers `grammar/JsltLexer.g4` et
-`grammar/JsltParser.g4` sont la source de vérité du langage, repris du dépôt
-.NET. Le parser Python généré (`src/jslt/_antlr/`) est versionné afin que la
-librairie s'utilise sans l'outil ANTLR.
+La grammaire fait foi : `grammar/JsltLexer.g4` et `grammar/JsltParser.g4` sont la
+source de vérité du langage, reprise du dépôt .NET.
+
+## Périmètre
+
+Le portage cible le **cœur** du moteur. Hors périmètre (extensible) : certains
+opérateurs ensemblistes de filtre (`nin`/`subsetof`/`contains`…, absents aussi du
+.NET), les fonctions d'E-S (`csv`, `http`, `sql`…) et les jointures (`group`,
+`join`, `index`). Le détail des fonctions portées et des écarts assumés vis-à-vis
+du .NET figure dans [`CLAUDE.md`](CLAUDE.md).
 
 ## Licence
 
