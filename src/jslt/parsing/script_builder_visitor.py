@@ -43,6 +43,7 @@ from jslt.jsonpath import (
     IndexSelector,
     JsonPath,
     NameSelector,
+    PathFunctionSelector,
     PathScope,
     PathSegment,
     SliceSelector,
@@ -432,7 +433,12 @@ class ScriptBuilderVisitor(JsltParserVisitor):
         if ctx.WILDCARD_SUBSCRIPT() is not None:
             return WildcardSelector()
         if ctx.subscriptableArguments() is not None:
-            raise NotImplementedError("fonction de chemin (size, contains…) : étape ultérieure")
+            name = ctx.jsonPath_identifier().getText()
+            if ctx.subscriptableArguments().jsonpath__():
+                raise NotImplementedError(f"fonction de chemin '{name}' avec arguments : non portée")
+            if name not in ("length", "value"):
+                raise NotImplementedError(f"fonction de chemin '{name}' : non portée")
+            return PathFunctionSelector(name)
         return NameSelector(ctx.jsonPath_identifier().getText())
 
     def _build_subscript_selector(self, ctx: JsltParser.SubscriptablesContext):

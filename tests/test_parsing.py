@@ -63,13 +63,14 @@ PHASE1_TEMPLATES = [
     pytest.param('{ "wild": $.* }', id="jsonpath-wildcard"),
     pytest.param('{ "slice": $.list[1:3] }', id="jsonpath-slice"),
     pytest.param('{ "f": $.items[?(@.n > 1)] }', id="jsonpath-filtre"),
+    pytest.param('{ "n": $.obj.length() }', id="fonction-de-chemin-length"),
 ]
 
 # Constructions qui parsent (ANTLR) mais dont l'AST n'est pas encore porté
-# (opérateurs ensemblistes et fonctions de chemin dans les filtres).
+# (opérateurs ensemblistes de filtre et fonctions de chemin non portées).
 NOT_YET_BUILT_TEMPLATES = [
     pytest.param('{ "f": $.items[?(@.tags contains "x")] }', id="filtre-contains"),
-    pytest.param('{ "n": $.obj.size() }', id="fonction-de-chemin"),
+    pytest.param('{ "n": $.obj.size() }', id="fonction-de-chemin-size"),
 ]
 
 # Templates qui doivent être rejetés.

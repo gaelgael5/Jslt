@@ -75,6 +75,33 @@ class IndexSelector(ISelector):
         return f"IndexSelector({self.index})"
 
 
+class PathFunctionSelector(ISelector):
+    """Fonction de chemin appliquée au nœud courant (ex. ``@.tags.length()``).
+
+    Port partiel des fonctions ``Bb.JPaths`` enregistrées : ``length`` (taille
+    d'un objet/tableau, longueur d'une chaîne ; sinon rien) et ``value``
+    (identité). ``count``/``match``/``search`` ne sont pas portées.
+    """
+
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+    def evaluate(self, match: Node, root: Any) -> Iterable[Node]:
+        if self.name == "length":
+            value = match.value
+            if isinstance(value, (dict, list, str)):
+                yield match.child(len(value), "length()")
+            # sinon : aucune valeur (null), comme LengthFunction
+        elif self.name == "value":
+            yield match  # valeur du nœud courant (identité)
+
+    def build_string(self) -> str:
+        return f"{self.name}()"
+
+    def __repr__(self) -> str:
+        return f"PathFunctionSelector({self.name!r})"
+
+
 class WildcardSelector(ISelector):
     """Sélecteur wildcard ``*`` (port de ``Bb.JPaths.WildcardSelector``).
 

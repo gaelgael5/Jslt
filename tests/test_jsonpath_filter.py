@@ -92,3 +92,37 @@ def test_unsupported_set_operators_raise(template: str) -> None:
     # Non implémentés côté .NET non plus : NotImplementedError explicite.
     with pytest.raises(NotImplementedError):
         JsltTemplate.parse(template)
+
+
+# --- fonctions de chemin (length, value) ----------------------------------
+PATH_FUNCTION_CASES = [
+    pytest.param('{ "r": $.tags.length() }', {"tags": ["a", "b", "c"]}, 3, id="length-tableau"),
+    pytest.param('{ "r": $.obj.length() }', {"obj": {"a": 1, "b": 2}}, 2, id="length-objet"),
+    pytest.param('{ "r": $.s.length() }', {"s": "hello"}, 5, id="length-chaine"),
+    pytest.param('{ "r": $.n.length() }', {"n": 5}, None, id="length-non-collection"),
+    pytest.param('{ "r": $.v.value() }', {"v": 42}, 42, id="value-identite"),
+    pytest.param(
+        '{ "r": $.items[?(@.tags.length() > 1)] }',
+        {"items": [{"tags": ["x"]}, {"tags": ["y", "z"]}]},
+        {"r": {"tags": ["y", "z"]}}["r"],
+        id="length-dans-filtre",
+    ),
+]
+
+
+@pytest.mark.parametrize("template, source, expected", PATH_FUNCTION_CASES)
+def test_path_functions(template: str, source, expected) -> None:
+    assert JsltTemplate.parse(template).transform(source) == {"r": expected}
+
+
+@pytest.mark.parametrize(
+    "template",
+    [
+        '{ "r": $.a.size() }',  # size n'existe pas côté .NET
+        '{ "r": $.a.count() }',
+        '{ "r": $.a.match("x") }',
+    ],
+)
+def test_unsupported_path_functions_raise(template: str) -> None:
+    with pytest.raises(NotImplementedError):
+        JsltTemplate.parse(template)

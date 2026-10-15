@@ -19,6 +19,7 @@ from .selectors import (
     IndexSelector,
     ISelector,
     NameSelector,
+    PathFunctionSelector,
     SliceSelector,
     WildcardSelector,
 )
@@ -34,6 +35,7 @@ __all__ = [
     "JsonPath",
     "NameSelector",
     "Node",
+    "PathFunctionSelector",
     "PathScope",
     "PathSegment",
     "SliceSelector",

@@ -60,8 +60,10 @@ Patterns repris du .NET :
 ## Hors périmètre « cœur » (extensible, non porté)
 
 - Opérateurs ensemblistes de filtre `nin`/`subsetof`/`contains`/`size`/`empty`
-  (non implémentés côté .NET non plus) et fonctions de chemin (`size()`…). Le
-  filtre `in` **est** porté.
+  (non implémentés côté .NET non plus). Le filtre `in` **est** porté.
+- Fonctions de chemin : `length()` et `value()` **sont** portées (dans les
+  chemins et les filtres) ; `count`/`match`/`search` (et `size`, inexistant en
+  .NET) lèvent `NotImplementedError`.
 - Fonctions d'E-S (`csv`, `http`, `hash`, `randoms`, `group`, `sql`).
 - Sérialisation `ToString` (round-trip AST → source).
 
