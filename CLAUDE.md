@@ -65,7 +65,12 @@ Patterns repris du .NET :
   chemins et les filtres) ; `count`/`match`/`search` (et `size`, inexistant en
   .NET) lèvent `NotImplementedError`.
 - Fonctions d'E-S (`csv`, `http`, `hash`, `randoms`, `group`, `sql`).
-- Sérialisation `ToString` (round-trip AST → source).
+
+Sérialisation `ToString` (round-trip AST → source) : **portée** sous forme d'un
+visiteur dédié `SourceWriterVisitor` (`src/jslt/serialization.py`), exposée via
+`JsltTemplate.to_source()`. Produit un template valide et ré-analysable,
+équivalent en comportement (pas identique au caractère près) ; un cast `x #type`
+se re-sérialise sous sa forme `convert(x, "type")`.
 
 Fonctions portées (modules dans `src/jslt/functions/`) :
 - cœur : `sum`, `concat`, `convert` (casts), `distinct`.

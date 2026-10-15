@@ -34,6 +34,7 @@ from .errors import JsltError, JsltSemanticError, JsltSyntaxError
 from .parsing import parse_to_tree
 from .parsing.script_builder_visitor import ScriptBuilderVisitor
 from .runtime import JsltEvaluationVisitor, RuntimeContext, Sources
+from .serialization import to_source
 
 __all__ = [
     "JsltError",
@@ -91,3 +92,15 @@ class JsltTemplate:
         context = RuntimeContext(Sources(source))
         evaluator = JsltEvaluationVisitor(context)
         return self._ast.accept(evaluator)
+
+    def to_source(self) -> str:
+        """Re-sérialise l'AST du template en texte source ré-analysable.
+
+        Analogue du ``ToString`` du .NET : le résultat est un template valide,
+        équivalent en comportement à l'original (pas forcément identique au
+        caractère près — voir :mod:`jslt.serialization`).
+
+        Returns:
+            Le template jslt sérialisé depuis l'AST.
+        """
+        return to_source(self._ast)

@@ -19,7 +19,9 @@ def execute_uuid(ctx: Any) -> str:
 
 @jslt_function("now")
 def execute_now(ctx: Any, utc: bool = False) -> str:
-    moment = datetime.now(timezone.utc) if utc else datetime.now()
+    # L'heure locale (sans tz) est volontaire : `now(false)` renvoie l'heure
+    # locale, `now(true)` l'UTC — fidèle au comportement .NET.
+    moment = datetime.now(timezone.utc) if utc else datetime.now()  # noqa: DTZ005
     return moment.isoformat()
 
 
