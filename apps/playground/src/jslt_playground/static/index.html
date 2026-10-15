@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>jslt — playground</title>
+  <link rel="stylesheet" href="jslt-editor/jslt-editor.css" />
+  <script type="module" src="jslt-editor/jslt-editor.js"></script>
+  <style>
+    :root {
+      --bg: #fff; --fg: #1a1a1a; --muted: #666; --border: #ddd;
+      --accent: #2d6cdf; --err: #c0392b; --panel: #f7f7f8; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #1b1d22; --fg: #e8e8ea; --muted: #9aa0a6; --border: #333842;
+              --accent: #6ea0ff; --err: #ff7a6b; --panel: #23262d; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+           background: var(--bg); color: var(--fg); }
+    header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex;
+             align-items: baseline; gap: 12px; flex-wrap: wrap; }
+    header h1 { font-size: 18px; margin: 0; }
+    header .sub { color: var(--muted); font-size: 13px; }
+    main { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 16px; }
+    @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
+    .panel { display: flex; flex-direction: column; min-width: 0; }
+    .panel label { font-size: 12px; font-weight: 600; color: var(--muted);
+                   text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+    textarea, pre { font-family: var(--mono); font-size: 13px; border: 1px solid var(--border);
+                    border-radius: 8px; padding: 10px; background: var(--panel); color: var(--fg); }
+    textarea { resize: vertical; min-height: 180px; }
+    pre { margin: 0; min-height: 180px; overflow: auto; white-space: pre-wrap; word-break: break-word; }
+    pre.error { color: var(--err); }
+    .bar { grid-column: 1 / -1; display: flex; gap: 10px; align-items: center; }
+    button { background: var(--accent); color: #fff; border: 0; border-radius: 8px;
+             padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    button:disabled { opacity: .6; cursor: default; }
+    .hint { color: var(--muted); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>jslt · playground</h1>
+    <span class="sub">template jslt + JSON source → résultat (moteur cœur, fonctions d'E-S désactivées)</span>
+  </header>
+  <main>
+    <div class="panel">
+      <label for="template">Template jslt</label>
+      <jslt-editor id="template" catalog-url="api/functions"></jslt-editor>
+    </div>
+    <div class="panel">
+      <label for="source">JSON source</label>
+      <textarea id="source" spellcheck="false"></textarea>
+    </div>
+    <div class="bar">
+      <button id="run">Transformer</button>
+      <span class="hint">Ctrl/⌘+Entrée</span>
+    </div>
+    <div class="panel" style="grid-column: 1 / -1;">
+      <label for="output">Résultat</label>
+      <pre id="output"></pre>
+    </div>
+  </main>
+
+  <script>
+    const EXAMPLE_TEMPLATE = '{\n  "name": $.user.name,\n  "year": $.user.age + 1,\n  "tags": $.user.tags\n}';
+    const EXAMPLE_SOURCE = '{\n  "user": { "name": "Alice", "age": 30, "tags": ["a", "b"] }\n}';
+
+    const $template = document.getElementById("template");
+    const $source = document.getElementById("source");
+    const $output = document.getElementById("output");
+    const $run = document.getElementById("run");
+
+    $template.value = EXAMPLE_TEMPLATE;
+    $source.value = EXAMPLE_SOURCE;
+
+    async function run() {
+      $run.disabled = true;
+      $output.classList.remove("error");
+      $output.textContent = "…";
+      try {
+        const resp = await fetch("api/transform", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ template: $template.value, source: $source.value }),
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          $output.textContent = JSON.stringify(data.result, null, 2);
+        } else {
+          $output.classList.add("error");
+          $output.textContent = data.error || ("Erreur HTTP " + resp.status);
+        }
+      } catch (e) {
+        $output.classList.add("error");
+        $output.textContent = String(e);
+      } finally {
+        $run.disabled = false;
+      }
+    }
+
+    $run.addEventListener("click", run);
+    document.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") run();
+    });
+    run();
+  </script>
+</body>
+</html>

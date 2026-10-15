@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install the core package, plugins and dev dependencies
+      - name: Install the core package, plugins, editor, app and dev dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e "packages/jslt[dev]"
@@ -29,14 +29,20 @@ jobs:
           pip install -e packages/jslt-db
           pip install -e packages/jslt-http
           pip install -e packages/jslt-elastic
+          pip install -e packages/jslt-editor
+          pip install -e "apps/playground[dev]"
 
       - name: Lint (ruff)
-        run: ruff check packages
+        run: ruff check packages apps
 
       - name: Tests — cœur (pytest)
         run: pytest -q packages/jslt/tests
 
-      - name: Tests — plugins (pytest)
+      - name: Tests — plugins + composant (pytest)
         run: >-
           pytest -q packages/jslt-csv/tests packages/jslt-xml/tests
           packages/jslt-db/tests packages/jslt-http/tests packages/jslt-elastic/tests
+          packages/jslt-editor/tests
+
+      - name: Tests — apps (pytest)
+        run: pytest -q apps/playground/tests

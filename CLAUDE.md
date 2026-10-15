@@ -108,6 +108,21 @@ cœur, chacun comme **distribution séparée** dans un **monorepo** :
   Elasticsearch → `_source` des hits) via le client officiel `elasticsearch`
   (importé paresseusement). Distribution `jslt-elastic`, dépend de `jslt` +
   `elasticsearch`.
+- `packages/jslt-editor/` — composant d'édition **réutilisable** : Web Component
+  `<jslt-editor>` (coloration syntaxique + intellisense, **sans dépendance JS**) +
+  utilitaires Python (`assets_dir`, `catalog`, `mount`). L'intellisense est
+  alimentée par `registry.catalog()`. Distribution `jslt-editor`, dépend de `jslt`.
+
+### Applications (non publiées) — `apps/`
+
+Les **applications** du dépôt vivent sous `apps/` (distinct de `packages/`, réservé
+aux libs publiables) :
+
+- `apps/playground/` — playground web de test/démo (FastAPI) : template jslt
+  (via `<jslt-editor>`) + JSON source → résultat du **vrai moteur** côté serveur.
+  **Bac à sable** : seules les fonctions du cœur sont exécutées (registre isolé,
+  copie du registre cœur sans plugins) — pas d'E-S (fichiers/réseau/SQL) depuis un
+  template. Lancer : `uvicorn jslt_playground.app:app --reload`.
 
 Modèle de packaging (cf. pytest) : **monorepo, distributions indépendantes,
 découverte par entry points**. Chaque paquet (cœur compris) a son
