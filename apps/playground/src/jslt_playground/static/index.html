@@ -9,7 +9,8 @@
   <style>
     :root {
       --bg: #fff; --fg: #1a1a1a; --muted: #666; --border: #ddd;
-      --accent: #2d6cdf; --err: #c0392b; --panel: #f7f7f8; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --accent: #2d6cdf; --err: #c0392b; --panel: #f7f7f8;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     }
     @media (prefers-color-scheme: dark) {
       :root { --bg: #1b1d22; --fg: #e8e8ea; --muted: #9aa0a6; --border: #333842;
@@ -18,32 +19,49 @@
     * { box-sizing: border-box; }
     body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
            background: var(--bg); color: var(--fg); }
-    header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex;
-             align-items: baseline; gap: 12px; flex-wrap: wrap; }
-    header h1 { font-size: 18px; margin: 0; }
-    header .sub { color: var(--muted); font-size: 13px; }
+    header { padding: 12px 20px; border-bottom: 1px solid var(--border); display: flex;
+             align-items: center; gap: 12px; flex-wrap: wrap; }
+    header h1 { font-size: 18px; margin: 0; margin-right: auto; }
+    header .sub { color: var(--muted); font-size: 12px; width: 100%; }
+    select, button, input[type="search"] {
+      font: inherit; font-size: 14px; border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 10px; background: var(--panel); color: var(--fg);
+    }
+    button.primary { background: var(--accent); color: #fff; border: 0; font-weight: 600; cursor: pointer; }
+    button { cursor: pointer; }
+    button:disabled { opacity: .6; cursor: default; }
     main { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 16px; }
     @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
     .panel { display: flex; flex-direction: column; min-width: 0; }
-    .panel label { font-size: 12px; font-weight: 600; color: var(--muted);
-                   text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+    .panel > label { font-size: 12px; font-weight: 600; color: var(--muted);
+                     text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
     textarea, pre { font-family: var(--mono); font-size: 13px; border: 1px solid var(--border);
                     border-radius: 8px; padding: 10px; background: var(--panel); color: var(--fg); }
     textarea { resize: vertical; min-height: 180px; }
     pre { margin: 0; min-height: 180px; overflow: auto; white-space: pre-wrap; word-break: break-word; }
     pre.error { color: var(--err); }
-    .bar { grid-column: 1 / -1; display: flex; gap: 10px; align-items: center; }
-    button { background: var(--accent); color: #fff; border: 0; border-radius: 8px;
-             padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
-    button:disabled { opacity: .6; cursor: default; }
+    .full { grid-column: 1 / -1; }
     .hint { color: var(--muted); font-size: 12px; }
+    details.ref { grid-column: 1 / -1; border: 1px solid var(--border); border-radius: 8px;
+                  background: var(--panel); padding: 8px 12px; }
+    details.ref summary { cursor: pointer; font-weight: 600; }
+    .ref-list { margin-top: 10px; max-height: 260px; overflow: auto; display: grid; gap: 6px; }
+    .ref-item { font-family: var(--mono); font-size: 12px; }
+    .ref-item .sig { color: var(--accent); }
+    .ref-item .desc { color: var(--muted); }
+    #funcSearch { width: 100%; margin-top: 8px; }
   </style>
 </head>
 <body>
   <header>
     <h1>jslt · playground</h1>
-    <span class="sub">template jslt + JSON source → résultat (moteur cœur, fonctions d'E-S désactivées)</span>
+    <select id="examples" title="Charger un exemple"><option value="">Exemples…</option></select>
+    <label class="hint"><input type="checkbox" id="auto" checked /> auto</label>
+    <button class="primary" id="run">Transformer</button>
+    <button id="share">Partager</button>
+    <span class="sub">template jslt + JSON source → résultat (moteur cœur ; fonctions d'E-S désactivées)</span>
   </header>
+
   <main>
     <div class="panel">
       <label for="template">Template jslt</label>
@@ -53,32 +71,69 @@
       <label for="source">JSON source</label>
       <textarea id="source" spellcheck="false"></textarea>
     </div>
-    <div class="bar">
-      <button id="run">Transformer</button>
-      <span class="hint">Ctrl/⌘+Entrée</span>
-    </div>
-    <div class="panel" style="grid-column: 1 / -1;">
+
+    <div class="panel full">
       <label for="output">Résultat</label>
       <pre id="output"></pre>
     </div>
+
+    <details class="ref">
+      <summary>Fonctions disponibles</summary>
+      <input type="search" id="funcSearch" placeholder="Filtrer les fonctions…" />
+      <div class="ref-list" id="funcList"></div>
+    </details>
   </main>
 
   <script>
-    const EXAMPLE_TEMPLATE = '{\n  "name": $.user.name,\n  "year": $.user.age + 1,\n  "tags": $.user.tags\n}';
-    const EXAMPLE_SOURCE = '{\n  "user": { "name": "Alice", "age": 30, "tags": ["a", "b"] }\n}';
+    const DEFAULT_TEMPLATE = '{\n  "name": $.user.name,\n  "year": $.user.age + 1\n}';
+    const DEFAULT_SOURCE = '{\n  "user": { "name": "Alice", "age": 30 }\n}';
 
     const $template = document.getElementById("template");
     const $source = document.getElementById("source");
     const $output = document.getElementById("output");
     const $run = document.getElementById("run");
+    const $share = document.getElementById("share");
+    const $auto = document.getElementById("auto");
+    const $examples = document.getElementById("examples");
+    const $funcList = document.getElementById("funcList");
+    const $funcSearch = document.getElementById("funcSearch");
 
-    $template.value = EXAMPLE_TEMPLATE;
-    $source.value = EXAMPLE_SOURCE;
+    // --- encodage d'état pour le partage par URL (UTF-8 safe) ----------------
+    const b64encode = (s) => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
+    const b64decode = (b) => new TextDecoder().decode(Uint8Array.from(atob(b), (c) => c.charCodeAt(0)));
 
+    function loadFromHash() {
+      const m = /[#&]s=([^&]+)/.exec(location.hash);
+      if (!m) return false;
+      try {
+        const state = JSON.parse(b64decode(decodeURIComponent(m[1])));
+        $template.value = state.t || "";
+        $source.value = state.s || "";
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function share() {
+      const state = { t: $template.value, s: $source.value };
+      location.hash = "s=" + encodeURIComponent(b64encode(JSON.stringify(state)));
+      navigator.clipboard?.writeText(location.href).then(
+        () => flash($share, "Lien copié ✓"),
+        () => flash($share, "URL mise à jour"),
+      );
+    }
+    function flash(btn, msg) {
+      const old = btn.textContent;
+      btn.textContent = msg;
+      setTimeout(() => (btn.textContent = old), 1400);
+    }
+
+    // --- transformation ------------------------------------------------------
+    let timer = null;
     async function run() {
       $run.disabled = true;
       $output.classList.remove("error");
-      $output.textContent = "…";
       try {
         const resp = await fetch("api/transform", {
           method: "POST",
@@ -90,7 +145,7 @@
           $output.textContent = JSON.stringify(data.result, null, 2);
         } else {
           $output.classList.add("error");
-          $output.textContent = data.error || ("Erreur HTTP " + resp.status);
+          $output.textContent = data.error || "Erreur HTTP " + resp.status;
         }
       } catch (e) {
         $output.classList.add("error");
@@ -99,11 +154,78 @@
         $run.disabled = false;
       }
     }
+    function autoRun() {
+      if (!$auto.checked) return;
+      clearTimeout(timer);
+      timer = setTimeout(run, 400);
+    }
 
+    // --- exemples ------------------------------------------------------------
+    async function loadExamples() {
+      try {
+        const { examples } = await (await fetch("api/examples")).json();
+        for (const [i, ex] of examples.entries()) {
+          const opt = document.createElement("option");
+          opt.value = String(i);
+          opt.textContent = ex.name;
+          $examples.appendChild(opt);
+        }
+        $examples._data = examples;
+      } catch {
+        /* exemples indisponibles */
+      }
+    }
+
+    // --- référence des fonctions --------------------------------------------
+    let catalog = [];
+    async function loadFunctions() {
+      try {
+        const data = await (await fetch("api/functions")).json();
+        catalog = data.functions || [];
+        renderFunctions();
+      } catch {
+        /* référence indisponible */
+      }
+    }
+    function renderFunctions() {
+      const needle = $funcSearch.value.trim().toLowerCase();
+      const items = catalog.filter(
+        (f) => !needle || f.name.toLowerCase().includes(needle),
+      );
+      $funcList.innerHTML = items
+        .map(
+          (f) =>
+            `<div class="ref-item"><span class="sig">${f.signature || f.name}</span>` +
+            (f.description ? ` — <span class="desc">${f.description}</span>` : "") +
+            `</div>`,
+        )
+        .join("");
+    }
+
+    // --- câblage -------------------------------------------------------------
     $run.addEventListener("click", run);
+    $share.addEventListener("click", share);
+    $template.addEventListener("input", autoRun);
+    $source.addEventListener("input", autoRun);
+    $funcSearch.addEventListener("input", renderFunctions);
+    $examples.addEventListener("change", () => {
+      const ex = ($examples._data || [])[Number($examples.value)];
+      if (!ex) return;
+      $template.value = ex.template;
+      $source.value = ex.source;
+      run();
+    });
     document.addEventListener("keydown", (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") run();
     });
+
+    // --- init ----------------------------------------------------------------
+    if (!loadFromHash()) {
+      $template.value = DEFAULT_TEMPLATE;
+      $source.value = DEFAULT_SOURCE;
+    }
+    loadExamples();
+    loadFunctions();
     run();
   </script>
 </body>

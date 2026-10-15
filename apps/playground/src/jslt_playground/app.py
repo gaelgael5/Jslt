@@ -77,6 +77,14 @@ def functions() -> JSONResponse:
     return JSONResponse({"functions": _CORE_REGISTRY.catalog()})
 
 
+@app.get("/api/examples")
+def examples() -> JSONResponse:
+    """Exemples prêts à charger (template + source) couvrant le langage."""
+    from .examples import examples as _examples
+
+    return JSONResponse({"examples": _examples()})
+
+
 @app.get("/")
 def index() -> FileResponse:
     return FileResponse(_STATIC / "index.html")

@@ -7,6 +7,11 @@ le résultat transformé par le **vrai moteur** côté serveur (FastAPI).
 
 Ce n'est pas une distribution publiée — c'est une application du dépôt.
 
+Fonctionnalités : éditeur avec coloration + intellisense, **bibliothèque
+d'exemples**, **transformation automatique** (debounce, désactivable), **partage
+par URL** (l'état est encodé dans le lien), **panneau de référence** des fonctions
+disponibles (filtrable).
+
 ## Lancer en local
 
 ```bash
@@ -32,6 +37,7 @@ pas de timeout d'exécution) ; pour un déploiement exposé, ajouter ces garde-f
 |---|---|---|
 | `POST` | `/api/transform` | `{template, source}` → `{result}` ou `{error}` |
 | `GET` | `/api/functions` | catalogue des fonctions (cœur) pour l'intellisense |
+| `GET` | `/api/examples` | exemples prêts à charger (template + source) |
 | `GET` | `/jslt-editor/*` | assets du composant d'édition |
 | `GET` | `/` | la page du playground |
 
