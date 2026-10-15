@@ -89,9 +89,11 @@ Patterns repris du .NET :
 C'est le mécanisme sur lequel s'appuient les **paquets additionnels** (E-S), hors
 cœur, chacun comme **distribution séparée** dans un **monorepo** :
 
-- `packages/jslt-csv/` — **premier plugin** : fonction `loadcsv` (port de
-  `ServiceCsv`). Distribution `jslt-csv`, dépend de `jslt`, déclare l'entry point
-  `jslt.functions`. Installer le paquet suffit à exposer `loadcsv` dans les templates.
+- `packages/jslt-csv/` — fonction `loadcsv` (port de `ServiceCsv`). Distribution
+  `jslt-csv`, dépend de `jslt`.
+- `packages/jslt-xml/` — fonction `loadxml` (conventions XML↔JSON Newtonsoft du
+  `XmlNodeConverter` .NET ; parsing sécurisé via `defusedxml`). Distribution
+  `jslt-xml`, dépend de `jslt` + `defusedxml`.
 - À venir (même modèle) : bases de données, Elasticsearch, `http`, `loadmcsv`…
 
 Modèle de packaging (cf. pytest) : **monorepo, distributions indépendantes,
@@ -101,8 +103,9 @@ p.ex. `jslt-csv-vX.Y.Z` → `.github/workflows/release-jslt-csv.yml`).
 
 ```bash
 pip install -e ".[dev]"            # cœur + outils
-pip install -e packages/jslt-csv   # plugin (dépend du cœur)
-pytest && pytest packages/jslt-csv/tests
+pip install -e packages/jslt-csv   # plugins (dépendent du cœur)
+pip install -e packages/jslt-xml
+pytest && pytest packages/jslt-csv/tests packages/jslt-xml/tests
 ruff check src tests packages
 ```
 

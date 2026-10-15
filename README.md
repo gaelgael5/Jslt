@@ -89,6 +89,7 @@ Les **plugins tiers** sont auto-découverts via le groupe d'entry points
 
 **Plugins officiels** (monorepo, distributions séparées) :
 - [`jslt-csv`](packages/jslt-csv/) — lecture de fichiers CSV (`loadcsv`).
+- [`jslt-xml`](packages/jslt-xml/) — lecture de fichiers XML (`loadxml`).
 
 ## Architecture
 
