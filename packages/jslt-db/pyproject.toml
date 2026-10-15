@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jslt-db"
+dynamic = ["version"]
+description = "Plugin jslt : lecture en base de données SQL (connectsql / readsql)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "Gael Beard", email = "gaelgael5@gmail.com" }]
+keywords = ["json", "transform", "template", "jslt", "sql", "database", "plugin"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Database",
+    "Typing :: Typed",
+]
+# SQLite est fourni par la stdlib : aucune dépendance au-delà du cœur.
+dependencies = [
+    "jslt",
+]
+
+# SGBD additionnels en extras (connecteurs DB-API 2.0 à enregistrer via
+# register_client). Ex. : pip install jslt-db[postgresql]
+[project.optional-dependencies]
+postgresql = ["psycopg[binary]>=3"]
+mysql = ["PyMySQL>=1"]
+
+[project.urls]
+Homepage = "https://github.com/gaelgael5/Jslt"
+Repository = "https://github.com/gaelgael5/Jslt"
+
+# Découverte automatique par jslt : installer ce paquet suffit à exposer les fonctions.
+[project.entry-points."jslt.functions"]
+db = "jslt_db:register"
+
+[tool.setuptools.dynamic]
+version = { attr = "jslt_db.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+jslt_db = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]

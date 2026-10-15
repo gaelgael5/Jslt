@@ -94,7 +94,10 @@ cœur, chacun comme **distribution séparée** dans un **monorepo** :
 - `packages/jslt-xml/` — fonction `loadxml` (conventions XML↔JSON Newtonsoft du
   `XmlNodeConverter` .NET ; parsing sécurisé via `defusedxml`). Distribution
   `jslt-xml`, dépend de `jslt` + `defusedxml`.
-- À venir (même modèle) : bases de données, Elasticsearch, `http`, `loadmcsv`…
+- `packages/jslt-db/` — fonctions `connectsql` / `readsql` (port de `ServicesSql`).
+  Distribution `jslt-db` ; SQLite via la stdlib (sans dépendance), autres SGBD via
+  un registre de clients DB-API (extras `postgresql`/`mysql`).
+- À venir (même modèle) : Elasticsearch, `http`, `loadmcsv`…
 
 Modèle de packaging (cf. pytest) : **monorepo, distributions indépendantes,
 découverte par entry points**. Le cœur reste à la racine ; chaque plugin a son
@@ -105,7 +108,8 @@ p.ex. `jslt-csv-vX.Y.Z` → `.github/workflows/release-jslt-csv.yml`).
 pip install -e ".[dev]"            # cœur + outils
 pip install -e packages/jslt-csv   # plugins (dépendent du cœur)
 pip install -e packages/jslt-xml
-pytest && pytest packages/jslt-csv/tests packages/jslt-xml/tests
+pip install -e packages/jslt-db
+pytest && pytest packages/jslt-csv/tests packages/jslt-xml/tests packages/jslt-db/tests
 ruff check src tests packages
 ```
 
