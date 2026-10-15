@@ -1,5 +1,7 @@
 # Guide jslt — langage de transformation JSON → JSON
 
+*Français · [English](guide.en.md)*
+
 Ce guide présente **chaque construction du langage** avec des exemples. Tous les
 exemples sont **exécutés par la suite de tests** (`tests/test_guide_examples.py`)
 sous la forme de triplets *template → entrée → sortie* : ils sont donc toujours

@@ -1,5 +1,7 @@
 # jslt (Python)
 
+*Français · [English](README.en.md)*
+
 Portage Python du langage **JSLT — JSON Stylesheet Language Transformations** :
 un langage de **transformation JSON → JSON piloté par template**, initialement
 implémenté en .NET ([Black-Beard-Sdk/jslt](https://github.com/Black-Beard-Sdk/jslt)).

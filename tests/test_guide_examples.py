@@ -21,7 +21,9 @@ import pytest
 
 from jslt import JsltTemplate
 
-GUIDE = Path(__file__).resolve().parent.parent / "docs" / "guide.md"
+DOCS = Path(__file__).resolve().parent.parent / "docs"
+# Guides versionnés (français canonique + doublage anglais) : mêmes triplets.
+GUIDES = sorted(DOCS.glob("guide*.md"))
 
 # Capture (langage, contenu) de chaque bloc ``` ... ``` du document.
 _BLOCK_RE = re.compile(r"```(\w+)[^\n]*\n(.*?)```", re.DOTALL)
@@ -38,12 +40,12 @@ def _extract_triples(markdown: str) -> list[tuple[str, str, str]]:
 
 
 def _load_cases() -> list:
-    markdown = GUIDE.read_text(encoding="utf-8")
-    triples = _extract_triples(markdown)
-    return [
-        pytest.param(tpl, src, out, id=f"exemple-{idx}")
-        for idx, (tpl, src, out) in enumerate(triples)
-    ]
+    cases = []
+    for guide in GUIDES:
+        triples = _extract_triples(guide.read_text(encoding="utf-8"))
+        for idx, (tpl, src, out) in enumerate(triples):
+            cases.append(pytest.param(tpl, src, out, id=f"{guide.name}-{idx}"))
+    return cases
 
 
 CASES = _load_cases()
