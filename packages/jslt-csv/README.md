@@ -53,6 +53,39 @@ Les cellules sont coercées comme en .NET : `true`/`false` → booléen,
 entiers/décimaux → nombres, le reste → chaîne (les entêtes sont assainis :
 accents → ASCII, espaces → `_`).
 
+## `loadmcsv` — CSV multi-enregistrements hiérarchique
+
+Port de `ServicesMultiCsv` : un fichier `;`-délimité où chaque ligne est préfixée
+par un **type d'enregistrement**, les colonnes de chaque type étant déclarées par
+des lignes `#DEF`. Un `rule_payload` décrit la **hiérarchie**.
+
+```
+#DEF;CATALOG;id;name
+#DEF;BOOK;code;title
+CATALOG;1;Librairie
+BOOK;a;Alpha
+BOOK;b;Beta
+#END
+```
+
+```python
+from jslt import JsltTemplate
+JsltTemplate.parse(
+    '[ { "$source": selectmany(loadmcsv("catalog.mcsv", "CATALOG:BOOK"), $.BOOK.*), "t": $.title } ]'
+).transform({})
+# -> [{'t': 'Alpha'}, {'t': 'Beta'}]
+```
+
+`loadmcsv(source_path, rule_payload, encoding, ignore_empty)` :
+- `rule_payload` : règles `"PARENT:ENF1|ENF2; …"` (séparées par `;`). Un bloc dont
+  le nom est enfant du parent courant s'y imbrique, sinon il remonte.
+- Les enfants homonymes deviennent un **tableau** ; chaque racine porte un objet
+  `_metadatas` (nom de fichier, encodage, métadonnées `#clé` du fichier).
+- Lignes `#DEF;<schema>:<NOM>;col…` (colonnes), `#clé;…` (métadonnée), `#END` (fin).
+
+Écarts assumés vs .NET : lecture `utf-8` ; mappage des colonnes par position
+tolérant au `;` final (le .NET l'exige) ; noms de types comparés en majuscules.
+
 ## Licence
 
 Apache-2.0.

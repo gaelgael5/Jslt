@@ -87,7 +87,7 @@ group (installing the package is enough). Details and the plugin contract in the
 [guide, §Extensibility](docs/guide.en.md#16-extensibility-functions-and-plugins).
 
 **Official plugins** (monorepo, separate distributions):
-- [`jslt-csv`](packages/jslt-csv/) — reading CSV files (`loadcsv`).
+- [`jslt-csv`](packages/jslt-csv/) — reading CSV files (`loadcsv`, `loadmcsv`).
 - [`jslt-xml`](packages/jslt-xml/) — reading XML files (`loadxml`).
 - [`jslt-db`](packages/jslt-db/) — reading from SQL databases (`connectsql`, `readsql`).
 - [`jslt-http`](packages/jslt-http/) — HTTP calls (`http`, `httpget`).

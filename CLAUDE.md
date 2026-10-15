@@ -92,8 +92,9 @@ Patterns repris du .NET :
 C'est le mécanisme sur lequel s'appuient les **paquets additionnels** (E-S), hors
 cœur, chacun comme **distribution séparée** dans un **monorepo** :
 
-- `packages/jslt-csv/` — fonction `loadcsv` (port de `ServiceCsv`). Distribution
-  `jslt-csv`, dépend de `jslt`.
+- `packages/jslt-csv/` — fonctions `loadcsv` (port de `ServiceCsv`) et `loadmcsv`
+  (CSV multi-enregistrements hiérarchique, port de `ServicesMultiCsv` + `Bb.MultiCsv` ;
+  module `jslt_csv.mcsv`). Distribution `jslt-csv`, dépend de `jslt`.
 - `packages/jslt-xml/` — fonction `loadxml` (conventions XML↔JSON Newtonsoft du
   `XmlNodeConverter` .NET ; parsing sécurisé via `defusedxml`). Distribution
   `jslt-xml`, dépend de `jslt` + `defusedxml`.
@@ -107,7 +108,6 @@ cœur, chacun comme **distribution séparée** dans un **monorepo** :
   Elasticsearch → `_source` des hits) via le client officiel `elasticsearch`
   (importé paresseusement). Distribution `jslt-elastic`, dépend de `jslt` +
   `elasticsearch`.
-- À venir (même modèle) : `loadmcsv`…
 
 Modèle de packaging (cf. pytest) : **monorepo, distributions indépendantes,
 découverte par entry points**. Chaque paquet (cœur compris) a son

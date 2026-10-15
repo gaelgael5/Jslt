@@ -1,8 +1,9 @@
-"""Plugin jslt : lecture de fichiers CSV (``loadcsv``).
+"""Plugin jslt : lecture de fichiers CSV (``loadcsv``, ``loadmcsv``).
 
 Port de ``Bb.CustomServices.ServiceCsv.ExecuteLoadCsvSource`` du .NET. Fournit la
 fonction de template ``loadcsv`` qui lit un fichier CSV et renvoie un tableau
-d'objets JSON (une entrée par ligne).
+d'objets JSON (une entrée par ligne), et ``loadmcsv`` (CSV multi-enregistrements
+hiérarchique, port de ``ServicesMultiCsv`` — voir :mod:`jslt_csv.mcsv`).
 
 Ce paquet est découvert automatiquement par ``jslt`` via le groupe d'entry points
 ``jslt.functions`` (il suffit de l'installer). Il peut aussi être enregistré
@@ -23,9 +24,11 @@ import csv as _csv
 import unicodedata
 from typing import Any
 
+from .mcsv import execute_loadmcsv
+
 __version__ = "0.0.1"
 
-__all__ = ["execute_loadcsv", "register"]
+__all__ = ["execute_loadcsv", "execute_loadmcsv", "register"]
 
 
 def _sanitize_header(name: str) -> str:
@@ -191,4 +194,9 @@ def register(registry: Any) -> None:
         "loadcsv",
         execute_loadcsv,
         description="Lit un fichier CSV et renvoie un tableau d'objets.",
+    )
+    registry.register(
+        "loadmcsv",
+        execute_loadmcsv,
+        description="Lit un CSV multi-enregistrements hiérarchique et le convertit en arbre JSON.",
     )

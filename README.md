@@ -88,7 +88,7 @@ Les **plugins tiers** sont auto-découverts via le groupe d'entry points
 [guide, §Extensibilité](docs/guide.md#16-extensibilité--fonctions-et-plugins).
 
 **Plugins officiels** (monorepo, distributions séparées) :
-- [`jslt-csv`](packages/jslt-csv/) — lecture de fichiers CSV (`loadcsv`).
+- [`jslt-csv`](packages/jslt-csv/) — lecture de fichiers CSV (`loadcsv`, `loadmcsv`).
 - [`jslt-xml`](packages/jslt-xml/) — lecture de fichiers XML (`loadxml`).
 - [`jslt-db`](packages/jslt-db/) — lecture en base SQL (`connectsql`, `readsql`).
 - [`jslt-http`](packages/jslt-http/) — appels HTTP (`http`, `httpget`).
