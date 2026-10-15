@@ -57,6 +57,34 @@ Patterns repris du .NET :
 - Casts temporels (`uri`/`uuid`/`datetime`/`time`) rendus en chaîne (simplifié) ;
   `integer`/`decimal`/`string`/`boolean` complets.
 
+## Extensibilité (fonctions & plugins)
+
+Équivalent Python du `ServiceContainer`/`ServiceDiscovery` .NET, rendu idiomatique
+(pas de scan d'assembly par réflexion : inutile en Python) :
+
+- **Ajouter** une fonction : décorateur `@jslt_function("nom", path_args=(), description="")`
+  (analogue de l'attribut `[JsltExtensionMethod]`) ou `registry.register(...)`.
+- **Isoler** : `transform(source, functions=mon_registre)` ; `FunctionRegistry()`
+  vide ou `default_registry.copy()` pour dériver sans muter le global.
+- **Découvrir** : `registry.names()`, `describe(nom) -> FunctionInfo`,
+  `describe_all()`, itération, `in` (casse ignorée). `FunctionInfo` porte nom,
+  paramètres (hors `ctx`), `path_args`, description, `signature()`.
+- **Plugins tiers** : `load_plugins(registry=default_registry)` découvre les paquets
+  déclarant le groupe d'entry points **`jslt.functions`** (vrai équivalent du
+  `AddAssembly` .NET). Auto-appelé une fois au 1er `transform` sur le registre
+  global. Contrat : l'entry point pointe une callable `register(registry)`.
+  Déclaration côté plugin :
+  ```toml
+  [project.entry-points."jslt.functions"]
+  mon_paquet = "mon_paquet.jslt_ext:register"
+  ```
+  API publique exportée au top-level `jslt` : `jslt_function`, `FunctionRegistry`,
+  `FunctionInfo`, `default_registry`, `load_plugins`.
+
+C'est le mécanisme sur lequel s'appuieront les **paquets additionnels** à porter
+(E-S : `csv`, bases de données, Elasticsearch, `http`…), hors cœur, chacun comme
+plugin séparé.
+
 ## Hors périmètre « cœur » (extensible, non porté)
 
 - Opérateurs ensemblistes de filtre `nin`/`subsetof`/`contains`/`size`/`empty`

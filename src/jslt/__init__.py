@@ -31,19 +31,41 @@ from typing import Any
 
 from .ast import JsltBase
 from .errors import JsltError, JsltSemanticError, JsltSyntaxError
+from .functions import (
+    FunctionInfo,
+    FunctionRegistry,
+    default_registry,
+    jslt_function,
+    load_plugins,
+)
 from .parsing import parse_to_tree
 from .parsing.script_builder_visitor import ScriptBuilderVisitor
 from .runtime import JsltEvaluationVisitor, RuntimeContext, Sources
 from .serialization import to_source
 
 __all__ = [
+    "FunctionInfo",
+    "FunctionRegistry",
     "JsltError",
     "JsltSemanticError",
     "JsltSyntaxError",
     "JsltTemplate",
+    "default_registry",
+    "jslt_function",
+    "load_plugins",
 ]
 
 __version__ = "0.0.1"
+
+# Chargement paresseux (une fois) des plugins tiers dans le registre par défaut.
+_default_plugins_loaded = False
+
+
+def _ensure_default_plugins() -> None:
+    global _default_plugins_loaded
+    if not _default_plugins_loaded:
+        load_plugins(default_registry)
+        _default_plugins_loaded = True
 
 
 class JsltTemplate:
@@ -80,16 +102,24 @@ class JsltTemplate:
         ast = builder.visit(tree)
         return cls(ast, template)
 
-    def transform(self, source: Any = None) -> Any:
+    def transform(
+        self, source: Any = None, functions: FunctionRegistry | None = None
+    ) -> Any:
         """Applique le template au document source et renvoie le résultat.
 
         Args:
             source: le document source (structures Python issues de ``json.loads``).
+            functions: registre de fonctions à utiliser. Par défaut, le registre
+                global (fonctions intégrées + plugins découverts). Passer un
+                registre dédié permet d'isoler/limiter les fonctions disponibles.
 
         Returns:
             Le document transformé (structures Python).
         """
-        context = RuntimeContext(Sources(source))
+        if functions is None:
+            _ensure_default_plugins()
+            functions = default_registry
+        context = RuntimeContext(Sources(source), functions)
         evaluator = JsltEvaluationVisitor(context)
         return self._ast.accept(evaluator)
 

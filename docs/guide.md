@@ -37,8 +37,9 @@ JsltTemplate.parse(TEMPLATE).transform(ENTREE)   # == SORTIE
 13. [Filtres JSONPath `?(...)`](#13-filtres-jsonpath-)
 14. [Fonctions de chemin `length()` / `value()`](#14-fonctions-de-chemin-length--value)
 15. [Re-sérialisation `to_source()`](#15-re-sérialisation-to_source)
-16. [Erreurs](#16-erreurs)
-17. [Aide-mémoire](#17-aide-mémoire)
+16. [Extensibilité : fonctions et plugins](#16-extensibilité--fonctions-et-plugins)
+17. [Erreurs](#17-erreurs)
+18. [Aide-mémoire](#18-aide-mémoire)
 
 ---
 
@@ -656,7 +657,81 @@ JsltTemplate.parse(tpl.to_source())      # ré-analysable sans erreur
 
 ---
 
-## 16. Erreurs
+## 16. Extensibilité : fonctions et plugins
+
+On peut **ajouter** ses propres fonctions, les **isoler**, les **découvrir**, et
+consommer des **plugins tiers** installés — l'équivalent idiomatique Python du
+mécanisme de services du .NET.
+
+### Ajouter une fonction
+
+```python
+from jslt import jslt_function, JsltTemplate
+
+@jslt_function("double", description="Double un nombre")
+def _double(ctx, x=None):
+    return x * 2
+
+JsltTemplate.parse('{ "r": double($.n) }').transform({"n": 21})   # -> {'r': 42}
+```
+
+Une fonction reçoit toujours le contexte d'exécution en premier paramètre (`ctx`),
+puis les arguments du template. `path_args=(indices)` marque les arguments reçus
+comme chemin JSONPath compilé (non évalué), comme pour `distinct`.
+
+### Isoler un jeu de fonctions
+
+Un registre dédié permet de limiter/isoler les fonctions disponibles (sandbox) :
+
+```python
+from jslt import FunctionRegistry, default_registry, JsltTemplate
+
+sandbox = FunctionRegistry()                      # vide : aucune fonction intégrée
+sandbox.register("triple", lambda ctx, x=None: x * 3)
+JsltTemplate.parse('{ "r": triple($.n) }').transform({"n": 7}, functions=sandbox)
+
+# Partir des fonctions intégrées sans muter le registre global :
+derive = default_registry.copy()
+derive.register("triple", lambda ctx, x=None: x * 3)
+```
+
+### Découvrir les fonctions disponibles
+
+```python
+from jslt import default_registry
+
+default_registry.names()                 # ['abs', 'concat', 'distinct', ...]
+info = default_registry.describe("distinct")
+info.signature()                         # 'distinct(source, path)'
+info.path_args                           # (1,)
+info.description                         # 1re ligne du docstring
+```
+
+### Plugins tiers (entry points)
+
+Un paquet installé expose ses fonctions en déclarant le groupe d'entry points
+`jslt.functions`. Côté plugin, dans son `pyproject.toml` :
+
+```toml
+[project.entry-points."jslt.functions"]
+mon_paquet = "mon_paquet.jslt_ext:register"
+```
+
+avec une fonction `register` qui enregistre dans le registre reçu :
+
+```python
+def register(registry):
+    registry.register("shout", lambda ctx, s=None: (s or "").upper() + "!")
+```
+
+Les plugins sont découverts **automatiquement** au premier `transform` (ou à la
+demande via `load_plugins()`), puis utilisables dans les templates comme les
+fonctions intégrées. C'est le mécanisme prévu pour les paquets additionnels (E-S :
+CSV, bases de données, Elasticsearch…).
+
+---
+
+## 17. Erreurs
 
 Un template syntaxiquement invalide lève `JsltSyntaxError` (avec ligne/colonne) :
 
@@ -681,7 +756,7 @@ JsltTemplate.parse('{ "r": $.a[?(@.x contains 1)] }')   # -> NotImplementedError
 
 ---
 
-## 17. Aide-mémoire
+## 18. Aide-mémoire
 
 | Construction | Syntaxe | Section |
 |---|---|---|

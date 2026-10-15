@@ -64,6 +64,28 @@ Exceptions: `JsltError` (base), `JsltSyntaxError` (parsing), `JsltSemanticError`
 Constructs recognized by the grammar but not yet ported raise `NotImplementedError`
 with an explicit message (never a wrong result).
 
+## Extensibility (functions & plugins)
+
+Add a function usable in templates, isolate a set of functions, introspect the
+registry, or consume third-party plugins — the idiomatic Python equivalent of
+.NET's service mechanism:
+
+```python
+from jslt import jslt_function, JsltTemplate, default_registry
+
+@jslt_function("double", description="Doubles a number")
+def _double(ctx, x=None):
+    return x * 2
+
+JsltTemplate.parse('{ "r": double($.n) }').transform({"n": 21})   # -> {'r': 42}
+default_registry.names()          # discovery: list of available functions
+default_registry.describe("double").signature()   # 'double(x)'
+```
+
+**Third-party plugins** are auto-discovered via the `jslt.functions` entry point
+group (installing the package is enough). Details and the plugin contract in the
+[guide, §Extensibility](docs/guide.en.md#16-extensibility-functions-and-plugins).
+
 ## Architecture
 
 The pipeline mirrors the .NET engine, **without** its code
