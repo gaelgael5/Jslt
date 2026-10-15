@@ -9,7 +9,7 @@ examples are **executed by the test suite** (`tests/test_guide_examples.py`) as
 To reproduce them:
 
 ```python
-from jslt import JsltTemplate
+from urban_json import JsltTemplate
 JsltTemplate.parse(TEMPLATE).transform(INPUT)   # == OUTPUT
 ```
 
@@ -648,7 +648,7 @@ necessarily identical character-for-character); a `#type` cast reappears in its
 `convert(x, "type")` form.
 
 ```python
-from jslt import JsltTemplate
+from urban_json import JsltTemplate
 
 tpl = JsltTemplate.parse('{ "sum": $.a + $.b }')
 tpl.to_source()                          # -> '{ "sum": $.a + $.b }'
@@ -666,7 +666,7 @@ consume installed **third-party plugins** — the idiomatic Python equivalent of
 ### Adding a function
 
 ```python
-from jslt import jslt_function, JsltTemplate
+from urban_json import jslt_function, JsltTemplate
 
 @jslt_function("double", description="Doubles a number")
 def _double(ctx, x=None):
@@ -684,7 +684,7 @@ compiled (unevaluated) JSONPath, as for `distinct`.
 A dedicated registry lets you limit/isolate the available functions (sandbox):
 
 ```python
-from jslt import FunctionRegistry, default_registry, JsltTemplate
+from urban_json import FunctionRegistry, default_registry, JsltTemplate
 
 sandbox = FunctionRegistry()                      # empty: no built-in functions
 sandbox.register("triple", lambda ctx, x=None: x * 3)
@@ -698,7 +698,7 @@ derived.register("triple", lambda ctx, x=None: x * 3)
 ### Discovering available functions
 
 ```python
-from jslt import default_registry
+from urban_json import default_registry
 
 default_registry.names()                 # ['abs', 'concat', 'distinct', ...]
 info = default_registry.describe("distinct")
@@ -715,7 +715,7 @@ parameters name + type + required + path, return type, signature):
 
 ```python
 import json
-from jslt import default_registry
+from urban_json import default_registry
 
 json.dumps(default_registry.catalog())   # ready to hand to an editor
 # [{"name": "distinct", "description": "...", "signature": "distinct(source, path)",
@@ -726,11 +726,11 @@ json.dumps(default_registry.catalog())   # ready to hand to an editor
 
 ### Third-party plugins (entry points)
 
-An installed package exposes its functions by declaring the `jslt.functions` entry
+An installed package exposes its functions by declaring the `urban_json.functions` entry
 point group. On the plugin side, in its `pyproject.toml`:
 
 ```toml
-[project.entry-points."jslt.functions"]
+[project.entry-points."urban_json.functions"]
 my_package = "my_package.jslt_ext:register"
 ```
 
@@ -756,7 +756,7 @@ source and the produced value. (The engine is an interpreter, so debugging happe
 at the template level — there is no generated code as in .NET.)
 
 ```python
-from jslt import JsltTemplate
+from urban_json import JsltTemplate
 
 r = JsltTemplate.parse('{ "t": sum($.n) }').debug({"n": [1, 2, 3]})
 r.result                      # {'t': 6}
@@ -786,7 +786,7 @@ playground (`apps/playground`) offers a visual step-through.
 A syntactically invalid template raises `JsltSyntaxError` (with line/column):
 
 ```python
-from jslt import JsltTemplate, JsltSyntaxError
+from urban_json import JsltTemplate, JsltSyntaxError
 
 try:
     JsltTemplate.parse('{ "n": ~ }')
@@ -799,7 +799,7 @@ filter operator, the `size()` path function) raises `NotImplementedError` with a
 explicit message — never a wrong result:
 
 ```python
-from jslt import JsltTemplate
+from urban_json import JsltTemplate
 
 JsltTemplate.parse('{ "r": $.a[?(@.x contains 1)] }')   # -> NotImplementedError
 ```

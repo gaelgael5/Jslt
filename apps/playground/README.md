@@ -1,8 +1,8 @@
-# jslt playground
+# urban-json playground
 
-Petite application web de **test/démo** pour `jslt` : on saisit un template jslt
+Petite application web de **test/démo** pour `urban-json` : on saisit un template jslt
 (éditeur avec **coloration syntaxique + intellisense** via le composant
-[`jslt-editor`](../../packages/jslt-editor/)) et un document JSON source, et on voit
+[`urban-json-editor`](../../packages/urban-json-editor/)) et un document JSON source, et on voit
 le résultat transformé par le **vrai moteur** côté serveur (FastAPI).
 
 Ce n'est pas une distribution publiée — c'est une application du dépôt.
@@ -16,8 +16,8 @@ nœud, source/valeur à chaque étape, points d'arrêt sur fonctions).
 ## Lancer en local
 
 ```bash
-pip install -e "apps/playground[dev]"      # tire jslt, jslt-editor, fastapi, uvicorn
-uvicorn jslt_playground.app:app --reload
+pip install -e "apps/playground[dev]"      # tire urban-json, urban-json-editor, fastapi, uvicorn
+uvicorn urban_json_playground.app:app --reload
 # puis http://127.0.0.1:8000
 ```
 

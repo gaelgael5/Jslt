@@ -4,7 +4,7 @@ name: Release
 # (OIDC) : aucun token API n'est stocké dans le dépôt.
 #
 # Prérequis côté PyPI (une seule fois) :
-#   1. Créer le projet "jslt" sur https://pypi.org
+#   1. Créer le projet "urban-json" sur https://pypi.org
 #   2. Déclarer un "Trusted Publisher" GitHub Actions :
 #        owner      = gaelgael5
 #        repository = Jslt
@@ -22,7 +22,7 @@ permissions:
 
 defaults:
   run:
-    working-directory: packages/jslt
+    working-directory: packages/urban-json
 
 jobs:
   quality:
@@ -42,11 +42,11 @@ jobs:
         run: pytest -q
       - name: Vérifier que le tag correspond à la version du package
         run: |
-          pkg_version="$(python -c 'import jslt; print(jslt.__version__)')"
+          pkg_version="$(python -c 'import urban_json; print(urban_json.__version__)')"
           tag_version="${GITHUB_REF_NAME#v}"
           echo "package=$pkg_version  tag=$tag_version"
           if [ "$pkg_version" != "$tag_version" ]; then
-            echo "::error::Le tag ($tag_version) ne correspond pas à jslt.__version__ ($pkg_version)"
+            echo "::error::Le tag ($tag_version) ne correspond pas à urban_json.__version__ ($pkg_version)"
             exit 1
           fi
 
@@ -68,7 +68,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: packages/jslt/dist/
+          path: packages/urban-json/dist/
 
   publish:
     needs: build

@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "urban-json-db"
+dynamic = ["version"]
+description = "Plugin urban-json : lecture en base de données SQL (connectsql / readsql)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "Gael Beard", email = "gaelgael5@gmail.com" }]
+keywords = ["json", "transform", "template", "jslt", "sql", "database", "plugin"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Database",
+    "Typing :: Typed",
+]
+# SQLite est fourni par la stdlib : aucune dépendance au-delà du cœur.
+dependencies = [
+    "urban-json",
+]
+
+# SGBD additionnels en extras (connecteurs DB-API 2.0 à enregistrer via
+# register_client). Ex. : pip install urban-json-db[postgresql]
+[project.optional-dependencies]
+postgresql = ["psycopg[binary]>=3"]
+mysql = ["PyMySQL>=1"]
+
+[project.urls]
+Homepage = "https://github.com/gaelgael5/Jslt"
+Repository = "https://github.com/gaelgael5/Jslt"
+
+# Découverte automatique par urban-json : installer ce paquet suffit à exposer les fonctions.
+[project.entry-points."urban_json.functions"]
+db = "urban_json_db:register"
+
+[tool.setuptools.dynamic]
+version = { attr = "urban_json_db.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+urban_json_db = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
