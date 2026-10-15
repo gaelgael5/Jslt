@@ -1,0 +1,82 @@
+name: Release
+
+# Publie sur PyPI à chaque tag de version (vX.Y.Z), via Trusted Publishing
+# (OIDC) : aucun token API n'est stocké dans le dépôt.
+#
+# Prérequis côté PyPI (une seule fois) :
+#   1. Créer le projet "jslt" sur https://pypi.org
+#   2. Déclarer un "Trusted Publisher" GitHub Actions :
+#        owner      = gaelgael5
+#        repository = Jslt
+#        workflow   = release.yml
+#        environment = pypi
+#
+# Déclencher une release :  git tag v0.1.0 && git push origin v0.1.0
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install package and dev dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Lint (ruff)
+        run: ruff check src tests
+      - name: Tests (pytest)
+        run: pytest -q
+      - name: Vérifier que le tag correspond à la version du package
+        run: |
+          pkg_version="$(python -c 'import jslt; print(jslt.__version__)')"
+          tag_version="${GITHUB_REF_NAME#v}"
+          echo "package=$pkg_version  tag=$tag_version"
+          if [ "$pkg_version" != "$tag_version" ]; then
+            echo "::error::Le tag ($tag_version) ne correspond pas à jslt.__version__ ($pkg_version)"
+            exit 1
+          fi
+
+  build:
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Build sdist + wheel
+        run: |
+          python -m pip install --upgrade pip build twine
+          python -m build
+      - name: Vérifier les distributions (twine check)
+        run: python -m twine check dist/*
+      - name: Publier les artefacts de build
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write # requis par Trusted Publishing (OIDC)
+    steps:
+      - name: Récupérer les distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Publier sur PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

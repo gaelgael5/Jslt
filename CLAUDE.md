@@ -101,6 +101,21 @@ bash scripts/generate_parser.sh   # régénère le parser après modif des gramm
 Le parser généré (`src/jslt/_antlr/`) est **versionné** : la librairie s'utilise
 sans l'outil ANTLR. La grammaire `grammar/*.g4` fait foi.
 
+### Packaging / publication
+
+```bash
+python -m build              # construit sdist + wheel dans dist/
+python -m twine check dist/* # valide les distributions (métadonnées, README)
+```
+
+- Version **single-source** : `jslt.__version__` (`src/jslt/__init__.py`), lue par
+  `[tool.setuptools.dynamic]`. Pour publier une version, bumper `__version__`.
+- Publication **automatisée** (`.github/workflows/release.yml`) : pousser un tag
+  `vX.Y.Z` (égal à `__version__`, vérifié par le workflow) build, teste, puis
+  publie sur PyPI via **Trusted Publishing** (OIDC, aucun token stocké).
+  Prérequis PyPI une fois : créer le projet + déclarer l'éditeur de confiance
+  (repo `gaelgael5/Jslt`, workflow `release.yml`, environnement `pypi`).
+
 ## Conventions
 
 - snake_case côté code maison ; les overrides du visiteur ANTLR restent en
