@@ -97,7 +97,10 @@ cœur, chacun comme **distribution séparée** dans un **monorepo** :
 - `packages/jslt-db/` — fonctions `connectsql` / `readsql` (port de `ServicesSql`).
   Distribution `jslt-db` ; SQLite via la stdlib (sans dépendance), autres SGBD via
   un registre de clients DB-API (extras `postgresql`/`mysql`).
-- À venir (même modèle) : Elasticsearch, `http`, `loadmcsv`…
+- `packages/jslt-http/` — fonctions `http` / `httpget`. Appel formalisé en objet
+  Fetch/`RequestInit` (`{method,url,headers,query,body}` → `{status,headers,body}`)
+  via `httpx`. Distribution `jslt-http`, dépend de `jslt` + `httpx`.
+- À venir (même modèle) : Elasticsearch, `loadmcsv`…
 
 Modèle de packaging (cf. pytest) : **monorepo, distributions indépendantes,
 découverte par entry points**. Le cœur reste à la racine ; chaque plugin a son
@@ -109,7 +112,8 @@ pip install -e ".[dev]"            # cœur + outils
 pip install -e packages/jslt-csv   # plugins (dépendent du cœur)
 pip install -e packages/jslt-xml
 pip install -e packages/jslt-db
-pytest && pytest packages/jslt-csv/tests packages/jslt-xml/tests packages/jslt-db/tests
+pip install -e packages/jslt-http
+pytest && pytest packages/jslt-*/tests
 ruff check src tests packages
 ```
 
