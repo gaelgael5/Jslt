@@ -37,8 +37,9 @@ JsltTemplate.parse(TEMPLATE).transform(INPUT)   # == OUTPUT
 14. [Path functions `length()` / `value()`](#14-path-functions-length--value)
 15. [Re-serialization `to_source()`](#15-re-serialization-to_source)
 16. [Extensibility: functions and plugins](#16-extensibility-functions-and-plugins)
-17. [Errors](#17-errors)
-18. [Cheat sheet](#18-cheat-sheet)
+17. [Debugging (step-by-step)](#17-debugging-step-by-step)
+18. [Errors](#18-errors)
+19. [Cheat sheet](#19-cheat-sheet)
 
 ---
 
@@ -747,7 +748,40 @@ Elasticsearch…).
 
 ---
 
-## 17. Errors
+## 17. Debugging (step-by-step)
+
+`JsltTemplate.debug(source)` evaluates the template while collecting a
+**step-by-step trace**: one step per evaluated node, with its location, the current
+source and the produced value. (The engine is an interpreter, so debugging happens
+at the template level — there is no generated code as in .NET.)
+
+```python
+from jslt import JsltTemplate
+
+r = JsltTemplate.parse('{ "t": sum($.n) }').debug({"n": [1, 2, 3]})
+r.result                      # {'t': 6}
+for step in r.steps:
+    print(step.kind, step.line, step.expression, "->", step.result)
+# JsltPath 1 $.n -> [1, 2, 3]
+# JsltFunctionCall 1 sum(…) -> 6
+# JsltObject 1 None -> {'t': 6}
+```
+
+**Breakpoints**: flag the steps matching a function ("context method") or a template
+line.
+
+```python
+r = JsltTemplate.parse('{ "t": sum($.n) }').debug({"n": [1, 2]}, break_functions=["sum"])
+[s.expression for s in r.steps if s.breakpoint]   # ['sum(…)']
+```
+
+`DebugResult` carries `result` (final value), `steps` (list of `TraceStep`) and
+`error` (message if evaluation fails — the partial trace is still available). The
+playground (`apps/playground`) offers a visual step-through.
+
+---
+
+## 18. Errors
 
 A syntactically invalid template raises `JsltSyntaxError` (with line/column):
 
@@ -772,7 +806,7 @@ JsltTemplate.parse('{ "r": $.a[?(@.x contains 1)] }')   # -> NotImplementedError
 
 ---
 
-## 18. Cheat sheet
+## 19. Cheat sheet
 
 | Construct | Syntax | Section |
 |---|---|---|

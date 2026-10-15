@@ -41,6 +41,7 @@ from jslt import JsltTemplate
 
 tpl = JsltTemplate.parse(source_str)   # compile (JsltSyntaxError si invalide)
 tpl.transform(document)                # applique le template à un document
+tpl.debug(document)                     # trace pas-à-pas (débogage)
 tpl.to_source()                        # re-sérialise l'AST (ToString)
 ```
 

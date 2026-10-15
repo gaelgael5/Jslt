@@ -50,6 +50,25 @@
     .ref-item .sig { color: var(--accent); }
     .ref-item .desc { color: var(--muted); }
     #funcSearch { width: 100%; margin-top: 8px; }
+
+    details.dbg { grid-column: 1 / -1; border: 1px solid var(--border); border-radius: 8px;
+                  background: var(--panel); padding: 8px 12px; }
+    details.dbg summary { cursor: pointer; font-weight: 600; }
+    .dbg-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+    .dbg-bar input[type="text"] { flex: 1; min-width: 160px; }
+    .dbg-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 10px; }
+    @media (max-width: 760px) { .dbg-grid { grid-template-columns: 1fr; } }
+    .steps { max-height: 300px; overflow: auto; border: 1px solid var(--border); border-radius: 8px; }
+    .step { font-family: var(--mono); font-size: 12px; padding: 3px 8px; cursor: pointer;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: 0; }
+    .step.active { background: var(--accent); color: #fff; }
+    .step .bp { color: var(--err); font-weight: 700; }
+    .step .k { color: var(--muted); }
+    .step-detail { font-family: var(--mono); font-size: 12px; }
+    .step-detail h4 { margin: 8px 0 4px; font-size: 11px; color: var(--muted);
+                      text-transform: uppercase; letter-spacing: .04em; }
+    .step-detail pre { min-height: 0; }
   </style>
 </head>
 <body>
@@ -81,6 +100,27 @@
       <summary>Fonctions disponibles</summary>
       <input type="search" id="funcSearch" placeholder="Filtrer les fonctions…" />
       <div class="ref-list" id="funcList"></div>
+    </details>
+
+    <details class="dbg">
+      <summary>Débogage (pas à pas)</summary>
+      <div class="dbg-bar">
+        <input type="text" id="bpFuncs" placeholder="Arrêt sur fonctions (ex. sum, upper)" />
+        <button id="trace">Tracer</button>
+        <button id="prevStep" title="Étape précédente">◀ Préc</button>
+        <button id="nextStep" title="Étape suivante">Suiv ▶</button>
+        <button id="nextBp" title="Prochain point d'arrêt">⏭ Point d'arrêt</button>
+        <span class="hint" id="stepInfo"></span>
+      </div>
+      <div class="dbg-grid">
+        <div class="steps" id="steps"></div>
+        <div class="step-detail">
+          <h4>Source courante</h4>
+          <pre id="stepSource"></pre>
+          <h4>Valeur produite</h4>
+          <pre id="stepResult"></pre>
+        </div>
+      </div>
     </details>
   </main>
 
@@ -217,6 +257,82 @@
     });
     document.addEventListener("keydown", (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") run();
+    });
+
+    // --- débogage pas à pas --------------------------------------------------
+    const $bpFuncs = document.getElementById("bpFuncs");
+    const $trace = document.getElementById("trace");
+    const $steps = document.getElementById("steps");
+    const $stepSource = document.getElementById("stepSource");
+    const $stepResult = document.getElementById("stepResult");
+    const $stepInfo = document.getElementById("stepInfo");
+    const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    let dbgSteps = [];
+    let dbgIndex = -1;
+
+    async function trace() {
+      const break_functions = $bpFuncs.value.split(",").map((s) => s.trim()).filter(Boolean);
+      try {
+        const resp = await fetch("api/debug", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ template: $template.value, source: $source.value, break_functions }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          dbgSteps = [];
+          renderSteps();
+          $stepInfo.textContent = data.error || "Erreur " + resp.status;
+          return;
+        }
+        dbgSteps = data.steps || [];
+        renderSteps();
+        $stepInfo.textContent = (data.error ? "⚠ " + data.error + " · " : "") + dbgSteps.length + " étapes";
+        selectStep(dbgSteps.length ? 0 : -1);
+      } catch (e) {
+        $stepInfo.textContent = String(e);
+      }
+    }
+    function renderSteps() {
+      $steps.innerHTML = dbgSteps
+        .map((s, i) => {
+          const indent = "  ".repeat(Math.max(0, s.depth));
+          const loc = s.line != null ? s.line + ":" + (s.column ?? 0) : "—";
+          const bp = s.breakpoint ? '<span class="bp">● </span>' : "";
+          return `<div class="step" data-i="${i}">${bp}<span class="k">${loc} ${s.kind}</span> ${indent}${esc(s.expression || "")}</div>`;
+        })
+        .join("");
+    }
+    function selectStep(i) {
+      dbgIndex = i;
+      for (const el of $steps.querySelectorAll(".step"))
+        el.classList.toggle("active", Number(el.dataset.i) === i);
+      const s = dbgSteps[i];
+      if (!s) {
+        $stepSource.textContent = "";
+        $stepResult.textContent = "";
+        return;
+      }
+      $stepSource.textContent = JSON.stringify(s.source, null, 2);
+      $stepResult.textContent = JSON.stringify(s.result, null, 2);
+      $steps.querySelector(`.step[data-i="${i}"]`)?.scrollIntoView({ block: "nearest" });
+      $stepInfo.textContent = i + 1 + "/" + dbgSteps.length;
+    }
+    $trace.addEventListener("click", trace);
+    $steps.addEventListener("click", (e) => {
+      const row = e.target.closest(".step");
+      if (row) selectStep(Number(row.dataset.i));
+    });
+    document.getElementById("prevStep").addEventListener("click", () => {
+      if (dbgIndex > 0) selectStep(dbgIndex - 1);
+    });
+    document.getElementById("nextStep").addEventListener("click", () => {
+      if (dbgIndex < dbgSteps.length - 1) selectStep(dbgIndex + 1);
+    });
+    document.getElementById("nextBp").addEventListener("click", () => {
+      for (let i = dbgIndex + 1; i < dbgSteps.length; i++) {
+        if (dbgSteps[i].breakpoint) return selectStep(i);
+      }
     });
 
     // --- init ----------------------------------------------------------------

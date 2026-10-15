@@ -56,6 +56,7 @@ from jslt import JsltTemplate
 
 tpl = JsltTemplate.parse(source_str)   # compile the template (raises JsltSyntaxError if invalid)
 tpl.transform(document)                # apply the template to a document (dict/list/scalar)
+tpl.debug(document)                     # step-by-step trace (debugging): DebugResult{result, steps, error}
 tpl.to_source()                        # re-serialize the AST to a re-parseable template (ToString)
 tpl.ast                                # the AST (tree of JsltBase nodes)
 ```

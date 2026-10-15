@@ -66,6 +66,26 @@ def test_examples_listed() -> None:
         assert {"name", "template", "source"} <= ex.keys()
 
 
+def test_debug_returns_steps() -> None:
+    resp = client.post(
+        "/api/debug",
+        json={"template": '{ "t": sum($.n) }', "source": '{"n": [1, 2, 3]}',
+              "break_functions": ["sum"]},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["result"] == {"t": 6}
+    assert data["steps"], "trace non vide attendue"
+    fn = next(s for s in data["steps"] if s["function"] == "sum")
+    assert fn["breakpoint"] is True and fn["result"] == 6
+
+
+def test_debug_reports_error_with_partial_trace() -> None:
+    resp = client.post("/api/debug", json={"template": '{ "x": nope() }', "source": "null"})
+    assert resp.status_code == 200  # l'erreur d'exécution est rapportée dans le corps
+    assert resp.json()["error"] is not None
+
+
 def test_every_example_transforms_ok() -> None:
     # Les exemples servent aussi d'oracle : chacun doit transformer sans erreur.
     examples = client.get("/api/examples").json()["examples"]

@@ -71,6 +71,40 @@ def transform(req: TransformRequest) -> JSONResponse:
     return JSONResponse({"result": result})
 
 
+class DebugRequest(BaseModel):
+    template: str = Field(default="", max_length=_MAX_INPUT)
+    source: str = Field(default="null", max_length=_MAX_INPUT)
+    break_functions: list[str] = Field(default_factory=list)
+    break_lines: list[int] = Field(default_factory=list)
+
+
+@app.post("/api/debug")
+def debug(req: DebugRequest) -> JSONResponse:
+    """Évalue en mode pas-à-pas : renvoie ``{result, steps, error}``.
+
+    Chaque étape = un nœud évalué (type, localisation, source courante, valeur).
+    ``break_functions`` / ``break_lines`` marquent les points d'arrêt.
+    """
+    try:
+        source: Any = json.loads(req.source) if req.source.strip() else None
+    except json.JSONDecodeError as exc:
+        return JSONResponse({"error": f"JSON source invalide : {exc}"}, status_code=400)
+
+    try:
+        result = JsltTemplate.parse(req.template).debug(
+            source,
+            functions=_CORE_REGISTRY,
+            break_functions=req.break_functions,
+            break_lines=req.break_lines,
+        )
+    except JsltError as exc:  # erreur de parsing (avant exécution)
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    except Exception as exc:  # noqa: BLE001 — garde-fou
+        return JSONResponse({"error": f"{type(exc).__name__}: {exc}"}, status_code=400)
+
+    return JSONResponse(result.to_dict())
+
+
 @app.get("/api/functions")
 def functions() -> JSONResponse:
     """Catalogue des fonctions disponibles (cœur) — pour l'aide de l'éditeur."""

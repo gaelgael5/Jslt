@@ -38,8 +38,9 @@ JsltTemplate.parse(TEMPLATE).transform(ENTREE)   # == SORTIE
 14. [Fonctions de chemin `length()` / `value()`](#14-fonctions-de-chemin-length--value)
 15. [Re-sérialisation `to_source()`](#15-re-sérialisation-to_source)
 16. [Extensibilité : fonctions et plugins](#16-extensibilité--fonctions-et-plugins)
-17. [Erreurs](#17-erreurs)
-18. [Aide-mémoire](#18-aide-mémoire)
+17. [Débogage (pas à pas)](#17-débogage-pas-à-pas)
+18. [Erreurs](#18-erreurs)
+19. [Aide-mémoire](#19-aide-mémoire)
 
 ---
 
@@ -749,7 +750,40 @@ CSV, bases de données, Elasticsearch…).
 
 ---
 
-## 17. Erreurs
+## 17. Débogage (pas à pas)
+
+`JsltTemplate.debug(source)` évalue le template en collectant une **trace
+pas-à-pas** : une étape par nœud évalué, avec sa localisation, la source courante et
+la valeur produite. (Le moteur étant un interpréteur, le débogage se fait au niveau
+du template — il n'y a pas de code généré comme en .NET.)
+
+```python
+from jslt import JsltTemplate
+
+r = JsltTemplate.parse('{ "t": sum($.n) }').debug({"n": [1, 2, 3]})
+r.result                      # {'t': 6}
+for step in r.steps:
+    print(step.kind, step.line, step.expression, "->", step.result)
+# JsltPath 1 $.n -> [1, 2, 3]
+# JsltFunctionCall 1 sum(…) -> 6
+# JsltObject 1 None -> {'t': 6}
+```
+
+**Points d'arrêt** : marquer les étapes correspondant à une fonction (« méthode du
+contexte ») ou à une ligne du template.
+
+```python
+r = JsltTemplate.parse('{ "t": sum($.n) }').debug({"n": [1, 2]}, break_functions=["sum"])
+[s.expression for s in r.steps if s.breakpoint]   # ['sum(…)']
+```
+
+`DebugResult` porte `result` (valeur finale), `steps` (liste de `TraceStep`) et
+`error` (message si l'évaluation échoue — la trace partielle reste disponible). Le
+playground (`apps/playground`) en offre un pas-à-pas visuel.
+
+---
+
+## 18. Erreurs
 
 Un template syntaxiquement invalide lève `JsltSyntaxError` (avec ligne/colonne) :
 
@@ -774,7 +808,7 @@ JsltTemplate.parse('{ "r": $.a[?(@.x contains 1)] }')   # -> NotImplementedError
 
 ---
 
-## 18. Aide-mémoire
+## 19. Aide-mémoire
 
 | Construction | Syntaxe | Section |
 |---|---|---|

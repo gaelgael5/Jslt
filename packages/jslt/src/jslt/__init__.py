@@ -42,9 +42,11 @@ from .functions import (
 from .parsing import parse_to_tree
 from .parsing.script_builder_visitor import ScriptBuilderVisitor
 from .runtime import JsltEvaluationVisitor, RuntimeContext, Sources
+from .runtime.debug import DebugResult, TraceStep, evaluate_with_trace
 from .serialization import to_source
 
 __all__ = [
+    "DebugResult",
     "FunctionInfo",
     "FunctionRegistry",
     "JsltError",
@@ -52,6 +54,7 @@ __all__ = [
     "JsltSyntaxError",
     "JsltTemplate",
     "ParameterInfo",
+    "TraceStep",
     "default_registry",
     "jslt_function",
     "load_plugins",
@@ -124,6 +127,40 @@ class JsltTemplate:
         context = RuntimeContext(Sources(source), functions)
         evaluator = JsltEvaluationVisitor(context)
         return self._ast.accept(evaluator)
+
+    def debug(
+        self,
+        source: Any = None,
+        functions: FunctionRegistry | None = None,
+        break_functions: Any = (),
+        break_lines: Any = (),
+        max_steps: int = 10_000,
+    ) -> DebugResult:
+        """Évalue le template en collectant une trace pas-à-pas (débogage).
+
+        Interpréteur oblige, le débogage se fait au **niveau du template** (pas de
+        code généré comme en .NET) : chaque nœud évalué produit une étape
+        (:class:`~jslt.runtime.debug.TraceStep`) avec sa localisation, la source
+        courante et la valeur produite.
+
+        Args:
+            source: le document source.
+            functions: registre de fonctions (défaut : registre global).
+            break_functions: noms de fonctions (« méthodes du contexte ») sur
+                lesquelles marquer un point d'arrêt.
+            break_lines: lignes du template sur lesquelles marquer un point d'arrêt.
+            max_steps: nombre maximal d'étapes collectées (garde-fou).
+
+        Returns:
+            Un :class:`~jslt.runtime.debug.DebugResult` (résultat, étapes, erreur).
+        """
+        if functions is None:
+            _ensure_default_plugins()
+            functions = default_registry
+        context = RuntimeContext(Sources(source), functions)
+        return evaluate_with_trace(
+            self._ast, context, break_functions, break_lines, max_steps
+        )
 
     def to_source(self) -> str:
         """Re-sérialise l'AST du template en texte source ré-analysable.

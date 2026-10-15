@@ -157,6 +157,16 @@ visiteur dédié `SourceWriterVisitor` (`packages/jslt/src/jslt/serialization.py
 équivalent en comportement (pas identique au caractère près) ; un cast `x #type`
 se re-sérialise sous sa forme `convert(x, "type")`.
 
+Débogage de template (`packages/jslt/src/jslt/runtime/debug.py`) : le .NET
+affichait le **code généré** (Roslyn) pour stepper au débogueur — non pertinent ici
+(interpréteur, pas de code généré). À la place, on déboge **au niveau du template**
+en instrumentant l'évaluateur : `DebugEvaluationVisitor` enveloppe chaque `visit_*`
+et notifie un `Tracer` ; `TraceCollector` en tire une **trace pas-à-pas** (une
+`TraceStep` par nœud : type, localisation, source courante, valeur) et marque les
+**points d'arrêt** (par fonction / « méthode du contexte », ou par ligne). Exposé
+via `JsltTemplate.debug(...)` → `DebugResult` (exportés : `DebugResult`,
+`TraceStep`). Le playground l'utilise pour un pas-à-pas visuel (`/api/debug`).
+
 Fonctions portées (modules dans `packages/jslt/src/jslt/functions/`) :
 - cœur : `sum`, `concat`, `convert` (casts), `distinct`.
 - maths : `abs`, `floor`, `round`, `truncate`, `min`, `max`, `sqrt`, `pow`, `exp`,

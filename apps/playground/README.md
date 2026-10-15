@@ -10,7 +10,8 @@ Ce n'est pas une distribution publiée — c'est une application du dépôt.
 Fonctionnalités : éditeur avec coloration + intellisense, **bibliothèque
 d'exemples**, **transformation automatique** (debounce, désactivable), **partage
 par URL** (l'état est encodé dans le lien), **panneau de référence** des fonctions
-disponibles (filtrable).
+disponibles (filtrable), et **débogage pas-à-pas** (trace d'évaluation nœud par
+nœud, source/valeur à chaque étape, points d'arrêt sur fonctions).
 
 ## Lancer en local
 
@@ -36,6 +37,7 @@ pas de timeout d'exécution) ; pour un déploiement exposé, ajouter ces garde-f
 | Méthode | Chemin | Rôle |
 |---|---|---|
 | `POST` | `/api/transform` | `{template, source}` → `{result}` ou `{error}` |
+| `POST` | `/api/debug` | `{template, source, break_functions, break_lines}` → `{result, steps, error}` |
 | `GET` | `/api/functions` | catalogue des fonctions (cœur) pour l'intellisense |
 | `GET` | `/api/examples` | exemples prêts à charger (template + source) |
 | `GET` | `/jslt-editor/*` | assets du composant d'édition |
