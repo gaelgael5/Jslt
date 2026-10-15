@@ -1,21 +1,19 @@
-"""Fonctions intégrées du cœur jslt.
+"""Fonctions intégrées « cœur » : sum, concat, convert, distinct.
 
-Portage d'un sous-ensemble des ``CustomServices`` .NET. Chaque fonction reçoit le
-contexte d'exécution en premier argument, puis les arguments JSON évalués.
-
-Couverture actuelle : ``sum``, ``concat`` (4a) et ``convert`` (4b, support des
-casts ``#type``). D'autres fonctions pures (distinct, count…) viendront ensuite ;
-les fonctions d'E-S restent hors cœur.
+Les autres familles (maths, texte, collections, encodage, divers) sont dans des
+modules dédiés du paquet. Chaque fonction reçoit le contexte d'exécution en
+premier argument, puis les arguments JSON évalués (ou un chemin compilé pour les
+positions marquées ``path_args``).
 """
 
 from __future__ import annotations
 
 import json
-import math
 from typing import Any
 
 from jslt.errors import JsltError
 
+from ._helpers import coerce_bool, coerce_number, to_text
 from .registry import jslt_function
 
 
@@ -53,139 +51,8 @@ def execute_concat(
     if token is None:
         return ""
     if isinstance(token, list):
-        return separator.join(_to_text(item) for item in token)
-    return _to_text(token)
-
-
-def _to_text(value: Any) -> str:
-    if value is None:
-        return ""
-    if value is True:
-        return "True"
-    if value is False:
-        return "False"
-    return str(value)
-
-
-# --------------------------------------------------------------------- chaînes
-# Convention .NET pour ces fonctions : None -> None, chaîne -> résultat, sinon
-# False (valeur non chaîne).
-
-
-def _string_result(token: Any, fn):
-    if token is None:
-        return None
-    if isinstance(token, str):
-        return fn(token)
-    return False
-
-
-@jslt_function("upper")
-def execute_upper(ctx: Any, token: Any = None) -> Any:
-    return _string_result(token, str.upper)
-
-
-@jslt_function("lower")
-def execute_lower(ctx: Any, token: Any = None) -> Any:
-    return _string_result(token, str.lower)
-
-
-@jslt_function("trim")
-def execute_trim(ctx: Any, token: Any = None, txt: str | None = None) -> Any:
-    return _string_result(token, lambda s: s.strip(txt) if txt else s.strip())
-
-
-@jslt_function("split")
-def execute_split(ctx: Any, token: Any = None, charset: str = "") -> Any:
-    if token is None:
-        return None
-    if isinstance(token, str):
-        return token.split(charset[0]) if charset else [token]
-    return []
-
-
-@jslt_function("startswith")
-def execute_startswith(ctx: Any, token: Any = None, txt: str = "") -> Any:
-    return _string_result(token, lambda s: s.startswith(txt))
-
-
-@jslt_function("endswith")
-def execute_endswith(ctx: Any, token: Any = None, txt: str = "") -> Any:
-    return _string_result(token, lambda s: s.endswith(txt))
-
-
-@jslt_function("stringcontains")
-def execute_stringcontains(ctx: Any, token: Any = None, contain_str: str = "") -> Any:
-    return _string_result(token, lambda s: contain_str in s)
-
-
-# ----------------------------------------------------------------------- maths
-# Convention .NET : une valeur non numérique (ou None) donne None.
-
-
-def _number_result(token: Any, fn):
-    if isinstance(token, bool) or not isinstance(token, (int, float)):
-        return None
-    return fn(token)
-
-
-@jslt_function("abs")
-def execute_abs(ctx: Any, token: Any = None) -> Any:
-    return _number_result(token, abs)  # conserve int/float comme en .NET
-
-
-@jslt_function("floor")
-def execute_floor(ctx: Any, token: Any = None) -> Any:
-    return _number_result(token, lambda n: float(math.floor(n)))  # .NET Math.Floor -> double
-
-
-@jslt_function("round")
-def execute_round(ctx: Any, token: Any = None) -> Any:
-    # .NET Math.Round : arrondi bancaire (demi vers pair), comme round() de Python.
-    return _number_result(token, lambda n: float(round(n)))
-
-
-@jslt_function("min")
-def execute_min(ctx: Any, left: Any = None, right: Any = None) -> Any:
-    if isinstance(left, bool) or not isinstance(left, (int, float)):
-        return None
-    return float(min(left, _coerce_number(right)))  # .NET renvoie un double
-
-
-@jslt_function("max")
-def execute_max(ctx: Any, left: Any = None, right: Any = None) -> Any:
-    if isinstance(left, bool) or not isinstance(left, (int, float)):
-        return None
-    return float(max(left, _coerce_number(right)))  # .NET renvoie un double
-
-
-# Valeurs par défaut par type cible (port de ``targetType.GetDefaultValue()``).
-_DEFAULTS = {"integer": 0, "decimal": 0.0, "string": "", "boolean": False}
-
-
-def _coerce_number(value: Any) -> float | int:
-    if isinstance(value, bool):
-        return int(value)
-    if isinstance(value, (int, float)):
-        return value
-    if isinstance(value, str):
-        try:
-            return int(value)
-        except ValueError:
-            return float(value)
-    raise JsltError(f"conversion numérique impossible : {value!r}")
-
-
-def _coerce_bool(value: Any) -> bool:
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, (int, float)):
-        return value != 0
-    if isinstance(value, str):
-        low = value.strip().lower()
-        if low in ("true", "false"):
-            return low == "true"
-    return bool(value)
+        return separator.join(to_text(item) for item in token)
+    return to_text(token)
 
 
 @jslt_function("distinct", path_args=(1,))
@@ -214,6 +81,10 @@ def execute_distinct(ctx: Any, source: Any = None, path: Any = None) -> list:
     return result
 
 
+# Valeurs par défaut par type cible (port de ``targetType.GetDefaultValue()``).
+_DEFAULTS = {"integer": 0, "decimal": 0.0, "string": "", "boolean": False}
+
+
 @jslt_function("convert")
 def execute_convert(ctx: Any, token: Any = None, target_type: str = "string") -> Any:
     """Convertit une valeur vers un type cible (port de ``ExecuteConvert``).
@@ -230,10 +101,10 @@ def execute_convert(ctx: Any, token: Any = None, target_type: str = "string") ->
         return json.dumps(token, ensure_ascii=False, separators=(",", ":"))
 
     if target_type == "integer":
-        return int(_coerce_number(token))
+        return int(coerce_number(token))
     if target_type == "decimal":
-        return float(_coerce_number(token))
+        return float(coerce_number(token))
     if target_type == "boolean":
-        return _coerce_bool(token)
+        return coerce_bool(token)
     # string, et types temporels/identifiants rendus en texte (simplifié).
-    return _to_text(token)
+    return to_text(token)

@@ -65,11 +65,22 @@ Patterns repris du .NET :
 - Fonctions d'E-S (`csv`, `http`, `hash`, `randoms`, `group`, `sql`).
 - Sérialisation `ToString` (round-trip AST → source).
 
-Fonctions portées : `sum`, `concat`, `convert` (casts), `distinct` ; chaînes
-(`upper`, `lower`, `trim`, `split`, `startswith`, `endswith`, `stringcontains`) ;
-maths (`abs`, `floor`, `round`, `min`, `max`). Quirks .NET conservés :
-`floor`/`round`/`min`/`max` renvoient un flottant, `round` = arrondi bancaire,
-`min`/`max` sont binaires.
+Fonctions portées (modules dans `src/jslt/functions/`) :
+- cœur : `sum`, `concat`, `convert` (casts), `distinct`.
+- maths : `abs`, `floor`, `round`, `truncate`, `min`, `max`, `sqrt`, `pow`, `exp`,
+  `logarithm`/`logarithm10`/`logarithm2`, trig (`sin`/`cos`/`tan`/`asin`/`acos`/
+  `atan`/`sinh`/`cosh`/`tanh`/`asinh`/`acosh`/`atanh`/`atan2`), `pi`, `e`.
+- texte : `upper`, `lower`, `trim`, `split`, `startswith`, `endswith`,
+  `stringcontains`, `indexof`, `lastindexof`, `padleft`, `padright`, `stringlenght`.
+- encodage : `tobase64`, `frombase64`, `crc32`, `sha256`, `sha512`.
+- collections : `limit`, `union`, `select`, `selectmany` (`select`/`selectmany`
+  prennent un argument-chemin).
+- divers : `uuid`, `now`, `isnull`, `isnotnull`.
+
+Quirks .NET conservés : `floor`/`round`/`truncate`/`min`/`max`/`pow`/trig
+renvoient un flottant, `round` = arrondi bancaire, `min`/`max` sont binaires.
+Fonctions encore non portées : `format`, `normalize`, `group`/`join`/`index`/
+`createindex` (jointures), `getrandom_*`, E-S (`loadcsv`/`loadjson`/http).
 
 ## Développement
 

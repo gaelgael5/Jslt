@@ -11,7 +11,8 @@ sql…) ne font pas partie du cœur et ne sont pas portées ici ; le registre re
 extensible pour les ajouter ou en enregistrer de nouvelles.
 """
 
-from . import builtins  # noqa: F401 — importé pour enregistrer les fonctions intégrées
+# Chaque module importé enregistre ses fonctions dans le registre par défaut.
+from . import builtins, collection, encoding, maths, misc, text  # noqa: F401
 from .registry import FunctionRegistry, default_registry, jslt_function
 
 __all__ = ["FunctionRegistry", "default_registry", "jslt_function"]
