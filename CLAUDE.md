@@ -68,7 +68,12 @@ Patterns repris du .NET :
   vide ou `default_registry.copy()` pour dériver sans muter le global.
 - **Découvrir** : `registry.names()`, `describe(nom) -> FunctionInfo`,
   `describe_all()`, itération, `in` (casse ignorée). `FunctionInfo` porte nom,
-  paramètres (hors `ctx`), `path_args`, description, `signature()`.
+  paramètres typés (`ParameterInfo` : nom, type, requis/défaut, `is_path`,
+  variadic), type de retour, `path_args`, description, `signature()`.
+- **Pour un éditeur (intellisense)** : `registry.catalog()` renvoie une liste de
+  dicts **sérialisables JSON** (nom, description, paramètres nom+type, retour,
+  signature) — analogue du paquet `Intellisense` du .NET. Les types proviennent
+  des annotations ; chaque fonction portée/plugin gagne à être annotée + docstring.
 - **Plugins tiers** : `load_plugins(registry=default_registry)` découvre les paquets
   déclarant le groupe d'entry points **`jslt.functions`** (vrai équivalent du
   `AddAssembly` .NET). Auto-appelé une fois au 1er `transform` sur le registre

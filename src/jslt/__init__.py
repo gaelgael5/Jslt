@@ -34,6 +34,7 @@ from .errors import JsltError, JsltSemanticError, JsltSyntaxError
 from .functions import (
     FunctionInfo,
     FunctionRegistry,
+    ParameterInfo,
     default_registry,
     jslt_function,
     load_plugins,
@@ -50,6 +51,7 @@ __all__ = [
     "JsltSemanticError",
     "JsltSyntaxError",
     "JsltTemplate",
+    "ParameterInfo",
     "default_registry",
     "jslt_function",
     "load_plugins",

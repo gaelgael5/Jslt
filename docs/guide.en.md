@@ -704,6 +704,23 @@ info = default_registry.describe("distinct")
 info.signature()                         # 'distinct(source, path)'
 info.path_args                           # (1,)
 info.description                         # first docstring line
+info.parameters[1].name, info.parameters[1].type, info.parameters[1].is_path
+#                                        # ('path', 'Any', True)
+```
+
+To feed a **template editor** (auto-completion, contextual help), `catalog()`
+returns a **JSON-serializable** list describing every function (name, description,
+parameters name + type + required + path, return type, signature):
+
+```python
+import json
+from jslt import default_registry
+
+json.dumps(default_registry.catalog())   # ready to hand to an editor
+# [{"name": "distinct", "description": "...", "signature": "distinct(source, path)",
+#   "parameters": [{"name": "source", "type": "Any", "required": false, ...},
+#                  {"name": "path", "type": "Any", "is_path": true, ...}],
+#   "returns": "list", "path_args": [1]}, ...]
 ```
 
 ### Third-party plugins (entry points)

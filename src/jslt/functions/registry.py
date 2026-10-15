@@ -32,47 +32,121 @@ JsltFunction = Callable[..., Any]
 PLUGIN_GROUP = "jslt.functions"
 
 
+def _type_name(annotation: Any) -> str | None:
+    """Nom lisible d'une annotation de type, ou ``None`` si absente.
+
+    Avec ``from __future__ import annotations`` les annotations sont déjà des
+    chaînes (p.ex. ``"str | None"``) ; sinon on retombe sur ``__name__`` / ``str``.
+    """
+    if annotation is inspect.Parameter.empty or annotation is inspect.Signature.empty:
+        return None
+    if isinstance(annotation, str):
+        return annotation
+    return getattr(annotation, "__name__", None) or str(annotation)
+
+
+@dataclass(frozen=True)
+class ParameterInfo:
+    """Description d'un paramètre de fonction (hors ``ctx``), pour l'outillage.
+
+    ``type`` est le nom du type annoté (ou ``None``), ``required`` indique l'absence
+    de valeur par défaut, ``is_path`` marque un argument reçu comme chemin JSONPath
+    compilé (``path_args``), ``variadic`` un ``*args``.
+    """
+
+    name: str
+    type: str | None = None
+    required: bool = True
+    default: Any = None
+    has_default: bool = False
+    is_path: bool = False
+    variadic: bool = False
+
+    def to_dict(self) -> dict[str, Any]:
+        data: dict[str, Any] = {
+            "name": self.name,
+            "type": self.type,
+            "required": self.required,
+            "is_path": self.is_path,
+            "variadic": self.variadic,
+        }
+        if self.has_default:
+            # Défaut JSON-safe si possible, sinon sa repr textuelle.
+            data["default"] = self.default if _is_json_scalar(self.default) else repr(self.default)
+        return data
+
+
+def _is_json_scalar(value: Any) -> bool:
+    return value is None or isinstance(value, (str, int, float, bool))
+
+
 @dataclass(frozen=True)
 class FunctionInfo:
     """Description introspectable d'une fonction enregistrée.
 
-    Utilisée pour la découverte : nom, paramètres (hors ``ctx``), positions des
-    arguments « chemin », description libre et acceptation d'arguments variadiques.
+    Pour la découverte / l'intelligence d'éditeur : nom, paramètres typés (hors
+    ``ctx``), type de retour, positions des arguments « chemin », et description.
     """
 
     name: str
     function: JsltFunction = field(repr=False)
     path_args: tuple[int, ...] = ()
     description: str = ""
-    parameters: tuple[str, ...] = ()
-    accepts_varargs: bool = False
+    parameters: tuple[ParameterInfo, ...] = ()
+    returns: str | None = None
+
+    @property
+    def accepts_varargs(self) -> bool:
+        return any(p.variadic for p in self.parameters)
 
     def signature(self) -> str:
         """Signature lisible côté template, p.ex. ``distinct(source, path)``."""
-        params = list(self.parameters)
-        if self.accepts_varargs:
-            params.append("...")
-        return f"{self.name}({', '.join(params)})"
+        parts = [("..." if p.variadic else p.name) for p in self.parameters]
+        return f"{self.name}({', '.join(parts)})"
+
+    def to_dict(self) -> dict[str, Any]:
+        """Représentation sérialisable (JSON) destinée à un éditeur de templates."""
+        return {
+            "name": self.name,
+            "description": self.description,
+            "parameters": [p.to_dict() for p in self.parameters],
+            "returns": self.returns,
+            "signature": self.signature(),
+            "path_args": list(self.path_args),
+        }
 
 
-def _introspect(function: JsltFunction) -> tuple[tuple[str, ...], bool]:
-    """Extrait les noms de paramètres (hors ``ctx``) et l'acceptation de ``*args``."""
+def _introspect(
+    function: JsltFunction, path_args: tuple[int, ...]
+) -> tuple[tuple[ParameterInfo, ...], str | None]:
+    """Extrait les paramètres typés (hors ``ctx``) et le type de retour."""
     try:
         sig = inspect.signature(function)
     except (ValueError, TypeError):
-        return (), False
-    names: list[str] = []
-    accepts_varargs = False
+        return (), None
+    params: list[ParameterInfo] = []
+    template_index = 0  # position côté template (0 = 1er argument après ctx)
     for index, param in enumerate(sig.parameters.values()):
         if index == 0:
             continue  # le premier paramètre est toujours le contexte (ctx)
-        if param.kind is inspect.Parameter.VAR_POSITIONAL:
-            accepts_varargs = True
-        elif param.kind is inspect.Parameter.VAR_KEYWORD:
+        if param.kind is inspect.Parameter.VAR_KEYWORD:
             continue
-        else:
-            names.append(param.name)
-    return tuple(names), accepts_varargs
+        variadic = param.kind is inspect.Parameter.VAR_POSITIONAL
+        has_default = param.default is not inspect.Parameter.empty
+        params.append(
+            ParameterInfo(
+                name=param.name,
+                type=_type_name(param.annotation),
+                required=not has_default and not variadic,
+                default=param.default if has_default else None,
+                has_default=has_default,
+                is_path=template_index in path_args,
+                variadic=variadic,
+            )
+        )
+        if not variadic:
+            template_index += 1
+    return tuple(params), _type_name(sig.return_annotation)
 
 
 class FunctionRegistry:
@@ -92,14 +166,14 @@ class FunctionRegistry:
         description: str = "",
     ) -> None:
         """Enregistre (ou remplace) une fonction sous ``name`` (casse ignorée)."""
-        parameters, accepts_varargs = _introspect(function)
+        parameters, returns = _introspect(function, path_args)
         self._functions[name.lower()] = FunctionInfo(
             name=name,
             function=function,
             path_args=path_args,
             description=description or (inspect.getdoc(function) or "").split("\n", 1)[0],
             parameters=parameters,
-            accepts_varargs=accepts_varargs,
+            returns=returns,
         )
 
     # -- résolution (exécution) --------------------------------------------
@@ -124,6 +198,16 @@ class FunctionRegistry:
     def describe_all(self) -> list[FunctionInfo]:
         """Métadonnées de toutes les fonctions, triées par nom."""
         return sorted(self._functions.values(), key=lambda info: info.name.lower())
+
+    def catalog(self) -> list[dict[str, Any]]:
+        """Catalogue sérialisable (JSON) de toutes les fonctions enregistrées.
+
+        Chaque entrée porte nom, description, paramètres (nom + type + requis +
+        défaut + chemin), type de retour et signature. Destiné à alimenter un
+        éditeur de templates (auto-complétion, aide contextuelle), à la manière du
+        paquet *Intellisense* du .NET.
+        """
+        return [info.to_dict() for info in self.describe_all()]
 
     def copy(self) -> FunctionRegistry:
         """Nouveau registre indépendant, pré-rempli avec les fonctions courantes.

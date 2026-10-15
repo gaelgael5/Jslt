@@ -705,6 +705,24 @@ info = default_registry.describe("distinct")
 info.signature()                         # 'distinct(source, path)'
 info.path_args                           # (1,)
 info.description                         # 1re ligne du docstring
+info.parameters[1].name, info.parameters[1].type, info.parameters[1].is_path
+#                                        # ('path', 'Any', True)
+```
+
+Pour alimenter un **éditeur de templates** (auto-complétion, aide contextuelle),
+`catalog()` renvoie une liste **sérialisable JSON** décrivant chaque fonction
+(nom, description, paramètres nom + type + requis + chemin, type de retour,
+signature) :
+
+```python
+import json
+from jslt import default_registry
+
+json.dumps(default_registry.catalog())   # prêt à transmettre à un éditeur
+# [{"name": "distinct", "description": "...", "signature": "distinct(source, path)",
+#   "parameters": [{"name": "source", "type": "Any", "required": false, ...},
+#                  {"name": "path", "type": "Any", "is_path": true, ...}],
+#   "returns": "list", "path_args": [1]}, ...]
 ```
 
 ### Plugins tiers (entry points)

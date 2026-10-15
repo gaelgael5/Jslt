@@ -34,9 +34,48 @@ def test_describe_exposes_metadata() -> None:
     assert isinstance(info, FunctionInfo)
     assert info.name == "distinct"
     assert info.path_args == (1,)
-    assert info.parameters == ("source", "path")  # ctx exclu
+    assert [p.name for p in info.parameters] == ["source", "path"]  # ctx exclu
     assert info.signature() == "distinct(source, path)"
     assert info.description  # 1re ligne du docstring par défaut
+
+
+def test_parameters_carry_name_type_and_path_flag() -> None:
+    info = default_registry.describe("distinct")
+    source, path = info.parameters
+    assert source.name == "source" and source.type == "Any"
+    # Le 2e argument de distinct est un argument « chemin » (path_args=(1,)).
+    assert path.is_path is True
+    assert source.is_path is False
+    # Paramètres optionnels (valeur par défaut) -> non requis.
+    assert source.required is False and source.has_default is True
+
+
+def test_catalog_is_json_serialisable_for_an_editor() -> None:
+    import json
+
+    catalog = default_registry.catalog()
+    assert isinstance(catalog, list)
+    # Entièrement sérialisable en JSON (destiné à un éditeur de templates).
+    dumped = json.dumps(catalog)
+    assert dumped
+    entry = next(e for e in catalog if e["name"] == "distinct")
+    assert entry["signature"] == "distinct(source, path)"
+    assert entry["parameters"][1]["is_path"] is True
+    assert {"name", "type", "required", "is_path", "variadic"} <= entry["parameters"][0].keys()
+
+
+def test_variadic_and_return_type_detected() -> None:
+    reg = FunctionRegistry()
+
+    def many(ctx, *values: int) -> list:
+        return list(values)
+
+    reg.register("many", many)
+    info = reg.describe("many")
+    assert info.accepts_varargs is True
+    assert info.parameters[0].variadic is True
+    assert info.parameters[0].required is False
+    assert info.returns == "list"
 
 
 def test_describe_unknown_returns_none() -> None:
