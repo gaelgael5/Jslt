@@ -10,6 +10,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from defusedxml.common import EntitiesForbidden
 from jslt import FunctionRegistry, JsltTemplate
 
 from jslt_xml import execute_loadxml, register
@@ -116,5 +117,5 @@ def test_xxe_external_entity_is_blocked(tmp_path: Path) -> None:
     )
     path = _write(tmp_path, "evil.xml", xml)
     # defusedxml doit refuser l'entité (pas d'exfiltration du secret).
-    with pytest.raises(Exception):  # noqa: B017 (defusedxml.EntitiesForbidden)
+    with pytest.raises(EntitiesForbidden):
         execute_loadxml(None, path)

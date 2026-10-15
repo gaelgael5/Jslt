@@ -99,7 +99,7 @@ def debug(req: DebugRequest) -> JSONResponse:
         )
     except JsltError as exc:  # erreur de parsing (avant exécution)
         return JSONResponse({"error": str(exc)}, status_code=400)
-    except Exception as exc:  # noqa: BLE001 — garde-fou
+    except Exception as exc:  # noqa: BLE001 — garde-fou : jamais de 500 brut vers l'UI
         return JSONResponse({"error": f"{type(exc).__name__}: {exc}"}, status_code=400)
 
     return JSONResponse(result.to_dict())
