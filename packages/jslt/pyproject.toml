@@ -39,7 +39,9 @@ Issues = "https://github.com/gaelgael5/Jslt/issues"
 [project.optional-dependencies]
 dev = [
     "pytest>=7",
-    "ruff>=0.4",
+    # ruff épinglé : le lint fait partie de la CI et ses règles changent entre
+    # versions — on fige pour que CI == local (bump délibéré uniquement).
+    "ruff==0.16.8",
     "build>=1",
 ]
 
