@@ -1,4 +1,4 @@
-# CLAUDE.md — jslt (portage Python)
+# CLAUDE.md — urban-json (portage Python)
 
 Portage Python du langage **JSLT** (JSON Stylesheet Language Transformations),
 initialement en .NET : [Black-Beard-Sdk/jslt](https://github.com/Black-Beard-Sdk/jslt).
@@ -13,18 +13,18 @@ bugs** (voir « Écarts volontaires »).
 
 ## Architecture (miroir du .NET)
 
-Le **cœur** vit sous `packages/jslt/` (paquet `jslt`), au même niveau que les
-plugins. Chemins ci-dessous relatifs à `packages/jslt/` :
+Le **cœur** vit sous `packages/urban-json/` (paquet `urban_json`), au même niveau que les
+plugins. Chemins ci-dessous relatifs à `packages/urban-json/` :
 
 ```
 texte template
-  └─ parser ANTLR (grammaire grammar/*.g4)      src/jslt/_antlr/ (généré, versionné)
+  └─ parser ANTLR (grammaire grammar/*.g4)      src/urban_json/_antlr/ (généré, versionné)
        └─ arbre d'analyse ANTLR
-            └─ ScriptBuilderVisitor               src/jslt/parsing/ (arbre ANTLR -> AST)
-                 └─ AST (pattern Visitor)         src/jslt/ast/
-                      └─ interpréteur (tree-walk)  src/jslt/runtime/
-                           ├─ JSONPath             src/jslt/jsonpath/ (port de Bb.JPaths)
-                           └─ fonctions            src/jslt/functions/ (registre par nom)
+            └─ ScriptBuilderVisitor               src/urban_json/parsing/ (arbre ANTLR -> AST)
+                 └─ AST (pattern Visitor)         src/urban_json/ast/
+                      └─ interpréteur (tree-walk)  src/urban_json/runtime/
+                           ├─ JSONPath             src/urban_json/jsonpath/ (port de Bb.JPaths)
+                           └─ fonctions            src/urban_json/functions/ (registre par nom)
 ```
 
 Patterns repris du .NET :
@@ -78,40 +78,40 @@ Patterns repris du .NET :
   signature) — analogue du paquet `Intellisense` du .NET. Les types proviennent
   des annotations ; chaque fonction portée/plugin gagne à être annotée + docstring.
 - **Plugins tiers** : `load_plugins(registry=default_registry)` découvre les paquets
-  déclarant le groupe d'entry points **`jslt.functions`** (vrai équivalent du
+  déclarant le groupe d'entry points **`urban_json.functions`** (vrai équivalent du
   `AddAssembly` .NET). Auto-appelé une fois au 1er `transform` sur le registre
   global. Contrat : l'entry point pointe une callable `register(registry)`.
   Déclaration côté plugin :
   ```toml
-  [project.entry-points."jslt.functions"]
+  [project.entry-points."urban_json.functions"]
   mon_paquet = "mon_paquet.jslt_ext:register"
   ```
-  API publique exportée au top-level `jslt` : `jslt_function`, `FunctionRegistry`,
+  API publique exportée au top-level `urban_json` : `jslt_function`, `FunctionRegistry`,
   `FunctionInfo`, `default_registry`, `load_plugins`.
 
 C'est le mécanisme sur lequel s'appuient les **paquets additionnels** (E-S), hors
 cœur, chacun comme **distribution séparée** dans un **monorepo** :
 
-- `packages/jslt-csv/` — fonctions `loadcsv` (port de `ServiceCsv`) et `loadmcsv`
+- `packages/urban-json-csv/` — fonctions `loadcsv` (port de `ServiceCsv`) et `loadmcsv`
   (CSV multi-enregistrements hiérarchique, port de `ServicesMultiCsv` + `Bb.MultiCsv` ;
-  module `jslt_csv.mcsv`). Distribution `jslt-csv`, dépend de `jslt`.
-- `packages/jslt-xml/` — fonction `loadxml` (conventions XML↔JSON Newtonsoft du
+  module `urban_json_csv.mcsv`). Distribution `urban-json-csv`, dépend de `urban-json`.
+- `packages/urban-json-xml/` — fonction `loadxml` (conventions XML↔JSON Newtonsoft du
   `XmlNodeConverter` .NET ; parsing sécurisé via `defusedxml`). Distribution
-  `jslt-xml`, dépend de `jslt` + `defusedxml`.
-- `packages/jslt-db/` — fonctions `connectsql` / `readsql` (port de `ServicesSql`).
-  Distribution `jslt-db` ; SQLite via la stdlib (sans dépendance), autres SGBD via
+  `urban-json-xml`, dépend de `urban-json` + `defusedxml`.
+- `packages/urban-json-db/` — fonctions `connectsql` / `readsql` (port de `ServicesSql`).
+  Distribution `urban-json-db` ; SQLite via la stdlib (sans dépendance), autres SGBD via
   un registre de clients DB-API (extras `postgresql`/`mysql`).
-- `packages/jslt-http/` — fonctions `http` / `httpget`. Appel formalisé en objet
+- `packages/urban-json-http/` — fonctions `http` / `httpget`. Appel formalisé en objet
   Fetch/`RequestInit` (`{method,url,headers,query,body}` → `{status,headers,body}`)
-  via `httpx`. Distribution `jslt-http`, dépend de `jslt` + `httpx`.
-- `packages/jslt-elastic/` — fonctions `esconnect` / `essearch` (recherche
+  via `httpx`. Distribution `urban-json-http`, dépend de `urban-json` + `httpx`.
+- `packages/urban-json-elastic/` — fonctions `esconnect` / `essearch` (recherche
   Elasticsearch → `_source` des hits) via le client officiel `elasticsearch`
-  (importé paresseusement). Distribution `jslt-elastic`, dépend de `jslt` +
+  (importé paresseusement). Distribution `urban-json-elastic`, dépend de `urban-json` +
   `elasticsearch`.
-- `packages/jslt-editor/` — composant d'édition **réutilisable** : Web Component
+- `packages/urban-json-editor/` — composant d'édition **réutilisable** : Web Component
   `<jslt-editor>` (coloration syntaxique + intellisense, **sans dépendance JS**) +
   utilitaires Python (`assets_dir`, `catalog`, `mount`). L'intellisense est
-  alimentée par `registry.catalog()`. Distribution `jslt-editor`, dépend de `jslt`.
+  alimentée par `registry.catalog()`. Distribution `urban-json-editor`, dépend de `urban-json`.
 
 ### Applications (non publiées) — `apps/`
 
@@ -122,23 +122,23 @@ aux libs publiables) :
   (via `<jslt-editor>`) + JSON source → résultat du **vrai moteur** côté serveur.
   **Bac à sable** : seules les fonctions du cœur sont exécutées (registre isolé,
   copie du registre cœur sans plugins) — pas d'E-S (fichiers/réseau/SQL) depuis un
-  template. Lancer : `uvicorn jslt_playground.app:app --reload`.
+  template. Lancer : `uvicorn urban_json_playground.app:app --reload`.
 
 Modèle de packaging (cf. pytest) : **monorepo, distributions indépendantes,
 découverte par entry points**. Chaque paquet (cœur compris) a son
 `packages/<nom>/pyproject.toml`, son `src/`, ses tests, sa release (tag dédié :
-cœur `vX.Y.Z` → `release.yml` ; plugins `jslt-csv-vX.Y.Z` →
-`release-jslt-csv.yml`, etc.). À la racine : docs projet (`README*`, `docs/`,
+cœur `vX.Y.Z` → `release.yml` ; plugins `urban-json-csv-vX.Y.Z` →
+`release-urban-json-csv.yml`, etc.). À la racine : docs projet (`README*`, `docs/`,
 `CLAUDE.md`) et `.github/`.
 
 ```bash
-pip install -e "packages/jslt[dev]"   # cœur + outils
-pip install -e packages/jslt-csv      # plugins (dépendent du cœur)
-pip install -e packages/jslt-xml
-pip install -e packages/jslt-db
-pip install -e packages/jslt-http
-pip install -e packages/jslt-elastic
-pytest packages/jslt/tests && pytest packages/jslt-*/tests
+pip install -e "packages/urban-json[dev]"   # cœur + outils
+pip install -e packages/urban-json-csv      # plugins (dépendent du cœur)
+pip install -e packages/urban-json-xml
+pip install -e packages/urban-json-db
+pip install -e packages/urban-json-http
+pip install -e packages/urban-json-elastic
+pytest packages/urban-json/tests && pytest packages/urban-json-*/tests
 ruff check packages
 ```
 
@@ -152,12 +152,12 @@ ruff check packages
 - Fonctions d'E-S (`csv`, `http`, `hash`, `randoms`, `group`, `sql`).
 
 Sérialisation `ToString` (round-trip AST → source) : **portée** sous forme d'un
-visiteur dédié `SourceWriterVisitor` (`packages/jslt/src/jslt/serialization.py`), exposée via
+visiteur dédié `SourceWriterVisitor` (`packages/urban-json/src/urban_json/serialization.py`), exposée via
 `JsltTemplate.to_source()`. Produit un template valide et ré-analysable,
 équivalent en comportement (pas identique au caractère près) ; un cast `x #type`
 se re-sérialise sous sa forme `convert(x, "type")`.
 
-Débogage de template (`packages/jslt/src/jslt/runtime/debug.py`) : le .NET
+Débogage de template (`packages/urban-json/src/urban_json/runtime/debug.py`) : le .NET
 affichait le **code généré** (Roslyn) pour stepper au débogueur — non pertinent ici
 (interpréteur, pas de code généré). À la place, on déboge **au niveau du template**
 en instrumentant l'évaluateur : `DebugEvaluationVisitor` enveloppe chaque `visit_*`
@@ -167,7 +167,7 @@ et notifie un `Tracer` ; `TraceCollector` en tire une **trace pas-à-pas** (une
 via `JsltTemplate.debug(...)` → `DebugResult` (exportés : `DebugResult`,
 `TraceStep`). Le playground l'utilise pour un pas-à-pas visuel (`/api/debug`).
 
-Fonctions portées (modules dans `packages/jslt/src/jslt/functions/`) :
+Fonctions portées (modules dans `packages/urban-json/src/urban_json/functions/`) :
 - cœur : `sum`, `concat`, `convert` (casts), `distinct`.
 - maths : `abs`, `floor`, `round`, `truncate`, `min`, `max`, `sqrt`, `pow`, `exp`,
   `logarithm`/`logarithm10`/`logarithm2`, trig (`sin`/`cos`/`tan`/`asin`/`acos`/
@@ -186,34 +186,46 @@ Fonctions encore non portées : `format`, `normalize`, `group`/`join`/`index`/
 
 ## Développement
 
-Le cœur est sous `packages/jslt/` (chemins ci-dessous relatifs à ce dossier) :
+Le cœur est sous `packages/urban-json/` (chemins ci-dessous relatifs à ce dossier) :
 
 ```bash
-pip install -e "packages/jslt[dev]"           # runtime ANTLR + pytest + ruff
-pytest packages/jslt/tests                    # tests du cœur
+pip install -e "packages/urban-json[dev]"           # runtime ANTLR + pytest + ruff
+pytest packages/urban-json/tests                    # tests du cœur
 ruff check packages                           # lint (le code généré _antlr/ est exclu)
-bash packages/jslt/scripts/generate_parser.sh # régénère le parser (Java requis)
+bash packages/urban-json/scripts/generate_parser.sh # régénère le parser (Java requis)
 ```
 
-Le parser généré (`packages/jslt/src/jslt/_antlr/`) est **versionné** : la
-librairie s'utilise sans l'outil ANTLR. La grammaire `packages/jslt/grammar/*.g4`
+Le parser généré (`packages/urban-json/src/urban_json/_antlr/`) est **versionné** : la
+librairie s'utilise sans l'outil ANTLR. La grammaire `packages/urban-json/grammar/*.g4`
 fait foi.
 
 ### Packaging / publication
 
 ```bash
-cd packages/jslt && python -m build   # construit sdist + wheel dans dist/
+cd packages/urban-json && python -m build   # construit sdist + wheel dans dist/
 python -m twine check dist/*           # valide les distributions (métadonnées, README)
 ```
 
-- Version **single-source** : `jslt.__version__`
-  (`packages/jslt/src/jslt/__init__.py`), lue par `[tool.setuptools.dynamic]`.
+- Version **single-source** : `urban_json.__version__`
+  (`packages/urban-json/src/urban_json/__init__.py`), lue par `[tool.setuptools.dynamic]`.
   Pour publier une version, bumper `__version__`.
-- Publication **automatisée** (`.github/workflows/release.yml`) : pousser un tag
-  `vX.Y.Z` (égal à `__version__`, vérifié par le workflow) build, teste, puis
-  publie sur PyPI via **Trusted Publishing** (OIDC, aucun token stocké).
-  Prérequis PyPI une fois : créer le projet + déclarer l'éditeur de confiance
-  (repo `gaelgael5/Jslt`, workflow `release.yml`, environnement `pypi`).
+- Deux canaux de publication, tous deux en **Trusted Publishing** (OIDC, aucun
+  token stocké) :
+  - **Prod → PyPI** (`release.yml` pour le cœur, `release-urban-json-<plugin>.yml`
+    pour chaque plugin) : pousser un tag — cœur `vX.Y.Z` (égal à `__version__`,
+    vérifié par le workflow), plugin `urban-json-<plugin>-vX.Y.Z`. Build + tests,
+    puis publication sur PyPI. Environnement GitHub par paquet (`pypi`,
+    `urban-json-csv`, …).
+  - **Dev → TestPyPI** (`release-testpypi.yml`) : chaque push sur `dev` touchant
+    `packages/**` publie tous les paquets du cœur/plugins sur **TestPyPI**, en
+    version `X.Y.Z.dev<run_number>` (PEP 440, unique par exécution — la source
+    n'est pas modifiée en dépôt, seulement en CI). Environnement `testpypi`.
+    **Opt-in** : le job n'est actif que si la variable de dépôt
+    `PUBLISH_TESTPYPI == 'true'` (sinon ignoré → CI verte), le temps de déclarer
+    les éditeurs de confiance.
+- Prérequis une fois, **par projet** et par index : créer le projet (sur PyPI
+  et/ou TestPyPI) et déclarer l'éditeur de confiance GitHub
+  (repo `gaelgael5/Jslt`, le `workflow` correspondant, l'`environment` ci-dessus).
 
 ## Conventions
 

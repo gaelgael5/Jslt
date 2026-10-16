@@ -1,4 +1,4 @@
-# jslt (Python)
+# urban-json (Python)
 
 *Français · [English](README.en.md)*
 
@@ -12,7 +12,7 @@ fonctions (`sum(...)`), opérateurs (`+`, `==`, `??`…), boucles
 (`[ { "$source": $.items } ]`), conditions (`when`), casts (`#integer`).
 
 ```python
-from jslt import JsltTemplate
+from urban_json import JsltTemplate
 
 template = JsltTemplate.parse('{ "name": $.user.name, "year": $.user.age + 1 }')
 template.transform({"user": {"name": "Alice", "age": 30}})
@@ -22,7 +22,7 @@ template.transform({"user": {"name": "Alice", "age": 30}})
 ## Installation
 
 ```bash
-pip install -e "packages/jslt[dev]"   # depuis le dépôt ; installe aussi pytest + ruff
+pip install -e "packages/urban-json[dev]"   # depuis le dépôt ; installe aussi pytest + ruff
 ```
 
 La seule dépendance d'exécution est `antlr4-python3-runtime`. Le parser généré
@@ -53,7 +53,7 @@ chaque construction. Tous ses exemples sont exécutés par la suite de tests
 ## API publique
 
 ```python
-from jslt import JsltTemplate
+from urban_json import JsltTemplate
 
 tpl = JsltTemplate.parse(source_str)   # compile le template (lève JsltSyntaxError si invalide)
 tpl.transform(document)                # applique le template à un document (dict/list/scalaire)
@@ -73,7 +73,7 @@ introspecter le registre, ou consommer des plugins tiers — équivalent idiomat
 Python du mécanisme de services du .NET :
 
 ```python
-from jslt import jslt_function, JsltTemplate, default_registry
+from urban_json import jslt_function, JsltTemplate, default_registry
 
 @jslt_function("double", description="Double un nombre")
 def _double(ctx, x=None):
@@ -85,33 +85,33 @@ default_registry.describe("double").signature()   # 'double(x)'
 ```
 
 Les **plugins tiers** sont auto-découverts via le groupe d'entry points
-`jslt.functions` (installer le paquet suffit). Détails et contrat de plugin dans le
+`urban_json.functions` (installer le paquet suffit). Détails et contrat de plugin dans le
 [guide, §Extensibilité](docs/guide.md#16-extensibilité--fonctions-et-plugins).
 
 **Plugins officiels** (monorepo, distributions séparées) :
-- [`jslt-csv`](packages/jslt-csv/) — lecture de fichiers CSV (`loadcsv`, `loadmcsv`).
-- [`jslt-xml`](packages/jslt-xml/) — lecture de fichiers XML (`loadxml`).
-- [`jslt-db`](packages/jslt-db/) — lecture en base SQL (`connectsql`, `readsql`).
-- [`jslt-http`](packages/jslt-http/) — appels HTTP (`http`, `httpget`).
-- [`jslt-elastic`](packages/jslt-elastic/) — recherche Elasticsearch (`esconnect`, `essearch`).
+- [`urban-json-csv`](packages/urban-json-csv/) — lecture de fichiers CSV (`loadcsv`, `loadmcsv`).
+- [`urban-json-xml`](packages/urban-json-xml/) — lecture de fichiers XML (`loadxml`).
+- [`urban-json-db`](packages/urban-json-db/) — lecture en base SQL (`connectsql`, `readsql`).
+- [`urban-json-http`](packages/urban-json-http/) — appels HTTP (`http`, `httpget`).
+- [`urban-json-elastic`](packages/urban-json-elastic/) — recherche Elasticsearch (`esconnect`, `essearch`).
 
 ## Architecture
 
 Le pipeline suit celui du moteur .NET, **sans** son étage de génération /
 compilation de code (Roslyn) : en Python, la transformation est réalisée par un
 **interpréteur d'AST** (tree-walking), plus simple et portable, à comportement
-identique. Le cœur est le paquet `packages/jslt/` (chemins ci-dessous relatifs à
-ce dossier) ; les plugins d'E-S sont les autres `packages/jslt-*/`.
+identique. Le cœur est le paquet `packages/urban-json/` (chemins ci-dessous relatifs à
+ce dossier) ; les plugins d'E-S sont les autres `packages/urban-json-*/`.
 
 ```
 texte template
-  └─ parser ANTLR (grammaire grammar/*.g4)      src/jslt/_antlr/ (généré, versionné)
+  └─ parser ANTLR (grammaire grammar/*.g4)      src/urban_json/_antlr/ (généré, versionné)
        └─ arbre d'analyse ANTLR
-            └─ ScriptBuilderVisitor               src/jslt/parsing/ (arbre ANTLR → AST)
-                 └─ AST (pattern Visitor)         src/jslt/ast/
-                      └─ interpréteur (tree-walk)  src/jslt/runtime/
-                           ├─ JSONPath             src/jslt/jsonpath/ (port de Bb.JPaths, RFC 9535)
-                           └─ fonctions            src/jslt/functions/ (registre par nom)
+            └─ ScriptBuilderVisitor               src/urban_json/parsing/ (arbre ANTLR → AST)
+                 └─ AST (pattern Visitor)         src/urban_json/ast/
+                      └─ interpréteur (tree-walk)  src/urban_json/runtime/
+                           ├─ JSONPath             src/urban_json/jsonpath/ (port de Bb.JPaths, RFC 9535)
+                           └─ fonctions            src/urban_json/functions/ (registre par nom)
 ```
 
 Patterns repris du .NET, notamment le **Visitor à double dispatch** (chaque nœud
@@ -123,13 +123,13 @@ aux noms .NET) et les **deux couches de visiteurs** (construction d'AST, puis
 ## Développement
 
 ```bash
-pip install -e "packages/jslt[dev]"
-pytest packages/jslt/tests        # suite de tests du cœur
+pip install -e "packages/urban-json[dev]"
+pytest packages/urban-json/tests        # suite de tests du cœur
 ruff check packages               # lint (le code généré _antlr/ est exclu)
-bash packages/jslt/scripts/generate_parser.sh   # régénère le parser (Java requis)
+bash packages/urban-json/scripts/generate_parser.sh   # régénère le parser (Java requis)
 ```
 
-La grammaire fait foi : `packages/jslt/grammar/JsltLexer.g4` et `JsltParser.g4`
+La grammaire fait foi : `packages/urban-json/grammar/JsltLexer.g4` et `JsltParser.g4`
 sont la source de vérité du langage, reprise du dépôt .NET.
 
 ## Périmètre

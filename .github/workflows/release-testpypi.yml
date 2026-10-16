@@ -1,0 +1,81 @@
+name: Release (dev → TestPyPI)
+
+# Publie des versions de développement sur TestPyPI à chaque push sur `dev`.
+# La version de chaque paquet est suffixée `.dev<run_number>` (PEP 440) : unique
+# à chaque exécution, donc jamais en conflit sur l'index de test.
+#
+# La production (PyPI) reste pilotée par les tags : `v*.*.*` pour le cœur,
+# `urban-json-<plugin>-v*.*.*` pour les plugins (workflows release*.yml).
+#
+# Prérequis TestPyPI (une fois, par projet) : créer le projet sur
+# https://test.pypi.org puis déclarer un "Trusted Publisher" GitHub Actions :
+#   owner = gaelgael5 · repository = Jslt
+#   workflow = release-testpypi.yml · environment = testpypi
+# Projets concernés : urban-json, urban-json-csv, urban-json-xml, urban-json-db,
+# urban-json-http, urban-json-elastic, urban-json-editor.
+#
+# Opt-in explicite : la publication ne s'exécute que si la variable de dépôt
+# `PUBLISH_TESTPYPI` vaut "true" (Settings → Secrets and variables → Actions →
+# Variables). Tant qu'elle n'est pas positionnée, le job est *ignoré* (CI verte),
+# ce qui évite des échecs rouges avant que les éditeurs de confiance ci-dessus
+# soient déclarés. Une fois prêt : créer les projets + pending publishers, puis
+# mettre `PUBLISH_TESTPYPI=true`.
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - "packages/**"
+      - ".github/workflows/release-testpypi.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  publish-dev:
+    runs-on: ubuntu-latest
+    if: ${{ vars.PUBLISH_TESTPYPI == 'true' }}
+    environment: testpypi
+    permissions:
+      id-token: write # requis par Trusted Publishing (OIDC)
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { dir: packages/urban-json,         module: urban_json }
+          - { dir: packages/urban-json-csv,     module: urban_json_csv }
+          - { dir: packages/urban-json-xml,     module: urban_json_xml }
+          - { dir: packages/urban-json-db,      module: urban_json_db }
+          - { dir: packages/urban-json-http,    module: urban_json_http }
+          - { dir: packages/urban-json-elastic, module: urban_json_elastic }
+          - { dir: packages/urban-json-editor,  module: urban_json_editor }
+    defaults:
+      run:
+        working-directory: ${{ matrix.dir }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Suffixer la version en .dev<run_number> (PEP 440)
+        run: |
+          f="src/${{ matrix.module }}/__init__.py"
+          sed -i -E 's/^(__version__ = "[0-9]+\.[0-9]+\.[0-9]+)"/\1.dev${{ github.run_number }}"/' "$f"
+          echo "Version de dev :"
+          grep -E '^__version__' "$f"
+
+      - name: Build sdist + wheel
+        run: |
+          python -m pip install --upgrade pip build twine
+          python -m build
+
+      - name: Vérifier les distributions (twine check)
+        run: python -m twine check dist/*
+
+      - name: Publier sur TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: ${{ matrix.dir }}/dist/

@@ -23,26 +23,26 @@ jobs:
       - name: Install the core package, plugins, editor, app and dev dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e "packages/jslt[dev]"
-          pip install -e packages/jslt-csv
-          pip install -e packages/jslt-xml
-          pip install -e packages/jslt-db
-          pip install -e packages/jslt-http
-          pip install -e packages/jslt-elastic
-          pip install -e packages/jslt-editor
+          pip install -e "packages/urban-json[dev]"
+          pip install -e packages/urban-json-csv
+          pip install -e packages/urban-json-xml
+          pip install -e packages/urban-json-db
+          pip install -e packages/urban-json-http
+          pip install -e packages/urban-json-elastic
+          pip install -e packages/urban-json-editor
           pip install -e "apps/playground[dev]"
 
       - name: Lint (ruff)
         run: ruff check packages apps
 
       - name: Tests — cœur (pytest)
-        run: pytest -q packages/jslt/tests
+        run: pytest -q packages/urban-json/tests
 
       - name: Tests — plugins + composant (pytest)
         run: >-
-          pytest -q packages/jslt-csv/tests packages/jslt-xml/tests
-          packages/jslt-db/tests packages/jslt-http/tests packages/jslt-elastic/tests
-          packages/jslt-editor/tests
+          pytest -q packages/urban-json-csv/tests packages/urban-json-xml/tests
+          packages/urban-json-db/tests packages/urban-json-http/tests packages/urban-json-elastic/tests
+          packages/urban-json-editor/tests
 
       - name: Tests — apps (pytest)
         run: pytest -q apps/playground/tests

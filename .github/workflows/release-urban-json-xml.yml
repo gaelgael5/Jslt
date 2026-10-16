@@ -1,0 +1,83 @@
+name: Release urban-json-xml
+
+# Publie le plugin urban-json-xml sur PyPI à chaque tag `urban-json-xml-vX.Y.Z`, via Trusted
+# Publishing (OIDC). Release indépendante du cœur et des autres plugins.
+#
+# Prérequis PyPI (une fois) : créer le projet "urban-json-xml" + déclarer un Trusted
+# Publisher GitHub Actions (repo gaelgael5/Jslt, workflow release-urban-json-xml.yml,
+# environment urban-json-xml).
+#
+# Déclencher :  git tag urban-json-xml-v0.1.0 && git push origin urban-json-xml-v0.1.0
+
+on:
+  push:
+    tags: ["urban-json-xml-v*.*.*"]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: packages/urban-json-xml
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install core + plugin + tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e "${{ github.workspace }}/packages/urban-json[dev]"
+          pip install -e .
+      - name: Lint (ruff)
+        run: ruff check src tests
+      - name: Tests (pytest)
+        run: pytest -q
+      - name: Vérifier que le tag correspond à la version du plugin
+        run: |
+          pkg_version="$(python -c 'import urban_json_xml; print(urban_json_xml.__version__)')"
+          tag_version="${GITHUB_REF_NAME#urban-json-xml-v}"
+          echo "package=$pkg_version  tag=$tag_version"
+          if [ "$pkg_version" != "$tag_version" ]; then
+            echo "::error::Le tag ($tag_version) ne correspond pas à urban_json_xml.__version__ ($pkg_version)"
+            exit 1
+          fi
+
+  build:
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Build sdist + wheel
+        run: |
+          python -m pip install --upgrade pip build twine
+          python -m build
+      - name: Vérifier les distributions (twine check)
+        run: python -m twine check dist/*
+      - name: Publier les artefacts de build
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-urban-json-xml
+          path: packages/urban-json-xml/dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: urban-json-xml
+    permissions:
+      id-token: write # requis par Trusted Publishing (OIDC)
+    steps:
+      - name: Récupérer les distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-urban-json-xml
+          path: dist/
+      - name: Publier sur PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
