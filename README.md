@@ -57,6 +57,7 @@ from urban_json import JsltTemplate
 
 tpl = JsltTemplate.parse(source_str)   # compile le template (lève JsltSyntaxError si invalide)
 tpl.transform(document)                # applique le template à un document (dict/list/scalaire)
+tpl.build()                            # (optionnel) pré-compile l'AST → transform plus rapide en masse
 tpl.debug(document)                     # trace pas-à-pas (débogage) : DebugResult{result, steps, error}
 tpl.to_source()                        # re-sérialise l'AST en template ré-analysable (ToString)
 tpl.ast                                # l'AST (arbre de nœuds JsltBase)
