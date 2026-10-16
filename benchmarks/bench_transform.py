@@ -76,9 +76,10 @@ def build_scenarios(size: int) -> list[Scenario]:
 @dataclass
 class Result:
     label: str
-    parse_ms: float
-    transform_ms: float  # médiane
-    throughput: float     # éléments/s
+    interp_ms: float    # médiane interpréteur
+    compiled_ms: float  # médiane chemin compilé (build)
+    speedup: float      # interp / compiled
+    throughput: float   # éléments/s (chemin compilé)
 
 
 def time_median(fn: Callable[[], Any], repeats: int) -> float:
@@ -92,21 +93,28 @@ def time_median(fn: Callable[[], Any], repeats: int) -> float:
 
 
 def run_scenario(sc: Scenario, repeats: int) -> Result:
-    t0 = time.perf_counter()
-    tpl = JsltTemplate.parse(sc.template)
-    parse_ms = (time.perf_counter() - t0) * 1000
-    med = time_median(lambda: tpl.transform(sc.document), repeats)
-    thr = sc.out_count / med if med else float("inf")
-    return Result(sc.label, parse_ms, med * 1000, thr)
+    interp = JsltTemplate.parse(sc.template)
+    compiled = JsltTemplate.parse(sc.template).build()
+
+    # Garde-fou : le chemin compilé doit produire un résultat identique.
+    if interp.transform(sc.document) != compiled.transform(sc.document):
+        raise AssertionError(f"résultats divergents pour {sc.label!r}")
+
+    interp_med = time_median(lambda: interp.transform(sc.document), repeats)
+    compiled_med = time_median(lambda: compiled.transform(sc.document), repeats)
+    speedup = interp_med / compiled_med if compiled_med else float("inf")
+    thr = sc.out_count / compiled_med if compiled_med else float("inf")
+    return Result(sc.label, interp_med * 1000, compiled_med * 1000, speedup, thr)
 
 
 def print_table(results: list[Result]) -> None:
     w = max(len(r.label) for r in results)
-    print(f"{'scénario':<{w}}  {'parse':>9}  {'transform(méd)':>15}  {'débit':>18}")
-    print("-" * (w + 9 + 15 + 18 + 6))
+    print(f"{'scénario':<{w}}  {'interpréteur':>13}  {'compilé':>11}  "
+          f"{'gain':>6}  {'débit (compilé)':>18}")
+    print("-" * (w + 13 + 11 + 6 + 18 + 8))
     for r in results:
-        print(f"{r.label:<{w}}  {r.parse_ms:7.2f}ms  {r.transform_ms:13.2f}ms  "
-              f"{r.throughput:12,.0f} it/s")
+        print(f"{r.label:<{w}}  {r.interp_ms:11.2f}ms  {r.compiled_ms:9.2f}ms  "
+              f"x{r.speedup:4.2f}  {r.throughput:12,.0f} it/s")
 
 
 def main() -> None:
@@ -117,7 +125,7 @@ def main() -> None:
                     help="nombre de mesures (médiane) (défaut 7)")
     args = ap.parse_args()
 
-    print("=== urban-json — banc d'essai transform (interpréteur) ===")
+    print("=== urban-json — banc d'essai transform : interpréteur vs compilé ===")
     print(f"taille={args.size:,}  répétitions={args.repeats}\n")
     results = [run_scenario(sc, args.repeats) for sc in build_scenarios(args.size)]
     print_table(results)
