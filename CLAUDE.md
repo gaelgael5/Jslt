@@ -44,7 +44,7 @@ Patterns repris du .NET :
   l'interpréteur (vérifié par `tests/test_compiler.py` sur tous les exemples du
   guide) ; sans `build()`, l'interpréteur reste le défaut. Tout nœud non compilé
   retombe sur l'interpréteur (closure de repli), donc jamais faux. Gain observé
-  ×3 à ×4,5 (banc `benchmarks/bench_transform.py`).
+  ×3 à ×5 (banc `benchmarks/bench_transform.py`).
 
 ## Décisions de conception
 

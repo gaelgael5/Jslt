@@ -39,9 +39,6 @@ from urban_json.jsonpath.selectors import NameSelector
 
 from .operators import apply_unary, binary_op
 
-#: Sentinelle « aucune correspondance » pour l'accès de chemin rapide.
-_MISSING = object()
-
 if TYPE_CHECKING:
     from urban_json.ast import JsltBase
 
@@ -74,43 +71,39 @@ def _c_constant(node: JsltConstant) -> Program:
     return lambda ctx: value
 
 
-def _make_singular_accessor(compiled) -> Callable[[Any], Any]:
-    """Accesseur rapide pour un chemin *singulier* (suite de noms/indices).
-
-    Reproduit ``select_values`` d'un chemin ``is_singular`` sans allouer de
-    ``Node`` : descente directe par ``dict``/``list``. Renvoie la valeur trouvée
-    ou :data:`_MISSING` (traduit en ``None`` par l'appelant), exactement comme
-    ``NameSelector``/``IndexSelector`` (nom absent, non-dict, indice hors bornes,
-    non-list → aucune correspondance).
-    """
-    # (is_name, key) par segment : is_name True -> clé de dict, False -> indice.
-    steps = [
+def _singular_steps(compiled) -> list[tuple[bool, Any]]:
+    """(is_name, key) par segment d'un chemin singulier : nom de dict ou indice."""
+    return [
         (isinstance(seg.selectors[0], NameSelector),
          seg.selectors[0].name if isinstance(seg.selectors[0], NameSelector)
          else seg.selectors[0].index)
         for seg in compiled.segments
     ]
 
-    def access(source: Any) -> Any:
-        cur = source
-        for is_name, key in steps:
-            if is_name:
-                if isinstance(cur, dict) and key in cur:
-                    cur = cur[key]
-                else:
-                    return _MISSING
-            elif isinstance(cur, list):
-                count = len(cur)
-                index = key + count if key < 0 else key
-                if 0 <= index < count:
-                    cur = cur[index]
-                else:
-                    return _MISSING
-            else:
-                return _MISSING
-        return cur
 
-    return access
+def _descend(source: Any, steps: list[tuple[bool, Any]]) -> Any:
+    """Descente directe d'un chemin singulier (noms/indices), ``None`` si absent.
+
+    Reproduit ``select_values`` d'un chemin ``is_singular`` sans allouer de
+    ``Node`` ni passer par le moteur générique : mêmes règles que
+    ``NameSelector``/``IndexSelector`` (nom absent, non-dict, indice hors bornes,
+    non-list → aucune correspondance → ``None``).
+    """
+    cur = source
+    for is_name, key in steps:
+        if is_name:
+            if not isinstance(cur, dict) or key not in cur:
+                return None
+            cur = cur[key]
+        else:
+            if not isinstance(cur, list):
+                return None
+            count = len(cur)
+            index = key + count if key < 0 else key
+            if not (0 <= index < count):
+                return None
+            cur = cur[index]
+    return cur
 
 
 def _c_path(node: JsltPath) -> Program:
@@ -119,16 +112,19 @@ def _c_path(node: JsltPath) -> Program:
 
     # Chemin singulier (noms/indices) : accès direct, sans moteur générique.
     if compiled.is_singular:
-        access = _make_singular_accessor(compiled)
-        if variable is not None:
+        steps = _singular_steps(compiled)
+        # Cas ultra-courant `$.champ` (un seul nom, source courante) : accès direct.
+        if variable is None and len(steps) == 1 and steps[0][0]:
+            key = steps[0][1]
+
             def prog(ctx: RuntimeContext) -> Any:
-                value = access(ctx.variables.get(variable)[1])
-                return None if value is _MISSING else value
-        else:
-            def prog(ctx: RuntimeContext) -> Any:
-                value = access(ctx.current_source)
-                return None if value is _MISSING else value
-        return prog
+                src = ctx.current_source
+                return src.get(key) if isinstance(src, dict) else None
+
+            return prog
+        if variable is None:
+            return lambda ctx: _descend(ctx.current_source, steps)
+        return lambda ctx: _descend(ctx.variables.get(variable)[1], steps)
 
     # Chemin général (wildcard, descente, slices, filtres) : moteur complet.
     if variable is not None:
@@ -255,22 +251,22 @@ def _compile_object_body(node: JsltObject) -> Program:
         (p.name, _compile(p.value) if p.value is not None else _none)
         for p in node.properties
     ]
-    has_vars = bool(cvars)
+    # Cas courant sans variable : pas de scope à empiler ni de try/finally —
+    # construction directe par compréhension.
+    if not cvars:
+        def body_no_vars(ctx: RuntimeContext) -> dict[str, Any]:
+            return {name: cvalue(ctx) for name, cvalue in cprops}
+
+        return body_no_vars
 
     def body(ctx: RuntimeContext) -> dict[str, Any]:
-        previous = None
-        if has_vars:
-            previous = ctx.push_scope()
-            for name, cvalue in cvars:
-                ctx.variables.add(name, cvalue(ctx))
+        previous = ctx.push_scope()
+        for name, cvalue in cvars:
+            ctx.variables.add(name, cvalue(ctx))
         try:
-            result: dict[str, Any] = {}
-            for name, cvalue in cprops:
-                result[name] = cvalue(ctx)
-            return result
+            return {name: cvalue(ctx) for name, cvalue in cprops}
         finally:
-            if previous is not None:
-                ctx.restore_scope(previous)
+            ctx.restore_scope(previous)
 
     return body
 

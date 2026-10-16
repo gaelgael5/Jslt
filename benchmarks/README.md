@@ -21,5 +21,5 @@ compilation est prouvée équivalente, pas seulement plus rapide).
 
 Les chiffres sont **relatifs à la machine** : ils servent à comparer les deux
 chemins entre eux, pas à donner une valeur absolue. Ordre de grandeur observé :
-**×3 à ×4,5** selon le template (gain maximal sur les accès de champs `$.x`,
+**×3 à ×5** selon le template (gain maximal sur les accès de champs `$.x`,
 dominants dans les imports).
