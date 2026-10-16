@@ -220,6 +220,9 @@ python -m twine check dist/*           # valide les distributions (métadonnées
     `packages/**` publie tous les paquets du cœur/plugins sur **TestPyPI**, en
     version `X.Y.Z.dev<run_number>` (PEP 440, unique par exécution — la source
     n'est pas modifiée en dépôt, seulement en CI). Environnement `testpypi`.
+    **Opt-in** : le job n'est actif que si la variable de dépôt
+    `PUBLISH_TESTPYPI == 'true'` (sinon ignoré → CI verte), le temps de déclarer
+    les éditeurs de confiance.
 - Prérequis une fois, **par projet** et par index : créer le projet (sur PyPI
   et/ou TestPyPI) et déclarer l'éditeur de confiance GitHub
   (repo `gaelgael5/Jslt`, le `workflow` correspondant, l'`environment` ci-dessus).

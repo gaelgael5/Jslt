@@ -13,6 +13,13 @@ name: Release (dev → TestPyPI)
 #   workflow = release-testpypi.yml · environment = testpypi
 # Projets concernés : urban-json, urban-json-csv, urban-json-xml, urban-json-db,
 # urban-json-http, urban-json-elastic, urban-json-editor.
+#
+# Opt-in explicite : la publication ne s'exécute que si la variable de dépôt
+# `PUBLISH_TESTPYPI` vaut "true" (Settings → Secrets and variables → Actions →
+# Variables). Tant qu'elle n'est pas positionnée, le job est *ignoré* (CI verte),
+# ce qui évite des échecs rouges avant que les éditeurs de confiance ci-dessus
+# soient déclarés. Une fois prêt : créer les projets + pending publishers, puis
+# mettre `PUBLISH_TESTPYPI=true`.
 
 on:
   push:
@@ -27,6 +34,7 @@ permissions:
 jobs:
   publish-dev:
     runs-on: ubuntu-latest
+    if: ${{ vars.PUBLISH_TESTPYPI == 'true' }}
     environment: testpypi
     permissions:
       id-token: write # requis par Trusted Publishing (OIDC)
