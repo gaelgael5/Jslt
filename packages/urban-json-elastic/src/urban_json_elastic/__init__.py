@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from typing import Any
 
-__version__ = "0.0.1"
+__version__ = "0.1.0"
 
 __all__ = ["execute_esconnect", "execute_essearch", "register"]
 
