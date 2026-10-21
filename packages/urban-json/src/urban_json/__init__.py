@@ -62,7 +62,7 @@ __all__ = [
     "load_plugins",
 ]
 
-__version__ = "0.0.1"
+__version__ = "0.1.0"
 
 # Chargement paresseux (une fois) des plugins tiers dans le registre par défaut.
 _default_plugins_loaded = False

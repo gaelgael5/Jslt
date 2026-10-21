@@ -31,6 +31,11 @@ dependencies = [
     "urban-json",
 ]
 
+[project.optional-dependencies]
+# mount() importe starlette à l'appel (pas une dépendance d'exécution) ; les
+# tests l'exercent, donc le workflow de release doit l'installer explicitement.
+test = ["starlette"]
+
 [project.urls]
 Homepage = "https://github.com/gaelgael5/Jslt"
 Repository = "https://github.com/gaelgael5/Jslt"
