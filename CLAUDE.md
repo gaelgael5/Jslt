@@ -34,7 +34,17 @@ Patterns repris du .NET :
 - **Deux couches de visiteurs** : `ScriptBuilderVisitor` (hérite du visiteur
   ANTLR généré, construit l'AST) puis les visiteurs sur l'AST (évaluation…).
 - **Interpréteur d'AST** au lieu de la génération/compilation de code (Roslyn)
-  du .NET — plus simple et portable, même comportement.
+  du .NET — plus simple et portable, même comportement. Un **chemin compilé
+  optionnel** (`src/urban_json/runtime/compiler.py`) accélère les transformations
+  en masse sans changer l'API : `JsltTemplate.build()` parcourt l'AST une fois et
+  produit, par nœud, une closure `program(context) -> valeur` (plus de
+  double-dispatch ni de tests de type par nœud ; accès de champ `$.x` singulier
+  compilé en descente `dict`/`list` directe ; opérateur binaire pré-résolu). Après
+  `build()`, `transform` emprunte ce chemin, **résultat identique** à
+  l'interpréteur (vérifié par `tests/test_compiler.py` sur tous les exemples du
+  guide) ; sans `build()`, l'interpréteur reste le défaut. Tout nœud non compilé
+  retombe sur l'interpréteur (closure de repli), donc jamais faux. Gain observé
+  ×3 à ×5 (banc `benchmarks/bench_transform.py`).
 
 ## Décisions de conception
 

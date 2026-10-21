@@ -99,63 +99,96 @@ def _compare(left: Any, right: Any, op: OperationEnum) -> bool:
     return False
 
 
+# --- implémentations par opérateur (callables (left, right) -> valeur) -------
+# La sémantique est inchangée ; on la factorise ici pour deux usages : le
+# dispatch de ``apply_binary`` (interpréteur) et la *pré-résolution* par le
+# compilateur (``binary_op`` renvoie directement la callable de l'opérateur).
+
+def _add(left: Any, right: Any) -> Any:
+    if isinstance(left, str):
+        return left + _to_str(right)
+    if _is_number(left):
+        return left + _to_number(right)
+    return False
+
+
+def _subtract(left: Any, right: Any) -> Any:
+    return left - _to_number(right) if _is_number(left) else False
+
+
+def _multiply(left: Any, right: Any) -> Any:
+    return left * _to_number(right) if _is_number(left) else False
+
+
+def _divide(left: Any, right: Any) -> Any:
+    if not _is_number(left):
+        return False
+    right_num = _to_number(right)
+    if isinstance(left, int) and isinstance(right_num, int):
+        # Division entière tronquée vers zéro (comportement C#).
+        return int(left / right_num)
+    return left / right_num
+
+
+def _modulo(left: Any, right: Any) -> Any:
+    return left % _to_number(right) if _is_number(left) else False
+
+
+def _xor(left: Any, right: Any) -> Any:  # ^ = XOR entier (cf. .NET)
+    return int(left) ^ int(_to_number(right)) if _is_number(left) else False
+
+
+def _bitand(left: Any, right: Any) -> Any:  # & = ET bit-à-bit
+    return int(left) & int(_to_number(right)) if _is_number(left) else False
+
+
+def _bitor(left: Any, right: Any) -> Any:  # | = OU bit-à-bit
+    return int(left) | int(_to_number(right)) if _is_number(left) else False
+
+
+_BINARY_DISPATCH: dict[OperationEnum, Any] = {
+    OperationEnum.EQUAL: _equal,
+    OperationEnum.NOT_EQUAL: lambda left, right: not _equal(left, right),
+    OperationEnum.GREATER_THAN: lambda left, right: _compare(
+        left, right, OperationEnum.GREATER_THAN),
+    OperationEnum.GREATER_THAN_OR_EQUAL: lambda left, right: _compare(
+        left, right, OperationEnum.GREATER_THAN_OR_EQUAL),
+    OperationEnum.LESS_THAN: lambda left, right: _compare(
+        left, right, OperationEnum.LESS_THAN),
+    OperationEnum.LESS_THAN_OR_EQUAL: lambda left, right: _compare(
+        left, right, OperationEnum.LESS_THAN_OR_EQUAL),
+    OperationEnum.ADD: _add,
+    OperationEnum.SUBTRACT: _subtract,
+    OperationEnum.MULTIPLY: _multiply,
+    OperationEnum.DIVIDE: _divide,
+    OperationEnum.MODULO: _modulo,
+    OperationEnum.POWER: _xor,
+    OperationEnum.AND: _bitand,
+    OperationEnum.OR: _bitor,
+    OperationEnum.AND_EXCLUSIVE: lambda left, right: _to_bool(left) and _to_bool(right),
+    OperationEnum.OR_EXCLUSIVE: lambda left, right: _to_bool(left) or _to_bool(right),
+}
+
+
+def binary_op(operator: OperationEnum) -> Any:
+    """Renvoie la callable ``(left, right) -> valeur`` d'un opérateur binaire.
+
+    Permet au compilateur de **pré-résoudre** l'opérateur à la compilation plutôt
+    que de ré-aiguiller à chaque évaluation. ``None`` pour ``COALESCE`` / ``CHAIN``
+    (gérés par l'évaluateur/compilateur, pas ici).
+    """
+    return _BINARY_DISPATCH.get(operator)
+
+
 def apply_binary(left: Any, operator: OperationEnum, right: Any) -> Any:
     """Évalue ``left operator right`` selon la sémantique jslt.
 
     ``COALESCE`` et ``CHAIN`` ne passent pas par ici (gérés par l'évaluateur).
     """
-    if operator is OperationEnum.EQUAL:
-        return _equal(left, right)
-    if operator is OperationEnum.NOT_EQUAL:
-        return not _equal(left, right)
-    if operator in (
-        OperationEnum.GREATER_THAN,
-        OperationEnum.GREATER_THAN_OR_EQUAL,
-        OperationEnum.LESS_THAN,
-        OperationEnum.LESS_THAN_OR_EQUAL,
-    ):
-        return _compare(left, right, operator)
-
-    if operator is OperationEnum.ADD:
-        if isinstance(left, str):
-            return left + _to_str(right)
-        if _is_number(left):
-            return left + _to_number(right)
-        return False
-    if operator is OperationEnum.SUBTRACT:
-        return left - _to_number(right) if _is_number(left) else False
-    if operator is OperationEnum.MULTIPLY:
-        return left * _to_number(right) if _is_number(left) else False
-    if operator is OperationEnum.DIVIDE:
-        if not _is_number(left):
-            return False
-        right_num = _to_number(right)
-        if isinstance(left, int) and isinstance(right_num, int):
-            # Division entière tronquée vers zéro (comportement C#).
-            return int(left / right_num)
-        return left / right_num
-    if operator is OperationEnum.MODULO:
-        return left % _to_number(right) if _is_number(left) else False
-
-    if operator is OperationEnum.POWER:  # ^ = XOR entier (cf. .NET)
-        if _is_number(left):
-            return int(left) ^ int(_to_number(right))
-        return False
-    if operator is OperationEnum.AND:  # & = ET bit-à-bit
-        if _is_number(left):
-            return int(left) & int(_to_number(right))
-        return False
-    if operator is OperationEnum.OR:  # | = OU bit-à-bit
-        if _is_number(left):
-            return int(left) | int(_to_number(right))
-        return False
-
-    if operator is OperationEnum.AND_EXCLUSIVE:  # && = ET booléen
-        return _to_bool(left) and _to_bool(right)
-    if operator is OperationEnum.OR_EXCLUSIVE:  # || = OU booléen (bug .NET corrigé)
-        return _to_bool(left) or _to_bool(right)
-
-    return None
+    operation = _BINARY_DISPATCH.get(operator)
+    if operation is None:
+        return None
+    return operation(left, right)
 
 
 def apply_unary(operator: OperationEnum, value: Any) -> Any:

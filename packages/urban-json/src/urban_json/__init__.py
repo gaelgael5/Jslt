@@ -41,7 +41,8 @@ from .functions import (
 )
 from .parsing import parse_to_tree
 from .parsing.script_builder_visitor import ScriptBuilderVisitor
-from .runtime import JsltEvaluationVisitor, RuntimeContext, Sources
+from .runtime import JsltEvaluationVisitor, RuntimeContext, Sources, compile_program
+from .runtime.compiler import Program
 from .runtime.debug import DebugResult, TraceStep, evaluate_with_trace
 from .serialization import to_source
 
@@ -54,6 +55,7 @@ __all__ = [
     "JsltSyntaxError",
     "JsltTemplate",
     "ParameterInfo",
+    "Program",
     "TraceStep",
     "default_registry",
     "jslt_function",
@@ -82,6 +84,8 @@ class JsltTemplate:
     def __init__(self, ast: JsltBase, source: str) -> None:
         self._ast = ast
         self._source = source
+        #: Programme compilé (closures) si :meth:`build` a été appelé, sinon None.
+        self._compiled: Program | None = None
 
     @property
     def ast(self) -> JsltBase:
@@ -107,6 +111,26 @@ class JsltTemplate:
         ast = builder.visit(tree)
         return cls(ast, template)
 
+    def build(self) -> JsltTemplate:
+        """Compile l'AST en closures pour accélérer les transformations en masse.
+
+        Optionnel. Par défaut, :meth:`transform` utilise l'interpréteur d'AST, qui
+        suffit à la grande majorité des cas. Pour des transformations répétées sur
+        de gros volumes (imports en masse), ``build()`` pré-compile le template une
+        fois : les appels suivants à :meth:`transform` empruntent alors un chemin
+        d'exécution plus rapide (sans double-dispatch ni tests de type par nœud),
+        pour un résultat **identique**.
+
+        Idempotent. Renvoie ``self`` pour permettre
+        ``JsltTemplate.parse(src).build()``.
+
+        Returns:
+            Le template lui-même (compilé).
+        """
+        if self._compiled is None:
+            self._compiled = compile_program(self._ast)
+        return self
+
     def transform(
         self, source: Any = None, functions: FunctionRegistry | None = None
     ) -> Any:
@@ -125,6 +149,11 @@ class JsltTemplate:
             _ensure_default_plugins()
             functions = default_registry
         context = RuntimeContext(Sources(source), functions)
+        # Chemin compilé si build() a été appelé (identique, plus rapide en masse) ;
+        # sinon l'interpréteur d'AST. Le registre de fonctions reste résolu à
+        # l'exécution : un `functions=` par appel est honoré dans les deux cas.
+        if self._compiled is not None:
+            return self._compiled(context)
         evaluator = JsltEvaluationVisitor(context)
         return self._ast.accept(evaluator)
 
