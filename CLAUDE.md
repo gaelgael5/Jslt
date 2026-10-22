@@ -67,6 +67,9 @@ Patterns repris du .NET :
   testé).
 - `^` = XOR entier, `&`/`|` = ET/OU bit-à-bit, `&&` = ET booléen (fidèles) ;
   `||` = OU booléen (corrige un copier-coller fautif .NET qui faisait un ET).
+- Regex (`regexismatch`/`regexmatches`) : dialecte du module `re` ; seuls les groupes
+  nommés .NET `(?<nom>…)` sont traduits en `(?P<nom>…)`. `null`/objet/tableau → `null`
+  (le .NET levait sur null) ; motif invalide → `JsltError`.
 - Casts temporels (`uri`/`uuid`/`datetime`/`time`) rendus en chaîne (simplifié) ;
   `integer`/`decimal`/`string`/`boolean` complets.
 

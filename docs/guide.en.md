@@ -414,6 +414,24 @@ Banker's rounding:
 { "trim": "hello", "debut": true, "contient": true }
 ```
 
+### Regular expressions: `regexismatch`, `regexmatches`
+
+`regexismatch(text, pattern)` tells whether the text contains a match;
+`regexmatches(text, pattern)` returns the list of full matches. A number or a
+boolean is converted to text first; `null`, an object or an array yield `null`.
+Inside a jslt string, backslashes are doubled (`"\\d+"`). The .NET named-group
+syntax `(?<name>…)` is accepted.
+
+```jslt
+{ "valide": regexismatch($.mail, "^[\\w.]+@[\\w.]+\\.[a-z]+$"), "nombres": regexmatches($.s, "\\d+") }
+```
+```json
+{ "mail": "bob@ex.fr", "s": "lot 12, ref 345" }
+```
+```json
+{ "valide": true, "nombres": ["12", "345"] }
+```
+
 ### Collections: `limit`, `union`, `select`, `selectmany`
 
 ```jslt

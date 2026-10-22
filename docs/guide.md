@@ -415,6 +415,24 @@ Arrondi bancaire :
 { "trim": "hello", "debut": true, "contient": true }
 ```
 
+### Expressions régulières : `regexismatch`, `regexmatches`
+
+`regexismatch(texte, motif)` dit si le texte contient une correspondance ;
+`regexmatches(texte, motif)` rend la liste des correspondances complètes. Un
+nombre ou un booléen est converti en texte avant la recherche ; `null`, un objet
+ou un tableau donnent `null`. Dans une chaîne jslt, l'antislash se double
+(`"\\d+"`). La syntaxe .NET des groupes nommés `(?<nom>…)` est acceptée.
+
+```jslt
+{ "valide": regexismatch($.mail, "^[\\w.]+@[\\w.]+\\.[a-z]+$"), "nombres": regexmatches($.s, "\\d+") }
+```
+```json
+{ "mail": "bob@ex.fr", "s": "lot 12, ref 345" }
+```
+```json
+{ "valide": true, "nombres": ["12", "345"] }
+```
+
 ### Collections : `limit`, `union`, `select`, `selectmany`
 
 ```jslt
