@@ -16,22 +16,22 @@ from ._helpers import string_result, to_text
 from .registry import jslt_function
 
 
-@jslt_function("upper")
+@jslt_function("upper", description="Texte en majuscules (null reste null, une non-chaîne donne false)")
 def execute_upper(ctx: Any, token: Any = None) -> Any:
     return string_result(token, str.upper)
 
 
-@jslt_function("lower")
+@jslt_function("lower", description="Texte en minuscules (null reste null, une non-chaîne donne false)")
 def execute_lower(ctx: Any, token: Any = None) -> Any:
     return string_result(token, str.lower)
 
 
-@jslt_function("trim")
+@jslt_function("trim", description="Retire les espaces en début et fin, ou les caractères de txt s'il est donné")
 def execute_trim(ctx: Any, token: Any = None, txt: str | None = None) -> Any:
     return string_result(token, lambda s: s.strip(txt) if txt else s.strip())
 
 
-@jslt_function("split")
+@jslt_function("split", description="Découpe un texte en tableau sur le premier caractère de charset")
 def execute_split(ctx: Any, token: Any = None, charset: str = "") -> Any:
     if token is None:
         return None
@@ -40,44 +40,44 @@ def execute_split(ctx: Any, token: Any = None, charset: str = "") -> Any:
     return []
 
 
-@jslt_function("startswith")
+@jslt_function("startswith", description="Vrai si le texte commence par txt")
 def execute_startswith(ctx: Any, token: Any = None, txt: str = "") -> Any:
     return string_result(token, lambda s: s.startswith(txt))
 
 
-@jslt_function("endswith")
+@jslt_function("endswith", description="Vrai si le texte se termine par txt")
 def execute_endswith(ctx: Any, token: Any = None, txt: str = "") -> Any:
     return string_result(token, lambda s: s.endswith(txt))
 
 
-@jslt_function("stringcontains")
+@jslt_function("stringcontains", description="Vrai si le texte contient contain_str")
 def execute_stringcontains(ctx: Any, token: Any = None, contain_str: str = "") -> Any:
     return string_result(token, lambda s: contain_str in s)
 
 
-@jslt_function("indexof")
+@jslt_function("indexof", description="Position (à partir de 0) de la première occurrence de txt, -1 si absent")
 def execute_indexof(ctx: Any, token: Any = None, txt: str = "") -> Any:
     return string_result(token, lambda s: s.find(txt))  # -1 si absent
 
 
-@jslt_function("lastindexof")
+@jslt_function("lastindexof", description="Position (à partir de 0) de la dernière occurrence de txt, -1 si absent")
 def execute_lastindexof(ctx: Any, token: Any = None, txt: str = "") -> Any:
     return string_result(token, lambda s: s.rfind(txt))
 
 
-@jslt_function("padleft")
+@jslt_function("padleft", description="Complète le texte à gauche jusqu'à length avec le 1er caractère de charset (espace par défaut)")
 def execute_padleft(ctx: Any, token: Any = None, length: int = 0, charset: str = " ") -> Any:
     fill = charset[0] if charset else " "
     return string_result(token, lambda s: s.rjust(length, fill))
 
 
-@jslt_function("padright")
+@jslt_function("padright", description="Complète le texte à droite jusqu'à length avec le 1er caractère de charset (espace par défaut)")
 def execute_padright(ctx: Any, token: Any = None, length: int = 0, charset: str = " ") -> Any:
     fill = charset[0] if charset else " "
     return string_result(token, lambda s: s.ljust(length, fill))
 
 
-@jslt_function("stringlenght")
+@jslt_function("stringlenght", description="Nombre de caractères d'un texte (0 pour null ou une non-chaîne) — orthographe d'origine conservée")
 def execute_stringlenght(ctx: Any, token: Any = None) -> int:
     # Convention .NET : null -> 0 ; chaîne -> longueur ; autre -> 0.
     return len(token) if isinstance(token, str) else 0

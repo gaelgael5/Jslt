@@ -15,12 +15,12 @@ from urban_json.errors import JsltError
 from .registry import jslt_function
 
 
-@jslt_function("uuid")
+@jslt_function("uuid", description="Nouvel identifiant unique aléatoire (UUID v4) à chaque appel")
 def execute_uuid(ctx: Any) -> str:
     return str(_uuid.uuid4())
 
 
-@jslt_function("now")
+@jslt_function("now", description="Date et heure courantes en ISO 8601 : locales, ou UTC si utc vaut true")
 def execute_now(ctx: Any, utc: bool = False) -> str:
     # L'heure locale (sans tz) est volontaire : `now(false)` renvoie l'heure
     # locale, `now(true)` l'UTC — fidèle au comportement .NET.
@@ -28,12 +28,12 @@ def execute_now(ctx: Any, utc: bool = False) -> str:
     return moment.isoformat()
 
 
-@jslt_function("isnull")
+@jslt_function("isnull", description="Vrai si la valeur est null ou absente")
 def execute_isnull(ctx: Any, token: Any = None) -> bool:
     return token is None
 
 
-@jslt_function("isnotnull")
+@jslt_function("isnotnull", description="Vrai si la valeur n'est ni null ni absente")
 def execute_isnotnull(ctx: Any, token: Any = None) -> bool:
     return token is not None
 

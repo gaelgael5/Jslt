@@ -17,7 +17,7 @@ from ._helpers import as_json_path, coerce_bool, coerce_number, to_text
 from .registry import jslt_function
 
 
-@jslt_function("sum")
+@jslt_function("sum", description="Somme des nombres d'un tableau (0 pour un tableau vide ou null)")
 def execute_sum(ctx: Any, token: Any = None) -> Any:
     """Somme des éléments numériques d'un tableau (port de ``ExecuteSum``).
 
@@ -38,7 +38,7 @@ def execute_sum(ctx: Any, token: Any = None) -> Any:
     raise JsltError("sum attend un tableau")
 
 
-@jslt_function("concat")
+@jslt_function("concat", description="Joint les éléments d'un tableau en un texte, séparés par split_char suivi de delimit_char")
 def execute_concat(
     ctx: Any, token: Any = None, split_char: str | None = None, delimit_char: str | None = None
 ) -> str:
@@ -55,7 +55,7 @@ def execute_concat(
     return to_text(token)
 
 
-@jslt_function("distinct", path_args=(1,))
+@jslt_function("distinct", path_args=(1,), description="Valeurs uniques sélectionnées par un chemin JSONPath dans un tableau, dans l'ordre d'apparition")
 def execute_distinct(ctx: Any, source: Any = None, path: Any = None) -> list:
     """Déduplique les valeurs d'un tableau sélectionnées par un chemin.
 
@@ -86,7 +86,7 @@ def execute_distinct(ctx: Any, source: Any = None, path: Any = None) -> list:
 _DEFAULTS = {"integer": 0, "decimal": 0.0, "string": "", "boolean": False}
 
 
-@jslt_function("convert")
+@jslt_function("convert", description="Convertit une valeur vers un type : integer, decimal, string, boolean (uri, uuid, datetime, time en texte)")
 def execute_convert(ctx: Any, token: Any = None, target_type: str = "string") -> Any:
     """Convertit une valeur vers un type cible (port de ``ExecuteConvert``).
 

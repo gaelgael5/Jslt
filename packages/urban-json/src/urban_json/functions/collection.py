@@ -12,7 +12,7 @@ from ._helpers import as_json_path
 from .registry import jslt_function
 
 
-@jslt_function("limit")
+@jslt_function("limit", description="Les max_items premiers éléments d'un tableau")
 def execute_limit(ctx: Any, source: Any = None, max_items: int = 0) -> Any:
     """Les ``max_items`` premiers éléments d'un tableau (port de ``ExecuteLimit``)."""
     if isinstance(source, list):
@@ -20,7 +20,7 @@ def execute_limit(ctx: Any, source: Any = None, max_items: int = 0) -> Any:
     return None
 
 
-@jslt_function("union")
+@jslt_function("union", description="Aplatit d'un niveau un tableau de tableaux")
 def execute_union(ctx: Any, source: Any = None) -> list:
     """Aplatit d'un niveau un tableau de tableaux (port de ``ExecuteUnion``)."""
     result: list = []
@@ -33,7 +33,7 @@ def execute_union(ctx: Any, source: Any = None) -> list:
     return result
 
 
-@jslt_function("select", path_args=(1,))
+@jslt_function("select", path_args=(1,), description="Première valeur sélectionnée par un chemin JSONPath dans la source, ou null")
 def execute_select(ctx: Any, source: Any = None, path: Any = None) -> Any:
     """Première valeur sélectionnée par le chemin (port de ``ExecuteSelectOne``)."""
     path = as_json_path(path)
@@ -43,7 +43,7 @@ def execute_select(ctx: Any, source: Any = None, path: Any = None) -> Any:
     return values[0] if values else None
 
 
-@jslt_function("selectmany", path_args=(1,))
+@jslt_function("selectmany", path_args=(1,), description="Toutes les valeurs sélectionnées par un chemin JSONPath dans la source")
 def execute_selectmany(ctx: Any, source: Any = None, path: Any = None) -> list:
     """Toutes les valeurs sélectionnées par le chemin (port de ``ExecuteSelectMany``)."""
     path = as_json_path(path)
