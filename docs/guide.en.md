@@ -512,6 +512,21 @@ whose `Key` is equal (compared as text); the source is not modified.
 { "clients": [{ "id": 1, "nom": "Ana", "commandes": [{ "total": 12 }] }] }
 ```
 
+### Schema: `schema`
+
+`schema(sample)` infers a JSON Schema (draft-04) from a JSON fragment, like
+NJsonSchema on the .NET side: nested objects become referenced `definitions`.
+
+```jslt
+{ "s": schema($.exemple) }
+```
+```json
+{ "exemple": { "nom": "Ana", "age": 30 } }
+```
+```json
+{ "s": { "$schema": "http://json-schema.org/draft-04/schema#", "type": "object", "properties": { "nom": { "type": "string" }, "age": { "type": "integer" } } } }
+```
+
 ### Collections: `limit`, `union`, `select`, `selectmany`
 
 ```jslt

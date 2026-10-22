@@ -513,6 +513,21 @@ index que `index(i, clé)` interroge.
 { "clients": [{ "id": 1, "nom": "Ana", "commandes": [{ "total": 12 }] }] }
 ```
 
+### Schéma : `schema`
+
+`schema(exemple)` déduit un JSON Schema (draft-04) d'un fragment JSON, comme
+NJsonSchema côté .NET : objets imbriqués en `definitions` référencées.
+
+```jslt
+{ "s": schema($.exemple) }
+```
+```json
+{ "exemple": { "nom": "Ana", "age": 30 } }
+```
+```json
+{ "s": { "$schema": "http://json-schema.org/draft-04/schema#", "type": "object", "properties": { "nom": { "type": "string" }, "age": { "type": "integer" } } } }
+```
+
 ### Collections : `limit`, `union`, `select`, `selectmany`
 
 ```jslt
