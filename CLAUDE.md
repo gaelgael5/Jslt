@@ -133,6 +133,11 @@ aux libs publiables) :
   **Bac à sable** : seules les fonctions du cœur sont exécutées (registre isolé,
   copie du registre cœur sans plugins) — pas d'E-S (fichiers/réseau/SQL) depuis un
   template. Lancer : `uvicorn urban_json_playground.app:app --reload`.
+  **Machine de test** : image `apps/playground/Dockerfile` (cœur + éditeur installés
+  depuis les sources du dépôt), stack `docker-compose.yml` à la racine, port hôte
+  `PLAYGROUND_PORT` (`.env`, défaut 8080), sonde `/healthz`. Livrer : push sur `dev`,
+  puis sur la machine `./dev-deploy.sh` (se met à jour depuis `origin/dev`, journal
+  dans `deploy-logs/`).
 
 Modèle de packaging (cf. pytest) : **monorepo, distributions indépendantes,
 découverte par entry points**. Chaque paquet (cœur compris) a son
