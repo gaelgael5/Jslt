@@ -25,4 +25,4 @@ Notes sur `test1` :
 
 | Service | Cible | URL publique |
 |---|---|---|
-| `urban-json-urban-json` | 100.74.129.165:8095 | `https://svc-urban-json-urban-json.dev.yoops.org/` |
+| `urban-json-urban-json` | 100.74.129.165:8095 | `https://svc-urban-json-urban-json.yoops.org/` (derrière la session du portail `dev.yoops.org`) |
