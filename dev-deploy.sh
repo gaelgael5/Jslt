@@ -93,7 +93,10 @@ echo "Déploiement de $(git log -1 --format='%h %s')"
 step 3 "Configuration (.env)"
 touch .env
 env_get() { grep "^$1=" .env | tail -1 | cut -d= -f2-; }
-env_default() { grep -q "^$1=" .env || echo "$1=$2" >> .env; }
+# Une valeur absente de .env est prise dans l'environnement si elle y est (premier
+# déploiement sur une VM partagée : PLAYGROUND_PORT=8095 ./dev-deploy.sh), sinon le
+# défaut ; elle est alors persistée, et les passages suivants la relisent.
+env_default() { grep -q "^$1=" .env || echo "$1=${!1:-$2}" >> .env; }
 # Isolation sur VM partagée : nom de stack et port paramétrés, jamais en dur.
 env_default COMPOSE_PROJECT_NAME urban-json
 env_default PLAYGROUND_PORT 8080
