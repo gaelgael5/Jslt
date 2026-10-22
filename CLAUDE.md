@@ -79,6 +79,9 @@ Patterns repris du .NET :
   levait une `TypeError` brute).
 - `parsedate` : pas de type date dans le portage → chaîne ISO 8601 ; cultures
   « mois d'abord » = vide/invariant/en/en-US, toutes les autres « jour d'abord ».
+- `format` : masques .NET **traduits** (sous-ensemble courant nombres/dates, 7
+  cultures) dans `functions/formatting.py` ; hors sous-ensemble → `JsltError`. Une
+  chaîne ISO est formatée comme une date (Newtonsoft convertit les ISO en dates).
 - Casts temporels (`uri`/`uuid`/`datetime`/`time`) rendus en chaîne (simplifié) ;
   `integer`/`decimal`/`string`/`boolean` complets.
 

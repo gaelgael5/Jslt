@@ -466,6 +466,24 @@ ISO 8601 ; `normalize` compose les caractères Unicode (forme C).
 { "fr": "2026-10-22T14:05:00", "us": "2026-10-22T00:00:00" }
 ```
 
+### Formatage : `format`
+
+`format(valeur, masque, culture)` reprend les masques .NET : nombres (`N2`,
+`C`, `P1`, `D5`, `#,##0.00`…) et dates — une chaîne ISO 8601 est une date —
+(`d`, `D`, `dd/MM/yyyy`, `dddd d MMMM yyyy`…). Cultures : invariante (vide),
+`en-US`, `en-GB`, `fr-FR`, `de-DE`, `es-ES`, `it-IT`. Un masque hors de ce
+sous-ensemble lève une erreur plutôt qu'un texte approximatif.
+
+```jslt
+{ "prix": format($.p, "#,##0.00"), "jour": format($.d, "dddd d MMMM yyyy", "fr-FR"), "code": format($.n, "D5") }
+```
+```json
+{ "p": 1234.5, "d": "2026-10-22T14:05:00", "n": 42 }
+```
+```json
+{ "prix": "1,234.50", "jour": "jeudi 22 octobre 2026", "code": "00042" }
+```
+
 ### Collections : `limit`, `union`, `select`, `selectmany`
 
 ```jslt

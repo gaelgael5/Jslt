@@ -465,6 +465,24 @@ value.
 { "fr": "2026-10-22T14:05:00", "us": "2026-10-22T00:00:00" }
 ```
 
+### Formatting: `format`
+
+`format(value, mask, culture)` follows .NET masks: numbers (`N2`, `C`, `P1`,
+`D5`, `#,##0.00`…) and dates — an ISO 8601 string is a date — (`d`, `D`,
+`dd/MM/yyyy`, `dddd d MMMM yyyy`…). Cultures: invariant (empty), `en-US`,
+`en-GB`, `fr-FR`, `de-DE`, `es-ES`, `it-IT`. A mask outside this subset raises
+an error rather than an approximate text.
+
+```jslt
+{ "prix": format($.p, "#,##0.00"), "jour": format($.d, "dddd d MMMM yyyy", "fr-FR"), "code": format($.n, "D5") }
+```
+```json
+{ "p": 1234.5, "d": "2026-10-22T14:05:00", "n": 42 }
+```
+```json
+{ "prix": "1,234.50", "jour": "jeudi 22 octobre 2026", "code": "00042" }
+```
+
 ### Collections: `limit`, `union`, `select`, `selectmany`
 
 ```jslt

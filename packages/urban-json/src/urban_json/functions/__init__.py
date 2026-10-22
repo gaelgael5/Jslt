@@ -12,7 +12,7 @@ extensible pour les ajouter ou en enregistrer de nouvelles.
 """
 
 # Chaque module importé enregistre ses fonctions dans le registre par défaut.
-from . import builtins, collection, encoding, maths, misc, text  # noqa: F401
+from . import builtins, collection, encoding, formatting, maths, misc, text  # noqa: F401
 from .registry import (
     PLUGIN_GROUP,
     FunctionInfo,
