@@ -12,7 +12,8 @@ name: Release (dev → TestPyPI)
 #   owner = gaelgael5 · repository = Jslt
 #   workflow = release-testpypi.yml · environment = testpypi
 # Projets concernés : urban-json, urban-json-csv, urban-json-xml, urban-json-db,
-# urban-json-http, urban-json-elastic, urban-json-editor, urban-json-random.
+# urban-json-http, urban-json-elastic, urban-json-editor, urban-json-random,
+# urban-json-files, urban-json-html, urban-json-excel, urban-json-phone.
 #
 # Opt-in explicite : la publication ne s'exécute que si la variable de dépôt
 # `PUBLISH_TESTPYPI` vaut "true" (Settings → Secrets and variables → Actions →
@@ -49,6 +50,10 @@ jobs:
           - { dir: packages/urban-json-http,    module: urban_json_http }
           - { dir: packages/urban-json-elastic, module: urban_json_elastic }
           - { dir: packages/urban-json-random,  module: urban_json_random }
+          - { dir: packages/urban-json-files,   module: urban_json_files }
+          - { dir: packages/urban-json-html,    module: urban_json_html }
+          - { dir: packages/urban-json-excel,   module: urban_json_excel }
+          - { dir: packages/urban-json-phone,   module: urban_json_phone }
           - { dir: packages/urban-json-editor,  module: urban_json_editor }
     defaults:
       run:

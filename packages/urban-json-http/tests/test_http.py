@@ -113,3 +113,41 @@ def test_discovered_via_entry_point() -> None:
 def test_in_template(mock_http) -> None:
     template = '{ "r:": http({ "url": "https://api/items" }), "code": r:$.status, "ok": r:$.body.ok }'
     assert JsltTemplate.parse(template).transform({}) == {"code": 200, "ok": True}
+
+
+# --- loadhttpgetjson : compatibilité avec le .NET (loadhttpgetJson) ----------------
+
+
+def test_loadhttpgetjson_url_de_base_et_methode(mock_http) -> None:
+    from urban_json_http import execute_loadhttpgetjson
+
+    assert execute_loadhttpgetjson(None, "https://api/v1/", "users") == {"ok": True, "path": "/v1/users"}
+    assert mock_http[0].headers["accept"] == "application/json"
+
+
+def test_loadhttpgetjson_echec_http_donne_null(mock_http) -> None:
+    from urban_json_http import execute_loadhttpgetjson
+
+    assert execute_loadhttpgetjson(None, "https://api/", "boom") is None
+
+
+def test_loadhttpgetjson_reponse_non_json_donne_null(mock_http) -> None:
+    from urban_json_http import execute_loadhttpgetjson
+
+    assert execute_loadhttpgetjson(None, "https://api/", "text") is None
+
+
+def test_loadhttpgetjson_url_requise() -> None:
+    from urban_json import JsltError
+
+    from urban_json_http import execute_loadhttpgetjson
+
+    with pytest.raises(JsltError, match="loadhttpgetjson"):
+        execute_loadhttpgetjson(None, None, "x")
+
+
+def test_loadhttpgetjson_dans_un_template(mock_http) -> None:
+    registry = FunctionRegistry()
+    register(registry)
+    template = JsltTemplate.parse('{ "r": loadhttpgetJson("https://api/", "x") }')
+    assert template.transform({}, functions=registry)["r"] == {"ok": True, "path": "/x"}

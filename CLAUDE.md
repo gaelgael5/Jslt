@@ -129,7 +129,8 @@ cœur, chacun comme **distribution séparée** dans un **monorepo** :
 - `packages/urban-json-db/` — fonctions `connectsql` / `readsql` (port de `ServicesSql`).
   Distribution `urban-json-db` ; SQLite via la stdlib (sans dépendance), autres SGBD via
   un registre de clients DB-API (extras `postgresql`/`mysql`).
-- `packages/urban-json-http/` — fonctions `http` / `httpget`. Appel formalisé en objet
+- `packages/urban-json-http/` — fonctions `http` / `httpget` (+ `loadhttpgetjson`,
+  compatibilité avec le GET .NET). Appel formalisé en objet
   Fetch/`RequestInit` (`{method,url,headers,query,body}` → `{status,headers,body}`)
   via `httpx`. Distribution `urban-json-http`, dépend de `urban-json` + `httpx`.
 - `packages/urban-json-elastic/` — fonctions `esconnect` / `essearch` (recherche
@@ -140,6 +141,15 @@ cœur, chacun comme **distribution séparée** dans un **monorepo** :
   `Services.randoms.cs`) via Faker + rstr. **Décision : toute génération aléatoire va
   dans ce paquet, jamais dans le cœur.** Bornes `exclusive*` au sens JSON Schema (le
   .NET élargissait l'intervalle). Distribution `urban-json-random`.
+- `packages/urban-json-files/` — `loadjson`, `iteratejsonfile` (lecture complète puis
+  JSONPath, au lieu du `BigJsonReader` en flux du .NET), `concatpath`. Dépend de
+  `urban-json>=0.2.0` (chemins en chaîne).
+- `packages/urban-json-html/` — `loadhtml` (fichier ou URL → `{#id, attributs,
+  content}` façon HtmlAgilityPack), via `html.parser` de la stdlib.
+- `packages/urban-json-excel/` — `loadxls` / `loadxlssheet` (port d'`ExcelReader`) via
+  openpyxl ; `.xls` via l'extra `[xls]` (xlrd).
+- `packages/urban-json-phone/` — `phoneisvalid` via `phonenumbers` (même
+  libphonenumber que le .NET).
 - `packages/urban-json-editor/` — composant d'édition **réutilisable** : Web Component
   `<jslt-editor>` (coloration syntaxique + intellisense, **sans dépendance JS**) +
   utilitaires Python (`assets_dir`, `catalog`, `mount`). L'intellisense est
@@ -179,6 +189,8 @@ pip install -e packages/urban-json-db
 pip install -e packages/urban-json-http
 pip install -e packages/urban-json-elastic
 pip install -e packages/urban-json-random
+pip install -e packages/urban-json-files packages/urban-json-html
+pip install -e packages/urban-json-excel packages/urban-json-phone
 pytest packages/urban-json/tests && pytest packages/urban-json-*/tests
 ruff check packages
 ```

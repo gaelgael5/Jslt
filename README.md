@@ -93,9 +93,13 @@ Les **plugins tiers** sont auto-découverts via le groupe d'entry points
 - [`urban-json-csv`](packages/urban-json-csv/) — lecture de fichiers CSV (`loadcsv`, `loadmcsv`).
 - [`urban-json-xml`](packages/urban-json-xml/) — lecture de fichiers XML (`loadxml`).
 - [`urban-json-db`](packages/urban-json-db/) — lecture en base SQL (`connectsql`, `readsql`).
-- [`urban-json-http`](packages/urban-json-http/) — appels HTTP (`http`, `httpget`).
+- [`urban-json-http`](packages/urban-json-http/) — appels HTTP (`http`, `httpget`, `loadhttpgetjson`).
 - [`urban-json-elastic`](packages/urban-json-elastic/) — recherche Elasticsearch (`esconnect`, `essearch`).
 - [`urban-json-random`](packages/urban-json-random/) — données aléatoires (`getrandom_*` : nombres, noms, e-mails, IBAN…).
+- [`urban-json-files`](packages/urban-json-files/) — fichiers JSON et chemins (`loadjson`, `iteratejsonfile`, `concatpath`).
+- [`urban-json-html`](packages/urban-json-html/) — conversion HTML vers JSON (`loadhtml`).
+- [`urban-json-excel`](packages/urban-json-excel/) — lecture de classeurs Excel (`loadxls`, `loadxlssheet`).
+- [`urban-json-phone`](packages/urban-json-phone/) — validation de numéros de téléphone (`phoneisvalid`).
 
 ## Architecture
 

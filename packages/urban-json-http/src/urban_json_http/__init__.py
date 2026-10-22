@@ -9,6 +9,8 @@ Fetch / ``RequestInit`` (le vocabulaire HTTP-en-JSON standard) :
   ``{status, headers, body}`` (``body`` = JSON parsé si la réponse est du JSON,
   sinon le texte brut).
 * ``httpget(url, headers)`` — convenance GET renvoyant directement le ``body``.
+* ``loadhttpgetjson(root_path, method_name)`` — compatibilité avec le GET .NET,
+  pour les templates existants.
 
 Client HTTP : `httpx`. Le corps (``body``) est envoyé en JSON si c'est un objet ou
 un tableau, sinon tel quel.
@@ -26,9 +28,9 @@ from typing import Any
 
 import httpx
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
-__all__ = ["execute_http", "execute_httpget", "register"]
+__all__ = ["execute_http", "execute_httpget", "execute_loadhttpgetjson", "register"]
 
 #: Timeout par défaut (secondes) si la requête n'en précise pas.
 DEFAULT_TIMEOUT = 30.0
@@ -96,6 +98,31 @@ def execute_httpget(ctx: Any, url: str | None = None, headers: Any = None) -> An
     return response["body"]
 
 
+def execute_loadhttpgetjson(ctx: Any, root_path: Any = None, method_name: Any = None) -> Any:
+    """Compatibilité .NET (``loadhttpgetJson``) : GET de ``root_path`` + ``method_name``.
+
+    Comme le .NET (``HttpClient.BaseAddress`` + chemin relatif, ``Accept:
+    application/json``) : la réponse est lue en JSON quel que soit son
+    content-type ; échec HTTP ou corps non JSON -> ``null`` (le .NET émettait un
+    avertissement). Pour un appel complet, préférer ``http`` / ``httpget``.
+    """
+    from urllib.parse import urljoin
+
+    from urban_json import JsltError
+
+    if not root_path:
+        raise JsltError("loadhttpgetjson : l'URL de base (root_path) est requise")
+    url = urljoin(str(root_path), str(method_name or ""))
+    with _build_client(DEFAULT_TIMEOUT) as client:
+        response = client.get(url, headers={"Accept": "application/json"})
+    if not response.is_success:
+        return None
+    try:
+        return response.json()
+    except ValueError:
+        return None
+
+
 def register(registry: Any) -> None:
     """Enregistre les fonctions du plugin dans un registre jslt (entry point)."""
     registry.register(
@@ -107,4 +134,9 @@ def register(registry: Any) -> None:
         "httpget",
         execute_httpget,
         description="GET HTTP renvoyant directement le corps (JSON parsé ou texte).",
+    )
+    registry.register(
+        "loadhttpgetjson",
+        execute_loadhttpgetjson,
+        description="GET JSON sur une URL de base + un chemin (compatibilité .NET) ; null en cas d'échec.",
     )

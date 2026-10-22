@@ -92,9 +92,13 @@ group (installing the package is enough). Details and the plugin contract in the
 - [`urban-json-csv`](packages/urban-json-csv/) — reading CSV files (`loadcsv`, `loadmcsv`).
 - [`urban-json-xml`](packages/urban-json-xml/) — reading XML files (`loadxml`).
 - [`urban-json-db`](packages/urban-json-db/) — reading from SQL databases (`connectsql`, `readsql`).
-- [`urban-json-http`](packages/urban-json-http/) — HTTP calls (`http`, `httpget`).
+- [`urban-json-http`](packages/urban-json-http/) — HTTP calls (`http`, `httpget`, `loadhttpgetjson`).
 - [`urban-json-elastic`](packages/urban-json-elastic/) — Elasticsearch search (`esconnect`, `essearch`).
 - [`urban-json-random`](packages/urban-json-random/) — random data (`getrandom_*`: numbers, names, e-mails, IBANs…).
+- [`urban-json-files`](packages/urban-json-files/) — JSON files and paths (`loadjson`, `iteratejsonfile`, `concatpath`).
+- [`urban-json-html`](packages/urban-json-html/) — HTML to JSON conversion (`loadhtml`).
+- [`urban-json-excel`](packages/urban-json-excel/) — reading Excel workbooks (`loadxls`, `loadxlssheet`).
+- [`urban-json-phone`](packages/urban-json-phone/) — phone number validation (`phoneisvalid`).
 
 ## Architecture
 
