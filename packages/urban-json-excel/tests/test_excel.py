@@ -147,3 +147,51 @@ def test_catalogue_et_decouverte(registry) -> None:
     assert all(len(e["description"]) >= 15 for e in registry.catalog())
     load_plugins()
     assert "loadxlssheet" in default_registry
+
+
+# --- .xls (Excel 97-2003, BIFF8) ------------------------------------------------------
+
+# tests/data/sample.xls : vrai classeur BIFF8 produit avec xlwt, même contenu que XLS_ROWS.
+XLS_SAMPLE = str(Path(__file__).parent / "data" / "sample.xls")
+XLS_ROWS = [
+    ["Nom", "Age", "Taille", "Actif", "Naissance", "Note"],
+    ["  Alice ", 30, 1.68, True, datetime(1994, 5, 17), "ok"],  # noqa: DTZ001
+    [None, None, None, None, None, None],
+    ["Bob", 42, 1.8, False, datetime(1982, 1, 2), None],  # noqa: DTZ001
+]
+
+
+@pytest.mark.parametrize(
+    "config",
+    [
+        pytest.param({"FirstRowHasColumnName": True}, id="colonnes-auto"),
+        pytest.param({"FirstRowHasColumnName": True, "ByPassEmptyObject": False}, id="ligne-vide-gardee"),
+        pytest.param(
+            {
+                "FirstRowHasColumnName": True,
+                "Columns": [
+                    {"Index": 0, "Name": "nom", "Type": "string"},
+                    {"Index": 1, "Name": "age", "Type": "integer"},
+                    {"Index": 2, "Name": "taille", "Type": "decimal"},
+                    {"Index": 3, "Name": "actif", "Type": "boolean"},
+                    {"Index": 4, "Name": "naissance", "Type": "datetime"},
+                ],
+            },
+            id="colonnes-typees",
+        ),
+    ],
+)
+def test_xls_identique_au_xlsx(registry, tmp_path, config) -> None:
+    pytest.importorskip("xlrd")
+    expected = sheet(registry, _book(tmp_path, {"Feuil1": XLS_ROWS}), config)
+    assert sheet(registry, XLS_SAMPLE, config) == expected
+
+
+def test_xls_valeurs(registry) -> None:
+    pytest.importorskip("xlrd")
+    out = sheet(registry, XLS_SAMPLE, {"FirstRowHasColumnName": True})
+    assert out == [
+        {"Nom": "Alice", "Age": 30, "Taille": 1.68, "Actif": True, "Naissance": "1994-05-17T00:00:00",
+         "Note": "ok", "$row": 0},
+        {"Nom": "Bob", "Age": 42, "Taille": 1.8, "Actif": False, "Naissance": "1982-01-02T00:00:00", "$row": 2},
+    ]

@@ -32,7 +32,7 @@ jobs:
           pip install -e packages/urban-json-random
           pip install -e packages/urban-json-files
           pip install -e packages/urban-json-html
-          pip install -e packages/urban-json-excel
+          pip install -e "packages/urban-json-excel[xls]"
           pip install -e packages/urban-json-phone
           pip install -e packages/urban-json-editor
           pip install -e "apps/playground[dev]"
