@@ -82,6 +82,9 @@ Patterns repris du .NET :
 - `format` : masques .NET **traduits** (sous-ensemble courant nombres/dates, 7
   cultures) dans `functions/formatting.py` ; hors sous-ensemble → `JsltError`. Une
   chaîne ISO est formatée comme une date (Newtonsoft convertit les ISO en dates).
+- `group` multi-chemins : sous-groupes imbriqués (le .NET les perdait) ; `join` ne
+  modifie pas la source (le .NET mutait la gauche) ; `createindex` rend un objet
+  `{clé: élément}` (le .NET : `JDictionaryValue` opaque).
 - Casts temporels (`uri`/`uuid`/`datetime`/`time`) rendus en chaîne (simplifié) ;
   `integer`/`decimal`/`string`/`boolean` complets.
 

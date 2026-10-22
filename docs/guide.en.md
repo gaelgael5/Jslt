@@ -483,6 +483,35 @@ an error rather than an approximate text.
 { "prix": "1,234.50", "jour": "jeudi 22 octobre 2026", "code": "00042" }
 ```
 
+### Grouping and joins: `group`, `join`, `createindex`, `index`
+
+`group(array, ["$.path", …])` returns `{ "Label", "Items" }` groups, nested
+when several paths are given. `join(left, $.key, false, [{ "Name", "Key",
+"Source" }])` attaches to each left object, under `Name`, the `Source` items
+whose `Key` is equal (compared as text); the source is not modified.
+`createindex(source, split, "$.key")` builds an index queried by
+`index(i, key)`.
+
+```jslt
+{ "parVille": group($.p, ["$.city"]), "i:": createindex($.p, "", "$.name"), "bob": index(i:, "Bob") }
+```
+```json
+{ "p": [{ "name": "Ana", "city": "Lyon" }, { "name": "Bob", "city": "Paris" }] }
+```
+```json
+{ "parVille": [{ "Label": "Lyon", "Items": [{ "name": "Ana", "city": "Lyon" }] }, { "Label": "Paris", "Items": [{ "name": "Bob", "city": "Paris" }] }], "bob": { "name": "Bob", "city": "Paris" } }
+```
+
+```jslt
+{ "clients": join($.c, $.id, false, [{ "Name": "commandes", "Key": "$.client", "Source": $.o }]) }
+```
+```json
+{ "c": [{ "id": 1, "nom": "Ana" }], "o": [{ "client": 1, "total": 12 }, { "client": 2, "total": 5 }] }
+```
+```json
+{ "clients": [{ "id": 1, "nom": "Ana", "commandes": [{ "total": 12 }] }] }
+```
+
 ### Collections: `limit`, `union`, `select`, `selectmany`
 
 ```jslt

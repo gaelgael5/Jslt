@@ -484,6 +484,35 @@ sous-ensemble lève une erreur plutôt qu'un texte approximatif.
 { "prix": "1,234.50", "jour": "jeudi 22 octobre 2026", "code": "00042" }
 ```
 
+### Regroupement et jointure : `group`, `join`, `createindex`, `index`
+
+`group(tableau, ["$.chemin", …])` rend des groupes `{ "Label", "Items" }`,
+imbriqués quand plusieurs chemins sont donnés. `join(gauche, $.clé, false,
+[{ "Name", "Key", "Source" }])` rattache à chaque objet de gauche, sous `Name`,
+les éléments de `Source` dont la clé `Key` est égale (comparée en texte) ; la
+source n'est pas modifiée. `createindex(source, découpe, "$.clé")` construit un
+index que `index(i, clé)` interroge.
+
+```jslt
+{ "parVille": group($.p, ["$.city"]), "i:": createindex($.p, "", "$.name"), "bob": index(i:, "Bob") }
+```
+```json
+{ "p": [{ "name": "Ana", "city": "Lyon" }, { "name": "Bob", "city": "Paris" }] }
+```
+```json
+{ "parVille": [{ "Label": "Lyon", "Items": [{ "name": "Ana", "city": "Lyon" }] }, { "Label": "Paris", "Items": [{ "name": "Bob", "city": "Paris" }] }], "bob": { "name": "Bob", "city": "Paris" } }
+```
+
+```jslt
+{ "clients": join($.c, $.id, false, [{ "Name": "commandes", "Key": "$.client", "Source": $.o }]) }
+```
+```json
+{ "c": [{ "id": 1, "nom": "Ana" }], "o": [{ "client": 1, "total": 12 }, { "client": 2, "total": 5 }] }
+```
+```json
+{ "clients": [{ "id": 1, "nom": "Ana", "commandes": [{ "total": 12 }] }] }
+```
+
 ### Collections : `limit`, `union`, `select`, `selectmany`
 
 ```jslt
