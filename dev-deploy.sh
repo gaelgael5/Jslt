@@ -4,6 +4,15 @@
 # Usage (depuis le clone du dépôt sur la machine) :
 #   ./dev-deploy.sh                 # déploiement normal
 #   ./dev-deploy.sh --no-detach     # CI / débogage : sans le filet anti-raccrochage
+#   ./dev-deploy.sh --exposer-seulement
+#                                   # stack déjà en place : santé + déclaration seules
+#
+# Déclaration à l'annuaire du portail (dernière étape utile, après la santé) :
+# active seulement si PORTAL_TOKEN est dans l'environnement — code TOTP
+# « <login>:<code> » obtenu par l'outil MCP `totp_code`, valable 30 s, jamais
+# écrit dans .env ni dans le journal. Comme il expire bien avant la fin d'un
+# build, on enchaîne en pratique : ./dev-deploy.sh, puis un code frais et
+# ./dev-deploy.sh --exposer-seulement.
 #
 # Prérequis : git, docker (+ plugin compose v2), curl, et l'accès réseau au dépôt
 # GitHub — le script se met à jour depuis origin/dev avant tout, il n'existe pas
@@ -14,17 +23,19 @@ set -euo pipefail
 
 BRANCH="dev"
 SERVICE="playground"
-STEPS=8
+STEPS=9
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_DIR="$REPO_DIR/deploy-logs"
 PRUNE_STAMP="$LOG_DIR/.last-prune"
 cd "$REPO_DIR"
 
 DETACH=1
+EXPOSE_ONLY=0
 for arg in "$@"; do
   case "$arg" in
     --no-detach) DETACH=0 ;;
-    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
+    --exposer-seulement) EXPOSE_ONLY=1 ;;
+    -h|--help) sed -n '2,22p' "$0"; exit 0 ;;
     *) echo "Option inconnue : $arg" >&2; exit 2 ;;
   esac
 done
@@ -81,9 +92,22 @@ echo "Déploiement de $(git log -1 --format='%h %s')"
 # --- 3. Configuration : compléter .env sans écraser l'existant --------------------
 step 3 "Configuration (.env)"
 touch .env
-grep -q '^PLAYGROUND_PORT=' .env || echo "PLAYGROUND_PORT=8080" >> .env
-PORT="$(grep '^PLAYGROUND_PORT=' .env | tail -1 | cut -d= -f2)"
-echo "Port publié : $PORT"
+env_get() { grep "^$1=" .env | tail -1 | cut -d= -f2-; }
+env_default() { grep -q "^$1=" .env || echo "$1=$2" >> .env; }
+# Isolation sur VM partagée : nom de stack et port paramétrés, jamais en dur.
+env_default COMPOSE_PROJECT_NAME urban-json
+env_default PLAYGROUND_PORT 8080
+# Cible de la déclaration à l'annuaire (le jeton, lui, n'est jamais ici).
+env_default EXPOSE_PORTAL_URL https://dev.yoops.org
+env_default EXPOSE_WORKSPACE urban-json
+PORT="$(env_get PLAYGROUND_PORT)"
+STACK="$(env_get COMPOSE_PROJECT_NAME)"
+export COMPOSE_PROJECT_NAME="$STACK"
+echo "Stack : $STACK — port publié : $PORT"
+
+if [[ "$EXPOSE_ONLY" == 1 ]]; then
+  echo "--exposer-seulement : étapes 4 à 6 sautées (stack supposée en place)"
+else
 
 # --- 4. Construction --------------------------------------------------------------
 # Construire ici, depuis la copie fraîche du dépôt, est la vraie validation de
@@ -112,6 +136,7 @@ done
 [[ "${state:-}" == "running" ]] \
   || die "le conteneur $SERVICE n'est pas en marche (état : ${state:-absent}) — docker compose logs $SERVICE"
 echo "Conteneur $SERVICE en marche"
+fi
 
 # --- 7. Contrôle de santé, plafonné, sur le port réellement publié ----------------
 step 7 "Contrôle de santé (http://127.0.0.1:$PORT/healthz)"
@@ -123,12 +148,32 @@ done
 [[ "$ok" == 1 ]] || die "pas de réponse saine en 90 s — docker compose logs --tail=100 $SERVICE"
 echo "Service sain : http://$(hostname -f 2>/dev/null || hostname):$PORT/"
 
-# --- 8. Purge disque hebdomadaire (ne fait jamais échouer le déploiement) ---------
+# --- 8. Déclaration à l'annuaire du portail (best-effort) ---------------------------
+# Après la santé : on ne publie pas une stack qui ne répond pas. Nom du service =
+# nom de la stack, pour que le lien de la machine retrouve l'exposition. Voie
+# --me : enregistrée sous le workspace de l'appelant authentifié par son TOTP.
+step 8 "Déclaration à l'annuaire"
+if [[ -n "${PORTAL_TOKEN:-}" ]]; then
+  TARGET_HOST="$(hostname -I 2>/dev/null | awk '{print $1}')"
+  bash "$REPO_DIR/scripts/declarer-exposition.sh" --me \
+    --portal "$(env_get EXPOSE_PORTAL_URL)" \
+    --workspace "$(env_get EXPOSE_WORKSPACE)" \
+    --service "$STACK" \
+    --target-host "$TARGET_HOST" \
+    --target-port "$PORT" \
+    --host "$(hostname)"
+else
+  echo "PORTAL_TOKEN absent : pas de déclaration (relancer avec un code TOTP et --exposer-seulement)"
+fi
+
+# --- 9. Purge disque hebdomadaire (ne fait jamais échouer le déploiement) ---------
 # Chaque build laisse des couches détaggées que rien ne récupère. Portée limitée
 # au cache de build et aux images détaggées ; jamais les volumes ni les images de
 # base. Témoin horodaté : au plus une fois par semaine.
-step 8 "Purge disque (hebdomadaire)"
-if [[ ! -f "$PRUNE_STAMP" ]] || [[ -n "$(find "$PRUNE_STAMP" -mtime +6 2>/dev/null)" ]]; then
+step 9 "Purge disque (hebdomadaire)"
+if [[ "$EXPOSE_ONLY" == 1 ]]; then
+  echo "--exposer-seulement : pas de purge"
+elif [[ ! -f "$PRUNE_STAMP" ]] || [[ -n "$(find "$PRUNE_STAMP" -mtime +6 2>/dev/null)" ]]; then
   {
     echo "Avant : $(df -h / | awk 'NR==2{print $4}') libres"
     docker builder prune -f --filter until=168h

@@ -137,7 +137,10 @@ aux libs publiables) :
   depuis les sources du dépôt), stack `docker-compose.yml` à la racine, port hôte
   `PLAYGROUND_PORT` (`.env`, défaut 8080), sonde `/healthz`. Livrer : push sur `dev`,
   puis sur la machine `./dev-deploy.sh` (se met à jour depuis `origin/dev`, journal
-  dans `deploy-logs/`).
+  dans `deploy-logs/`). Déclaration à l'annuaire du portail : code TOTP (outil MCP
+  `totp_code`) dans `PORTAL_TOKEN`, puis `./dev-deploy.sh --exposer-seulement` (le code
+  expire en 30 s, bien avant la fin d'un build) ; script `scripts/declarer-exposition.sh`
+  copié du dépôt du portail.
 
 Modèle de packaging (cf. pytest) : **monorepo, distributions indépendantes,
 découverte par entry points**. Chaque paquet (cœur compris) a son
