@@ -119,6 +119,12 @@ def examples() -> JSONResponse:
     return JSONResponse({"examples": _examples()})
 
 
+@app.get("/healthz")
+def healthz() -> JSONResponse:
+    """Sonde de vie pour le contrôle de santé du déploiement (dev-deploy.sh, compose)."""
+    return JSONResponse({"status": "ok"})
+
+
 @app.get("/")
 def index() -> FileResponse:
     return FileResponse(_STATIC / "index.html")

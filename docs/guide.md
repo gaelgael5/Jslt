@@ -415,6 +415,155 @@ Arrondi bancaire :
 { "trim": "hello", "debut": true, "contient": true }
 ```
 
+### Expressions régulières : `regexismatch`, `regexmatches`
+
+`regexismatch(texte, motif)` dit si le texte contient une correspondance ;
+`regexmatches(texte, motif)` rend la liste des correspondances complètes. Un
+nombre ou un booléen est converti en texte avant la recherche ; `null`, un objet
+ou un tableau donnent `null`. Dans une chaîne jslt, l'antislash se double
+(`"\\d+"`). La syntaxe .NET des groupes nommés `(?<nom>…)` est acceptée.
+
+```jslt
+{ "valide": regexismatch($.mail, "^[\\w.]+@[\\w.]+\\.[a-z]+$"), "nombres": regexmatches($.s, "\\d+") }
+```
+```json
+{ "mail": "bob@ex.fr", "s": "lot 12, ref 345" }
+```
+```json
+{ "valide": true, "nombres": ["12", "345"] }
+```
+
+### Tests sur les collections : `any`, `contains`, `selectany`
+
+`any(tableau)` est vrai pour un tableau non vide ; `contains(tableau, valeur)`
+compare avec l'égalité de l'opérateur `==` ; `selectany(source, "chemin")` est
+vrai si le chemin JSONPath (écrit en chaîne, comme en .NET, ou directement)
+sélectionne au moins une valeur.
+
+```jslt
+{ "plein": any($.a), "a_b": contains($.a, "b"), "grand": selectany($.n, "$[?(@ > 2)]") }
+```
+```json
+{ "a": ["a", "b"], "n": [1, 3] }
+```
+```json
+{ "plein": true, "a_b": true, "grand": true }
+```
+
+### Dates et Unicode : `parsedate`, `normalize`
+
+`parsedate(texte, culture)` lit une date (ISO 8601, ou numérique selon la
+culture : `fr-FR` jour d'abord, `en-US` ou vide mois d'abord) et la rend en
+ISO 8601 ; `normalize` compose les caractères Unicode (forme C).
+
+```jslt
+{ "fr": parsedate($.d, "fr-FR"), "us": parsedate($.u, "en-US") }
+```
+```json
+{ "d": "22/10/2026 14:05", "u": "10/22/2026" }
+```
+```json
+{ "fr": "2026-10-22T14:05:00", "us": "2026-10-22T00:00:00" }
+```
+
+### Formatage : `format`
+
+`format(valeur, masque, culture)` reprend les masques .NET : nombres (`N2`,
+`C`, `P1`, `D5`, `#,##0.00`…) et dates — une chaîne ISO 8601 est une date —
+(`d`, `D`, `dd/MM/yyyy`, `dddd d MMMM yyyy`…). Cultures : invariante (vide),
+`en-US`, `en-GB`, `fr-FR`, `de-DE`, `es-ES`, `it-IT`. Un masque hors de ce
+sous-ensemble lève une erreur plutôt qu'un texte approximatif.
+
+```jslt
+{ "prix": format($.p, "#,##0.00"), "jour": format($.d, "dddd d MMMM yyyy", "fr-FR"), "code": format($.n, "D5") }
+```
+```json
+{ "p": 1234.5, "d": "2026-10-22T14:05:00", "n": 42 }
+```
+```json
+{ "prix": "1,234.50", "jour": "jeudi 22 octobre 2026", "code": "00042" }
+```
+
+### Regroupement et jointure : `group`, `join`, `createindex`, `index`
+
+`group(tableau, ["$.chemin", …])` rend des groupes `{ "Label", "Items" }`,
+imbriqués quand plusieurs chemins sont donnés. `join(gauche, $.clé, false,
+[{ "Name", "Key", "Source" }])` rattache à chaque objet de gauche, sous `Name`,
+les éléments de `Source` dont la clé `Key` est égale (comparée en texte) ; la
+source n'est pas modifiée. `createindex(source, découpe, "$.clé")` construit un
+index que `index(i, clé)` interroge.
+
+```jslt
+{ "parVille": group($.p, ["$.city"]), "i:": createindex($.p, "", "$.name"), "bob": index(i:, "Bob") }
+```
+```json
+{ "p": [{ "name": "Ana", "city": "Lyon" }, { "name": "Bob", "city": "Paris" }] }
+```
+```json
+{ "parVille": [{ "Label": "Lyon", "Items": [{ "name": "Ana", "city": "Lyon" }] }, { "Label": "Paris", "Items": [{ "name": "Bob", "city": "Paris" }] }], "bob": { "name": "Bob", "city": "Paris" } }
+```
+
+```jslt
+{ "clients": join($.c, $.id, false, [{ "Name": "commandes", "Key": "$.client", "Source": $.o }]) }
+```
+```json
+{ "c": [{ "id": 1, "nom": "Ana" }], "o": [{ "client": 1, "total": 12 }, { "client": 2, "total": 5 }] }
+```
+```json
+{ "clients": [{ "id": 1, "nom": "Ana", "commandes": [{ "total": 12 }] }] }
+```
+
+### Schéma : `schema`
+
+`schema(exemple)` déduit un JSON Schema (draft-04) d'un fragment JSON, comme
+NJsonSchema côté .NET : objets imbriqués en `definitions` référencées.
+
+```jslt
+{ "s": schema($.exemple) }
+```
+```json
+{ "exemple": { "nom": "Ana", "age": 30 } }
+```
+```json
+{ "s": { "$schema": "http://json-schema.org/draft-04/schema#", "type": "object", "properties": { "nom": { "type": "string" }, "age": { "type": "integer" } } } }
+```
+
+### Sortie texte : `to_json`, `to_block` (`$directives.output`)
+
+Comme en .NET, un template peut déclarer comment son résultat est **sérialisé en
+texte**. La clé `$directives` n'apparaît jamais dans le résultat de
+`transform()` ; c'est `template.render(source)` qui l'applique : `filter`
+(JSONPath, optionnel) sélectionne une partie du résultat (1 nœud → ce nœud,
+plusieurs → tableau, aucun → `null`), puis la fonction de sortie `mode`
+produit le texte.
+
+```jslt
+{ "$directives": { "output": { "filter": $.lignes, "mode": to_block() } },
+  "lignes": $.commandes[*] }
+```
+```json
+{ "commandes": [ { "id": 1 }, { "id": 2 } ] }
+```
+```json
+{ "lignes": [ { "id": 1 }, { "id": 2 } ] }
+```
+
+`render()` donne ici une ligne JSON par élément (JSON Lines) :
+
+```text
+{"id":1}
+{"id":2}
+```
+
+- `to_json(indented, ignore_null_and_empty_value)` : JSON compact, ou indenté si
+  `indented` vaut `true` ; avec le 2e argument, les chaînes vides deviennent `null`
+  et les propriétés nulles sont retirées des objets.
+- `to_block()` : une ligne compacte par élément d'un tableau, ou l'objet sur une ligne.
+- Sans directive, `render()` rend le JSON indenté du résultat.
+- Les fonctions de sortie ne s'appellent pas dans le corps du template (erreur
+  explicite) ; `mode` est obligatoire. Les fonctions d'écriture .NET (`write`,
+  `to_file`) et `to_sqlserver` ne sont pas portées.
+
 ### Collections : `limit`, `union`, `select`, `selectmany`
 
 ```jslt

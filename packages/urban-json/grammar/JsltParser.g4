@@ -116,6 +116,9 @@ jsonfunctionCall :
 
 jsonfunctionName : 
    ID
+   // `contains` est aussi un opérateur de filtre JSONPath (jeton CONTAINS) : sans
+   // cette alternative, la fonction contains(...) était inappelable (déjà en .NET).
+   | CONTAINS
    ;
 
 jsonValueList : 

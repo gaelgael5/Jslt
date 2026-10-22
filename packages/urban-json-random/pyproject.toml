@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "urban-json-random"
+dynamic = ["version"]
+description = "Plugin urban-json : génération de données aléatoires (fonctions de template getrandom_*)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "Gael Beard", email = "gaelgael5@gmail.com" }]
+keywords = ["json", "transform", "template", "jslt", "random", "fake-data", "plugin"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Testing",
+    "Typing :: Typed",
+]
+dependencies = [
+    "urban-json",
+    # Noms, villes, pays, e-mails, IBAN, adresses réseau, lorem ipsum (rôle tenu
+    # par RandomDataGenerator côté .NET). Borne basse large : Faker récent exige
+    # Python >= 3.10, pip choisit la version compatible avec chaque interpréteur.
+    "faker>=20",
+    # Chaîne aléatoire conforme à un motif regex (getrandom_string avec pattern).
+    "rstr>=3.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/gaelgael5/Jslt"
+Repository = "https://github.com/gaelgael5/Jslt"
+
+# Découverte automatique par urban-json : installer ce paquet suffit à exposer les getrandom_*.
+[project.entry-points."urban_json.functions"]
+random = "urban_json_random:register"
+
+[tool.setuptools.dynamic]
+version = { attr = "urban_json_random.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+urban_json_random = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]

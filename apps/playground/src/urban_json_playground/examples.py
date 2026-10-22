@@ -35,6 +35,11 @@ EXAMPLES: list[dict[str, str]] = [
         "source": '{ "n": [1, 2, 3], "s": "hi" }',
     },
     {
+        "name": "Expressions régulières",
+        "template": '{\n  "valide": regexismatch($.mail, "^[\\\\w.]+@[\\\\w.]+\\\\.[a-z]+$"),\n  "nombres": regexmatches($.s, "\\\\d+")\n}',
+        "source": '{ "mail": "bob@ex.fr", "s": "lot 12, ref 345" }',
+    },
+    {
         "name": "when / switch",
         "template": '{ "statut": when($.code) { "200": "ok", "404": "introuvable", "default": "autre" } }',
         "source": '{ "code": 404 }',

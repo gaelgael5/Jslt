@@ -1,0 +1,20 @@
+# Stack de la machine de test : le playground seul (pas de base, pas d'état).
+# Port publié sur l'hôte : PLAYGROUND_PORT dans .env (complété par dev-deploy.sh).
+name: urban-json
+
+services:
+  playground:
+    build:
+      context: .
+      dockerfile: apps/playground/Dockerfile
+    image: urban-json-playground:dev
+    restart: unless-stopped
+    ports:
+      - "${PLAYGROUND_PORT:-8080}:8000"
+    # Rotation des journaux du conteneur : sans plafond, le fichier json-file
+    # grossit sans fin sur une machine qui reste allumée.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

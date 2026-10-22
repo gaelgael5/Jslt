@@ -414,6 +414,154 @@ Banker's rounding:
 { "trim": "hello", "debut": true, "contient": true }
 ```
 
+### Regular expressions: `regexismatch`, `regexmatches`
+
+`regexismatch(text, pattern)` tells whether the text contains a match;
+`regexmatches(text, pattern)` returns the list of full matches. A number or a
+boolean is converted to text first; `null`, an object or an array yield `null`.
+Inside a jslt string, backslashes are doubled (`"\\d+"`). The .NET named-group
+syntax `(?<name>…)` is accepted.
+
+```jslt
+{ "valide": regexismatch($.mail, "^[\\w.]+@[\\w.]+\\.[a-z]+$"), "nombres": regexmatches($.s, "\\d+") }
+```
+```json
+{ "mail": "bob@ex.fr", "s": "lot 12, ref 345" }
+```
+```json
+{ "valide": true, "nombres": ["12", "345"] }
+```
+
+### Collection tests: `any`, `contains`, `selectany`
+
+`any(array)` is true for a non-empty array; `contains(array, value)` compares
+with the `==` operator's equality; `selectany(source, "path")` is true when the
+JSONPath (written as a string, as in .NET, or directly) selects at least one
+value.
+
+```jslt
+{ "plein": any($.a), "a_b": contains($.a, "b"), "grand": selectany($.n, "$[?(@ > 2)]") }
+```
+```json
+{ "a": ["a", "b"], "n": [1, 3] }
+```
+```json
+{ "plein": true, "a_b": true, "grand": true }
+```
+
+### Dates and Unicode: `parsedate`, `normalize`
+
+`parsedate(text, culture)` reads a date (ISO 8601, or numeric by culture:
+`fr-FR` day first, `en-US` or empty month first) and returns ISO 8601;
+`normalize` composes Unicode characters (form C).
+
+```jslt
+{ "fr": parsedate($.d, "fr-FR"), "us": parsedate($.u, "en-US") }
+```
+```json
+{ "d": "22/10/2026 14:05", "u": "10/22/2026" }
+```
+```json
+{ "fr": "2026-10-22T14:05:00", "us": "2026-10-22T00:00:00" }
+```
+
+### Formatting: `format`
+
+`format(value, mask, culture)` follows .NET masks: numbers (`N2`, `C`, `P1`,
+`D5`, `#,##0.00`…) and dates — an ISO 8601 string is a date — (`d`, `D`,
+`dd/MM/yyyy`, `dddd d MMMM yyyy`…). Cultures: invariant (empty), `en-US`,
+`en-GB`, `fr-FR`, `de-DE`, `es-ES`, `it-IT`. A mask outside this subset raises
+an error rather than an approximate text.
+
+```jslt
+{ "prix": format($.p, "#,##0.00"), "jour": format($.d, "dddd d MMMM yyyy", "fr-FR"), "code": format($.n, "D5") }
+```
+```json
+{ "p": 1234.5, "d": "2026-10-22T14:05:00", "n": 42 }
+```
+```json
+{ "prix": "1,234.50", "jour": "jeudi 22 octobre 2026", "code": "00042" }
+```
+
+### Grouping and joins: `group`, `join`, `createindex`, `index`
+
+`group(array, ["$.path", …])` returns `{ "Label", "Items" }` groups, nested
+when several paths are given. `join(left, $.key, false, [{ "Name", "Key",
+"Source" }])` attaches to each left object, under `Name`, the `Source` items
+whose `Key` is equal (compared as text); the source is not modified.
+`createindex(source, split, "$.key")` builds an index queried by
+`index(i, key)`.
+
+```jslt
+{ "parVille": group($.p, ["$.city"]), "i:": createindex($.p, "", "$.name"), "bob": index(i:, "Bob") }
+```
+```json
+{ "p": [{ "name": "Ana", "city": "Lyon" }, { "name": "Bob", "city": "Paris" }] }
+```
+```json
+{ "parVille": [{ "Label": "Lyon", "Items": [{ "name": "Ana", "city": "Lyon" }] }, { "Label": "Paris", "Items": [{ "name": "Bob", "city": "Paris" }] }], "bob": { "name": "Bob", "city": "Paris" } }
+```
+
+```jslt
+{ "clients": join($.c, $.id, false, [{ "Name": "commandes", "Key": "$.client", "Source": $.o }]) }
+```
+```json
+{ "c": [{ "id": 1, "nom": "Ana" }], "o": [{ "client": 1, "total": 12 }, { "client": 2, "total": 5 }] }
+```
+```json
+{ "clients": [{ "id": 1, "nom": "Ana", "commandes": [{ "total": 12 }] }] }
+```
+
+### Schema: `schema`
+
+`schema(sample)` infers a JSON Schema (draft-04) from a JSON fragment, like
+NJsonSchema on the .NET side: nested objects become referenced `definitions`.
+
+```jslt
+{ "s": schema($.exemple) }
+```
+```json
+{ "exemple": { "nom": "Ana", "age": 30 } }
+```
+```json
+{ "s": { "$schema": "http://json-schema.org/draft-04/schema#", "type": "object", "properties": { "nom": { "type": "string" }, "age": { "type": "integer" } } } }
+```
+
+### Text output: `to_json`, `to_block` (`$directives.output`)
+
+As in .NET, a template can declare how its result is **serialized to text**. The
+`$directives` key never appears in the result of `transform()`;
+`template.render(source)` applies it: `filter` (JSONPath, optional) selects part
+of the result (1 node → that node, several → array, none → `null`), then the
+output function `mode` produces the text.
+
+```jslt
+{ "$directives": { "output": { "filter": $.lignes, "mode": to_block() } },
+  "lignes": $.commandes[*] }
+```
+```json
+{ "commandes": [ { "id": 1 }, { "id": 2 } ] }
+```
+```json
+{ "lignes": [ { "id": 1 }, { "id": 2 } ] }
+```
+
+Here `render()` yields one JSON line per element (JSON Lines):
+
+```text
+{"id":1}
+{"id":2}
+```
+
+- `to_json(indented, ignore_null_and_empty_value)`: compact JSON, or indented when
+  `indented` is `true`; with the 2nd argument, empty strings become `null` and
+  null properties are removed from objects.
+- `to_block()`: one compact line per array element, or the object on one line.
+- Without a directive, `render()` returns the indented JSON of the result.
+- Output functions cannot be called in the template body (explicit error); `mode`
+  is required. The .NET writer functions (`write`, `to_file`) and `to_sqlserver`
+  are not ported.
+
 ### Collections: `limit`, `union`, `select`, `selectmany`
 
 ```jslt

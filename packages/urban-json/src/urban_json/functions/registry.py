@@ -94,6 +94,9 @@ class FunctionInfo:
     description: str = ""
     parameters: tuple[ParameterInfo, ...] = ()
     returns: str | None = None
+    #: Famille (``FunctionKindEnum`` .NET) : ``"function"`` (appelable dans le corps du
+    #: template) ou ``"output"`` (déclarée dans ``$directives.output.mode``).
+    kind: str = "function"
 
     @property
     def accepts_varargs(self) -> bool:
@@ -113,6 +116,7 @@ class FunctionInfo:
             "returns": self.returns,
             "signature": self.signature(),
             "path_args": list(self.path_args),
+            "kind": self.kind,
         }
 
 
@@ -149,11 +153,49 @@ def _introspect(
     return tuple(params), _type_name(sig.return_annotation)
 
 
+def _arity_guard(info: FunctionInfo) -> JsltFunction:
+    """Refuse lisiblement un argument en trop. Sans ce contrôle, Python lève une
+    ``TypeError`` brute, ou pire, l'argument surnuméraire écrase un paramètre
+    interne. Fonction variadique ou non introspectable : appelée telle quelle."""
+    function = info.function
+    if not info.parameters and not _introspectable(function):
+        return function
+    if any(p.variadic for p in info.parameters):
+        return function
+    maximum = len(info.parameters)
+
+    def guarded(ctx: Any, *args: Any) -> Any:
+        if len(args) > maximum:
+            from urban_json.errors import JsltError
+
+            raise JsltError(
+                f"{info.name} attend au plus {maximum} argument(s), {len(args)} fourni(s) : "
+                f"{info.name}({', '.join(p.name for p in info.parameters)})"
+            )
+        return function(ctx, *args)
+
+    return guarded
+
+
+def _introspectable(function: JsltFunction) -> bool:
+    try:
+        inspect.signature(function)
+    except (ValueError, TypeError):
+        return False
+    return True
+
+
+#: Familles de fonctions reconnues (sous-ensemble de ``FunctionKindEnum`` .NET).
+KINDS = ("function", "output")
+
+
 class FunctionRegistry:
     """Table nom -> fonction, avec métadonnées de découverte."""
 
     def __init__(self) -> None:
         self._functions: dict[str, FunctionInfo] = {}
+        #: Appelables gardés par nombre d'arguments, construits à la 1re résolution.
+        self._guarded: dict[str, JsltFunction] = {}
         #: Noms d'entry points déjà chargés dans ce registre (idempotence).
         self._loaded_plugins: set[str] = set()
 
@@ -164,9 +206,17 @@ class FunctionRegistry:
         function: JsltFunction,
         path_args: tuple[int, ...] = (),
         description: str = "",
+        kind: str = "function",
     ) -> None:
-        """Enregistre (ou remplace) une fonction sous ``name`` (casse ignorée)."""
+        """Enregistre (ou remplace) une fonction sous ``name`` (casse ignorée).
+
+        ``kind`` : ``"function"`` (défaut, appelable dans le template) ou
+        ``"output"`` (fonction de sortie, cf. :mod:`urban_json.output`).
+        """
+        if kind not in KINDS:
+            raise ValueError(f"kind inconnu {kind!r} (attendu : {', '.join(KINDS)})")
         parameters, returns = _introspect(function, path_args)
+        self._guarded.pop(name.lower(), None)
         self._functions[name.lower()] = FunctionInfo(
             name=name,
             function=function,
@@ -174,12 +224,42 @@ class FunctionRegistry:
             description=description or (inspect.getdoc(function) or "").split("\n", 1)[0],
             parameters=parameters,
             returns=returns,
+            kind=kind,
         )
 
     # -- résolution (exécution) --------------------------------------------
     def get(self, name: str) -> JsltFunction | None:
+        """Fonction appelable dans le corps du template (``None`` si inconnue)."""
         info = self._functions.get(name.lower())
-        return info.function if info is not None else None
+        if info is None:
+            return None
+        if info.kind != "function":
+            from urban_json.errors import JsltError
+
+            raise JsltError(
+                f"{info.name} est une fonction de sortie : elle se déclare dans "
+                f'"$directives": {{"output": {{"mode": {info.name}(...)}}}}, pas dans le corps du template'
+            )
+        return self._resolve(info)
+
+    def get_output(self, name: str) -> JsltFunction:
+        """Fonction de sortie ``name`` (``$directives.output.mode``)."""
+        from urban_json.errors import JsltError
+
+        info = self._functions.get(name.lower())
+        if info is None:
+            raise JsltError(f"fonction de sortie inconnue : {name}")
+        if info.kind != "output":
+            outputs = ", ".join(i.name for i in self.describe_all() if i.kind == "output")
+            raise JsltError(f"{info.name} n'est pas une fonction de sortie (disponibles : {outputs})")
+        return self._resolve(info)
+
+    def _resolve(self, info: FunctionInfo) -> JsltFunction:
+        key = info.name.lower()
+        guarded = self._guarded.get(key)
+        if guarded is None:
+            guarded = self._guarded[key] = _arity_guard(info)
+        return guarded
 
     def path_args_of(self, name: str) -> tuple[int, ...]:
         """Indices des arguments passés comme chemin JSONPath brut (non évalué)."""
@@ -217,6 +297,7 @@ class FunctionRegistry:
         """
         clone = FunctionRegistry()
         clone._functions = dict(self._functions)
+        clone._guarded = dict(self._guarded)
         clone._loaded_plugins = set(self._loaded_plugins)
         return clone
 
@@ -235,7 +316,7 @@ default_registry = FunctionRegistry()
 
 
 def jslt_function(
-    name: str, path_args: tuple[int, ...] = (), description: str = ""
+    name: str, path_args: tuple[int, ...] = (), description: str = "", kind: str = "function"
 ) -> Callable[[JsltFunction], JsltFunction]:
     """Décorateur enregistrant une fonction dans le registre par défaut.
 
@@ -245,7 +326,7 @@ def jslt_function(
     """
 
     def decorator(function: JsltFunction) -> JsltFunction:
-        default_registry.register(name, function, path_args, description)
+        default_registry.register(name, function, path_args, description, kind)
         return function
 
     return decorator

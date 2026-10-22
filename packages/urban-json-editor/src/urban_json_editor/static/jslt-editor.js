@@ -84,6 +84,16 @@ class JsltEditor extends HTMLElement {
     this._acEl = this.querySelector(".jslt-ac");
 
     if (this.hasAttribute("value")) this._ta.value = this.getAttribute("value");
+    // Chargé en module (différé), le composant est souvent défini APRÈS que la
+    // page a écrit `el.value = …` : l'écriture a alors créé une propriété propre
+    // qui masque l'accesseur de la classe, et la page lit ensuite cette valeur
+    // figée au lieu de la saisie. On la reprend puis on la retire (patron
+    // « lazy property » des custom elements).
+    if (Object.prototype.hasOwnProperty.call(this, "value")) {
+      const early = this.value;
+      delete this.value;
+      this._ta.value = early == null ? "" : String(early);
+    }
 
     this._ta.addEventListener("input", () => this._onInput());
     this._ta.addEventListener("scroll", () => this._syncScroll());

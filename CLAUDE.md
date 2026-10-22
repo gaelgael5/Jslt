@@ -67,6 +67,32 @@ Patterns repris du .NET :
   testé).
 - `^` = XOR entier, `&`/`|` = ET/OU bit-à-bit, `&&` = ET booléen (fidèles) ;
   `||` = OU booléen (corrige un copier-coller fautif .NET qui faisait un ET).
+- Regex (`regexismatch`/`regexmatches`) : dialecte du module `re` ; seuls les groupes
+  nommés .NET `(?<nom>…)` sont traduits en `(?P<nom>…)`. `null`/objet/tableau → `null`
+  (le .NET levait sur null) ; motif invalide → `JsltError`.
+- `contains` est aussi un mot-clé (opérateur de filtre JSONPath) : la grammaire
+  l'accepte désormais comme nom de fonction (`jsonfunctionName`), sinon la fonction
+  `contains(...)` était inappelable — déjà le cas en .NET.
+- Arguments « chemin » (`distinct`, `select`, `selectmany`, `selectany`) : compilés
+  (`$.x`) **ou** en chaîne (`"$.x"`, forme .NET re-parsée à l'exécution).
+- Argument en trop → `JsltError` lisible (le .NET résolvait par types ; Python
+  levait une `TypeError` brute).
+- `parsedate` : pas de type date dans le portage → chaîne ISO 8601 ; cultures
+  « mois d'abord » = vide/invariant/en/en-US, toutes les autres « jour d'abord ».
+- `format` : masques .NET **traduits** (sous-ensemble courant nombres/dates, 7
+  cultures) dans `functions/formatting.py` ; hors sous-ensemble → `JsltError`. Une
+  chaîne ISO est formatée comme une date (Newtonsoft convertit les ISO en dates).
+- `group` multi-chemins : sous-groupes imbriqués (le .NET les perdait) ; `join` ne
+  modifie pas la source (le .NET mutait la gauche) ; `createindex` rend un objet
+  `{clé: élément}` (le .NET : `JDictionaryValue` opaque).
+- Sortie texte : `$directives.output` (`filter` + `mode`) est appliquée par
+  `JsltTemplate.render()` (équivalent `ApplyOutput`) ; `transform()` est inchangé et
+  n'émet jamais `$directives` (le .NET non plus — le portage le laissait fuir). Les
+  fonctions de sortie (`to_json`, `to_block`, module `functions/outputs.py`) ont le
+  `kind="output"` dans le registre : refusées dans le corps du template. Les clés
+  `write` (`to_file`) et `to_sqlserver` sont **laissées de côté** (décision
+  utilisateur) ; `write` lève `NotImplementedError`. Seule la directive de l'objet
+  racine est appliquée ; les autres clés de `$directives` (`culture`…) sont ignorées.
 - Casts temporels (`uri`/`uuid`/`datetime`/`time`) rendus en chaîne (simplifié) ;
   `integer`/`decimal`/`string`/`boolean` complets.
 
@@ -75,7 +101,7 @@ Patterns repris du .NET :
 Équivalent Python du `ServiceContainer`/`ServiceDiscovery` .NET, rendu idiomatique
 (pas de scan d'assembly par réflexion : inutile en Python) :
 
-- **Ajouter** une fonction : décorateur `@jslt_function("nom", path_args=(), description="")`
+- **Ajouter** une fonction : décorateur `@jslt_function("nom", path_args=(), description="", kind="function")`
   (analogue de l'attribut `[JsltExtensionMethod]`) ou `registry.register(...)`.
 - **Isoler** : `transform(source, functions=mon_registre)` ; `FunctionRegistry()`
   vide ou `default_registry.copy()` pour dériver sans muter le global.
@@ -111,13 +137,27 @@ cœur, chacun comme **distribution séparée** dans un **monorepo** :
 - `packages/urban-json-db/` — fonctions `connectsql` / `readsql` (port de `ServicesSql`).
   Distribution `urban-json-db` ; SQLite via la stdlib (sans dépendance), autres SGBD via
   un registre de clients DB-API (extras `postgresql`/`mysql`).
-- `packages/urban-json-http/` — fonctions `http` / `httpget`. Appel formalisé en objet
+- `packages/urban-json-http/` — fonctions `http` / `httpget` (+ `loadhttpgetjson`,
+  compatibilité avec le GET .NET). Appel formalisé en objet
   Fetch/`RequestInit` (`{method,url,headers,query,body}` → `{status,headers,body}`)
   via `httpx`. Distribution `urban-json-http`, dépend de `urban-json` + `httpx`.
 - `packages/urban-json-elastic/` — fonctions `esconnect` / `essearch` (recherche
   Elasticsearch → `_source` des hits) via le client officiel `elasticsearch`
   (importé paresseusement). Distribution `urban-json-elastic`, dépend de `urban-json` +
   `elasticsearch`.
+- `packages/urban-json-random/` — les 25 fonctions `getrandom_*` (port de
+  `Services.randoms.cs`) via Faker + rstr. **Décision : toute génération aléatoire va
+  dans ce paquet, jamais dans le cœur.** Bornes `exclusive*` au sens JSON Schema (le
+  .NET élargissait l'intervalle). Distribution `urban-json-random`.
+- `packages/urban-json-files/` — `loadjson`, `iteratejsonfile` (lecture complète puis
+  JSONPath, au lieu du `BigJsonReader` en flux du .NET), `concatpath`. Dépend de
+  `urban-json>=0.2.0` (chemins en chaîne).
+- `packages/urban-json-html/` — `loadhtml` (fichier ou URL → `{#id, attributs,
+  content}` façon HtmlAgilityPack), via `html.parser` de la stdlib.
+- `packages/urban-json-excel/` — `loadxls` / `loadxlssheet` (port d'`ExcelReader`) via
+  openpyxl ; `.xls` via l'extra `[xls]` (xlrd).
+- `packages/urban-json-phone/` — `phoneisvalid` via `phonenumbers` (même
+  libphonenumber que le .NET).
 - `packages/urban-json-editor/` — composant d'édition **réutilisable** : Web Component
   `<jslt-editor>` (coloration syntaxique + intellisense, **sans dépendance JS**) +
   utilitaires Python (`assets_dir`, `catalog`, `mount`). L'intellisense est
@@ -133,6 +173,14 @@ aux libs publiables) :
   **Bac à sable** : seules les fonctions du cœur sont exécutées (registre isolé,
   copie du registre cœur sans plugins) — pas d'E-S (fichiers/réseau/SQL) depuis un
   template. Lancer : `uvicorn urban_json_playground.app:app --reload`.
+  **Machine de test** : image `apps/playground/Dockerfile` (cœur + éditeur installés
+  depuis les sources du dépôt), stack `docker-compose.yml` à la racine, port hôte
+  `PLAYGROUND_PORT` (`.env`, défaut 8080), sonde `/healthz`. Livrer : push sur `dev`,
+  puis sur la machine `./dev-deploy.sh` (se met à jour depuis `origin/dev`, journal
+  dans `deploy-logs/`). Déclaration à l'annuaire du portail : code TOTP (outil MCP
+  `totp_code`) dans `PORTAL_TOKEN`, puis `./dev-deploy.sh --exposer-seulement` (le code
+  expire en 30 s, bien avant la fin d'un build) ; script `scripts/declarer-exposition.sh`
+  copié du dépôt du portail.
 
 Modèle de packaging (cf. pytest) : **monorepo, distributions indépendantes,
 découverte par entry points**. Chaque paquet (cœur compris) a son
@@ -148,6 +196,9 @@ pip install -e packages/urban-json-xml
 pip install -e packages/urban-json-db
 pip install -e packages/urban-json-http
 pip install -e packages/urban-json-elastic
+pip install -e packages/urban-json-random
+pip install -e packages/urban-json-files packages/urban-json-html
+pip install -e packages/urban-json-excel packages/urban-json-phone
 pytest packages/urban-json/tests && pytest packages/urban-json-*/tests
 ruff check packages
 ```
@@ -188,6 +239,7 @@ Fonctions portées (modules dans `packages/urban-json/src/urban_json/functions/`
 - collections : `limit`, `union`, `select`, `selectmany` (`select`/`selectmany`
   prennent un argument-chemin).
 - divers : `uuid`, `now`, `isnull`, `isnotnull`.
+- sortie (`kind="output"`, dans `$directives.output.mode`) : `to_json`, `to_block`.
 
 Quirks .NET conservés : `floor`/`round`/`truncate`/`min`/`max`/`pow`/trig
 renvoient un flottant, `round` = arrondi bancaire, `min`/`max` sont binaires.

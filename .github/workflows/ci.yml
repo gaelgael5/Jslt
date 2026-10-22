@@ -29,6 +29,11 @@ jobs:
           pip install -e packages/urban-json-db
           pip install -e packages/urban-json-http
           pip install -e packages/urban-json-elastic
+          pip install -e packages/urban-json-random
+          pip install -e packages/urban-json-files
+          pip install -e packages/urban-json-html
+          pip install -e "packages/urban-json-excel[xls]"
+          pip install -e packages/urban-json-phone
           pip install -e packages/urban-json-editor
           pip install -e "apps/playground[dev]"
 
@@ -42,6 +47,8 @@ jobs:
         run: >-
           pytest -q packages/urban-json-csv/tests packages/urban-json-xml/tests
           packages/urban-json-db/tests packages/urban-json-http/tests packages/urban-json-elastic/tests
+          packages/urban-json-random/tests packages/urban-json-files/tests packages/urban-json-html/tests
+          packages/urban-json-excel/tests packages/urban-json-phone/tests
           packages/urban-json-editor/tests
 
       - name: Tests — apps (pytest)

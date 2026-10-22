@@ -224,3 +224,6 @@ __marimo__/
 
 # Outil ANTLR (binaire téléchargé par scripts/generate_parser.sh)
 /tools/*.jar
+
+# Journaux de dev-deploy.sh (machine de test)
+/deploy-logs/

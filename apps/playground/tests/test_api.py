@@ -96,3 +96,9 @@ def test_every_example_transforms_ok() -> None:
         )
         assert resp.status_code == 200, f"exemple '{ex['name']}' échoue : {resp.json()}"
         assert "result" in resp.json()
+
+
+def test_healthz() -> None:
+    resp = client.get("/healthz")
+    assert resp.status_code == 200
+    assert resp.json() == {"status": "ok"}

@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "urban-json-phone"
+dynamic = ["version"]
+description = "Plugin urban-json : validation de numéros de téléphone (phoneisvalid)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "Gael Beard", email = "gaelgael5@gmail.com" }]
+keywords = ["json", "transform", "template", "jslt", "phone", "plugin"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: Markup",
+    "Typing :: Typed",
+]
+dependencies = [
+    "urban-json",
+    # Portage Python de libphonenumber, la bibliothèque utilisée côté .NET.
+    "phonenumbers>=8.13",
+]
+
+[project.urls]
+Homepage = "https://github.com/gaelgael5/Jslt"
+Repository = "https://github.com/gaelgael5/Jslt"
+
+# Découverte automatique par urban-json : installer ce paquet suffit à exposer ses fonctions.
+[project.entry-points."urban_json.functions"]
+phone = "urban_json_phone:register"
+
+[tool.setuptools.dynamic]
+version = { attr = "urban_json_phone.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+urban_json_phone = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
