@@ -27,6 +27,7 @@ les fonctions d'E-S (csv, http, hash, randoms, group, sql).
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from .ast import JsltBase
@@ -39,6 +40,7 @@ from .functions import (
     jslt_function,
     load_plugins,
 )
+from .output import OutputConfiguration, parse_output_directive, select_output
 from .parsing import parse_to_tree
 from .parsing.script_builder_visitor import ScriptBuilderVisitor
 from .runtime import JsltEvaluationVisitor, RuntimeContext, Sources, compile_program
@@ -145,10 +147,47 @@ class JsltTemplate:
         Returns:
             Le document transformé (structures Python).
         """
+        return self._run(self._context(source, functions))
+
+    def render(
+        self, source: Any = None, functions: FunctionRegistry | None = None
+    ) -> str:
+        """Applique le template puis sa directive de sortie, et renvoie le texte produit.
+
+        Équivalent de ``ApplyOutput`` .NET. Si le template déclare
+        ``"$directives": {"output": {"filter": …, "mode": to_json(…)}}``, le
+        résultat est filtré par ``filter`` (1 nœud -> ce nœud, plusieurs -> tableau,
+        aucun -> ``null``) puis passé à la fonction de sortie ``mode``
+        (``to_json``, ``to_block``…). Sans directive : JSON indenté du résultat
+        (``JToken.ToString()`` .NET).
+
+        Args:
+            source: le document source.
+            functions: registre de fonctions (défaut : registre global).
+
+        Returns:
+            Le texte produit.
+        """
+        context = self._context(source, functions)
+        result = self._run(context)
+        output = self._output_configuration()
+        if output is None:
+            return json.dumps(result, ensure_ascii=False, indent=2)
+        if output.filter is not None:
+            result = select_output(output.filter, result)
+        function = context.functions.get_output(output.mode.name)
+        evaluator = JsltEvaluationVisitor(context)
+        arguments = [argument.accept(evaluator) for argument in output.mode.arguments]
+        context.token_result = result
+        return function(context, *arguments)
+
+    def _context(self, source: Any, functions: FunctionRegistry | None) -> RuntimeContext:
         if functions is None:
             _ensure_default_plugins()
             functions = default_registry
-        context = RuntimeContext(Sources(source), functions)
+        return RuntimeContext(Sources(source), functions)
+
+    def _run(self, context: RuntimeContext) -> Any:
         # Chemin compilé si build() a été appelé (identique, plus rapide en masse) ;
         # sinon l'interpréteur d'AST. Le registre de fonctions reste résolu à
         # l'exécution : un `functions=` par appel est honoré dans les deux cas.
@@ -156,6 +195,10 @@ class JsltTemplate:
             return self._compiled(context)
         evaluator = JsltEvaluationVisitor(context)
         return self._ast.accept(evaluator)
+
+    def _output_configuration(self) -> OutputConfiguration | None:
+        """Directive de sortie du template (``$directives`` de l'objet racine)."""
+        return parse_output_directive(getattr(self._ast, "directives", None))
 
     def debug(
         self,

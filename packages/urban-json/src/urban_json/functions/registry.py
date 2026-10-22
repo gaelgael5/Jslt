@@ -94,6 +94,9 @@ class FunctionInfo:
     description: str = ""
     parameters: tuple[ParameterInfo, ...] = ()
     returns: str | None = None
+    #: Famille (``FunctionKindEnum`` .NET) : ``"function"`` (appelable dans le corps du
+    #: template) ou ``"output"`` (déclarée dans ``$directives.output.mode``).
+    kind: str = "function"
 
     @property
     def accepts_varargs(self) -> bool:
@@ -113,6 +116,7 @@ class FunctionInfo:
             "returns": self.returns,
             "signature": self.signature(),
             "path_args": list(self.path_args),
+            "kind": self.kind,
         }
 
 
@@ -181,6 +185,10 @@ def _introspectable(function: JsltFunction) -> bool:
     return True
 
 
+#: Familles de fonctions reconnues (sous-ensemble de ``FunctionKindEnum`` .NET).
+KINDS = ("function", "output")
+
+
 class FunctionRegistry:
     """Table nom -> fonction, avec métadonnées de découverte."""
 
@@ -198,8 +206,15 @@ class FunctionRegistry:
         function: JsltFunction,
         path_args: tuple[int, ...] = (),
         description: str = "",
+        kind: str = "function",
     ) -> None:
-        """Enregistre (ou remplace) une fonction sous ``name`` (casse ignorée)."""
+        """Enregistre (ou remplace) une fonction sous ``name`` (casse ignorée).
+
+        ``kind`` : ``"function"`` (défaut, appelable dans le template) ou
+        ``"output"`` (fonction de sortie, cf. :mod:`urban_json.output`).
+        """
+        if kind not in KINDS:
+            raise ValueError(f"kind inconnu {kind!r} (attendu : {', '.join(KINDS)})")
         parameters, returns = _introspect(function, path_args)
         self._guarded.pop(name.lower(), None)
         self._functions[name.lower()] = FunctionInfo(
@@ -209,14 +224,38 @@ class FunctionRegistry:
             description=description or (inspect.getdoc(function) or "").split("\n", 1)[0],
             parameters=parameters,
             returns=returns,
+            kind=kind,
         )
 
     # -- résolution (exécution) --------------------------------------------
     def get(self, name: str) -> JsltFunction | None:
-        key = name.lower()
-        info = self._functions.get(key)
+        """Fonction appelable dans le corps du template (``None`` si inconnue)."""
+        info = self._functions.get(name.lower())
         if info is None:
             return None
+        if info.kind != "function":
+            from urban_json.errors import JsltError
+
+            raise JsltError(
+                f"{info.name} est une fonction de sortie : elle se déclare dans "
+                f'"$directives": {{"output": {{"mode": {info.name}(...)}}}}, pas dans le corps du template'
+            )
+        return self._resolve(info)
+
+    def get_output(self, name: str) -> JsltFunction:
+        """Fonction de sortie ``name`` (``$directives.output.mode``)."""
+        from urban_json.errors import JsltError
+
+        info = self._functions.get(name.lower())
+        if info is None:
+            raise JsltError(f"fonction de sortie inconnue : {name}")
+        if info.kind != "output":
+            outputs = ", ".join(i.name for i in self.describe_all() if i.kind == "output")
+            raise JsltError(f"{info.name} n'est pas une fonction de sortie (disponibles : {outputs})")
+        return self._resolve(info)
+
+    def _resolve(self, info: FunctionInfo) -> JsltFunction:
+        key = info.name.lower()
         guarded = self._guarded.get(key)
         if guarded is None:
             guarded = self._guarded[key] = _arity_guard(info)
@@ -277,7 +316,7 @@ default_registry = FunctionRegistry()
 
 
 def jslt_function(
-    name: str, path_args: tuple[int, ...] = (), description: str = ""
+    name: str, path_args: tuple[int, ...] = (), description: str = "", kind: str = "function"
 ) -> Callable[[JsltFunction], JsltFunction]:
     """Décorateur enregistrant une fonction dans le registre par défaut.
 
@@ -287,7 +326,7 @@ def jslt_function(
     """
 
     def decorator(function: JsltFunction) -> JsltFunction:
-        default_registry.register(name, function, path_args, description)
+        default_registry.register(name, function, path_args, description, kind)
         return function
 
     return decorator

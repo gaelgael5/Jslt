@@ -52,6 +52,9 @@ class RuntimeContext:
         # source contre laquelle les chemins JSONPath se résolvent ; elle change
         # dans les boucles et les objets porteurs d'un ``$source``.
         self._source_stack: list[Any] = [self.sources.source]
+        #: Résultat soumis à la fonction de sortie (``TokenResult`` .NET), posé par
+        #: ``JsltTemplate.render`` avant d'appeler ``$directives.output.mode``.
+        self.token_result: Any = None
 
     @property
     def current_source(self) -> Any:

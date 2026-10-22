@@ -49,6 +49,7 @@ from urban_json.jsonpath import (
     SliceSelector,
     WildcardSelector,
 )
+from urban_json.output import DIRECTIVES_KEY, parse_output_directive
 
 # Clés spéciales reconnues dans un objet (port de la logique .NET VisitObj).
 _SOURCE_NAMES = {"$", "$source"}
@@ -136,7 +137,16 @@ class ScriptBuilderVisitor(JsltParserVisitor):
                 continue
 
             name = prop.name
-            if name.startswith("$") and name != "$directives":
+            if name.lower() == DIRECTIVES_KEY:
+                # Comme le .NET (VisitDirective -> null) : la directive configure le
+                # template mais n'est jamais émise dans le résultat.
+                if not isinstance(prop.value, JsltObject):
+                    raise JsltSemanticError(
+                        "'$directives' attend un objet", location=prop.location
+                    )
+                parse_output_directive(prop.value)  # valide dès l'analyse
+                result.directives = prop.value
+            elif name.startswith("$"):
                 if name.startswith("$$"):
                     # Échappement : "$$x" devient la propriété littérale "$x".
                     prop.name = name[1:]
@@ -149,7 +159,7 @@ class ScriptBuilderVisitor(JsltParserVisitor):
                     result.source = prop.value
                 elif name.lower() in _WHERE_NAMES:
                     result.where = prop.value
-                # autres clés $xxx : ignorées ici (directives : phases suivantes)
+                # autres clés $xxx : ignorées (comme le .NET, qui avertissait)
             else:
                 if prop.kind == JsltKind.PROPERTY and result.has_property(name):
                     raise JsltSemanticError(

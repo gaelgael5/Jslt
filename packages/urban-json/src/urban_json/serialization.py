@@ -59,6 +59,8 @@ class SourceWriterVisitor(JsltJsonVisitor):
 
     def visit_object(self, node: JsltObject) -> str:
         parts: list[str] = []
+        if node.directives is not None:
+            parts.append(f'"$directives": {node.directives.accept(self)}')
         if node.source is not None:
             parts.append(f'"$source": {node.source.accept(self)}')
         if node.where is not None:

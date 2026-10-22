@@ -20,6 +20,7 @@ from . import (  # noqa: F401
     grouping,
     maths,
     misc,
+    outputs,
     schema,
     text,
 )

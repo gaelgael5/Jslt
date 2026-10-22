@@ -140,6 +140,9 @@ class JsltObject(JsltBase):
         self.name: str | None = None
         self._items: dict[str, JsltProperty] = {}
         self._variables: dict[str, JsltVariable] = {}
+        #: Valeur de la clé ``$directives`` (port de ``JsltDirectives``) : jamais
+        #: évaluée ni émise dans le résultat, lue par ``JsltTemplate.render``.
+        self.directives: JsltObject | None = None
 
     @property
     def properties(self):

@@ -85,6 +85,14 @@ Patterns repris du .NET :
 - `group` multi-chemins : sous-groupes imbriqués (le .NET les perdait) ; `join` ne
   modifie pas la source (le .NET mutait la gauche) ; `createindex` rend un objet
   `{clé: élément}` (le .NET : `JDictionaryValue` opaque).
+- Sortie texte : `$directives.output` (`filter` + `mode`) est appliquée par
+  `JsltTemplate.render()` (équivalent `ApplyOutput`) ; `transform()` est inchangé et
+  n'émet jamais `$directives` (le .NET non plus — le portage le laissait fuir). Les
+  fonctions de sortie (`to_json`, `to_block`, module `functions/outputs.py`) ont le
+  `kind="output"` dans le registre : refusées dans le corps du template. Les clés
+  `write` (`to_file`) et `to_sqlserver` sont **laissées de côté** (décision
+  utilisateur) ; `write` lève `NotImplementedError`. Seule la directive de l'objet
+  racine est appliquée ; les autres clés de `$directives` (`culture`…) sont ignorées.
 - Casts temporels (`uri`/`uuid`/`datetime`/`time`) rendus en chaîne (simplifié) ;
   `integer`/`decimal`/`string`/`boolean` complets.
 
@@ -93,7 +101,7 @@ Patterns repris du .NET :
 Équivalent Python du `ServiceContainer`/`ServiceDiscovery` .NET, rendu idiomatique
 (pas de scan d'assembly par réflexion : inutile en Python) :
 
-- **Ajouter** une fonction : décorateur `@jslt_function("nom", path_args=(), description="")`
+- **Ajouter** une fonction : décorateur `@jslt_function("nom", path_args=(), description="", kind="function")`
   (analogue de l'attribut `[JsltExtensionMethod]`) ou `registry.register(...)`.
 - **Isoler** : `transform(source, functions=mon_registre)` ; `FunctionRegistry()`
   vide ou `default_registry.copy()` pour dériver sans muter le global.
@@ -231,6 +239,7 @@ Fonctions portées (modules dans `packages/urban-json/src/urban_json/functions/`
 - collections : `limit`, `union`, `select`, `selectmany` (`select`/`selectmany`
   prennent un argument-chemin).
 - divers : `uuid`, `now`, `isnull`, `isnotnull`.
+- sortie (`kind="output"`, dans `$directives.output.mode`) : `to_json`, `to_block`.
 
 Quirks .NET conservés : `floor`/`round`/`truncate`/`min`/`max`/`pow`/trig
 renvoient un flottant, `round` = arrondi bancaire, `min`/`max` sont binaires.
