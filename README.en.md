@@ -94,6 +94,7 @@ group (installing the package is enough). Details and the plugin contract in the
 - [`urban-json-db`](packages/urban-json-db/) — reading from SQL databases (`connectsql`, `readsql`).
 - [`urban-json-http`](packages/urban-json-http/) — HTTP calls (`http`, `httpget`).
 - [`urban-json-elastic`](packages/urban-json-elastic/) — Elasticsearch search (`esconnect`, `essearch`).
+- [`urban-json-random`](packages/urban-json-random/) — random data (`getrandom_*`: numbers, names, e-mails, IBANs…).
 
 ## Architecture
 

@@ -136,6 +136,10 @@ cœur, chacun comme **distribution séparée** dans un **monorepo** :
   Elasticsearch → `_source` des hits) via le client officiel `elasticsearch`
   (importé paresseusement). Distribution `urban-json-elastic`, dépend de `urban-json` +
   `elasticsearch`.
+- `packages/urban-json-random/` — les 25 fonctions `getrandom_*` (port de
+  `Services.randoms.cs`) via Faker + rstr. **Décision : toute génération aléatoire va
+  dans ce paquet, jamais dans le cœur.** Bornes `exclusive*` au sens JSON Schema (le
+  .NET élargissait l'intervalle). Distribution `urban-json-random`.
 - `packages/urban-json-editor/` — composant d'édition **réutilisable** : Web Component
   `<jslt-editor>` (coloration syntaxique + intellisense, **sans dépendance JS**) +
   utilitaires Python (`assets_dir`, `catalog`, `mount`). L'intellisense est
@@ -174,6 +178,7 @@ pip install -e packages/urban-json-xml
 pip install -e packages/urban-json-db
 pip install -e packages/urban-json-http
 pip install -e packages/urban-json-elastic
+pip install -e packages/urban-json-random
 pytest packages/urban-json/tests && pytest packages/urban-json-*/tests
 ruff check packages
 ```

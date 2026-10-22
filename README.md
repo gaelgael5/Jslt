@@ -95,6 +95,7 @@ Les **plugins tiers** sont auto-découverts via le groupe d'entry points
 - [`urban-json-db`](packages/urban-json-db/) — lecture en base SQL (`connectsql`, `readsql`).
 - [`urban-json-http`](packages/urban-json-http/) — appels HTTP (`http`, `httpget`).
 - [`urban-json-elastic`](packages/urban-json-elastic/) — recherche Elasticsearch (`esconnect`, `essearch`).
+- [`urban-json-random`](packages/urban-json-random/) — données aléatoires (`getrandom_*` : nombres, noms, e-mails, IBAN…).
 
 ## Architecture
 
