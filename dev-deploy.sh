@@ -145,7 +145,7 @@ fi
 step 7 "Contrôle de santé (http://127.0.0.1:$PORT/healthz)"
 ok=0
 for _ in $(seq 1 45); do
-  if curl -fsS --max-time 2 "http://127.0.0.1:$PORT/healthz" | grep -q '"ok"'; then ok=1; break; fi
+  if curl -fs --max-time 2 "http://127.0.0.1:$PORT/healthz" | grep -q '"ok"'; then ok=1; break; fi
   sleep 2
 done
 [[ "$ok" == 1 ]] || die "pas de réponse saine en 90 s — docker compose logs --tail=100 $SERVICE"
