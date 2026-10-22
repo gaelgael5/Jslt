@@ -137,6 +137,23 @@ def test_loadhttpgetjson_reponse_non_json_donne_null(mock_http) -> None:
     assert execute_loadhttpgetjson(None, "https://api/", "text") is None
 
 
+@pytest.mark.parametrize("error", [httpx.ConnectError("refused"), httpx.ReadTimeout("slow")])
+def test_loadhttpgetjson_hote_injoignable_erreur_lisible(monkeypatch, error) -> None:
+    from urban_json import JsltError
+
+    from urban_json_http import execute_loadhttpgetjson
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise error
+
+    transport = httpx.MockTransport(handler)
+    monkeypatch.setattr(
+        urban_json_http, "_build_client", lambda timeout: httpx.Client(transport=transport, timeout=timeout)
+    )
+    with pytest.raises(JsltError, match=r"loadhttpgetjson : appel impossible vers 'https://api/x'"):
+        execute_loadhttpgetjson(None, "https://api/", "x")
+
+
 def test_loadhttpgetjson_url_requise() -> None:
     from urban_json import JsltError
 

@@ -104,7 +104,8 @@ def execute_loadhttpgetjson(ctx: Any, root_path: Any = None, method_name: Any = 
     Comme le .NET (``HttpClient.BaseAddress`` + chemin relatif, ``Accept:
     application/json``) : la réponse est lue en JSON quel que soit son
     content-type ; échec HTTP ou corps non JSON -> ``null`` (le .NET émettait un
-    avertissement). Pour un appel complet, préférer ``http`` / ``httpget``.
+    avertissement) ; hôte injoignable ou délai dépassé -> ``JsltError`` (le .NET
+    levait). Pour un appel complet, préférer ``http`` / ``httpget``.
     """
     from urllib.parse import urljoin
 
@@ -113,8 +114,13 @@ def execute_loadhttpgetjson(ctx: Any, root_path: Any = None, method_name: Any = 
     if not root_path:
         raise JsltError("loadhttpgetjson : l'URL de base (root_path) est requise")
     url = urljoin(str(root_path), str(method_name or ""))
-    with _build_client(DEFAULT_TIMEOUT) as client:
-        response = client.get(url, headers={"Accept": "application/json"})
+    try:
+        with _build_client(DEFAULT_TIMEOUT) as client:
+            response = client.get(url, headers={"Accept": "application/json"})
+    except httpx.TransportError as exc:
+        # Hôte injoignable, délai dépassé… : le .NET levait aussi (seuls un statut
+        # d'erreur et un corps non JSON donnent null) ; ici, une erreur lisible.
+        raise JsltError(f"loadhttpgetjson : appel impossible vers {url!r} ({exc})") from exc
     if not response.is_success:
         return None
     try:
