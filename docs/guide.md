@@ -433,6 +433,39 @@ ou un tableau donnent `null`. Dans une chaîne jslt, l'antislash se double
 { "valide": true, "nombres": ["12", "345"] }
 ```
 
+### Tests sur les collections : `any`, `contains`, `selectany`
+
+`any(tableau)` est vrai pour un tableau non vide ; `contains(tableau, valeur)`
+compare avec l'égalité de l'opérateur `==` ; `selectany(source, "chemin")` est
+vrai si le chemin JSONPath (écrit en chaîne, comme en .NET, ou directement)
+sélectionne au moins une valeur.
+
+```jslt
+{ "plein": any($.a), "a_b": contains($.a, "b"), "grand": selectany($.n, "$[?(@ > 2)]") }
+```
+```json
+{ "a": ["a", "b"], "n": [1, 3] }
+```
+```json
+{ "plein": true, "a_b": true, "grand": true }
+```
+
+### Dates et Unicode : `parsedate`, `normalize`
+
+`parsedate(texte, culture)` lit une date (ISO 8601, ou numérique selon la
+culture : `fr-FR` jour d'abord, `en-US` ou vide mois d'abord) et la rend en
+ISO 8601 ; `normalize` compose les caractères Unicode (forme C).
+
+```jslt
+{ "fr": parsedate($.d, "fr-FR"), "us": parsedate($.u, "en-US") }
+```
+```json
+{ "d": "22/10/2026 14:05", "u": "10/22/2026" }
+```
+```json
+{ "fr": "2026-10-22T14:05:00", "us": "2026-10-22T00:00:00" }
+```
+
 ### Collections : `limit`, `union`, `select`, `selectmany`
 
 ```jslt

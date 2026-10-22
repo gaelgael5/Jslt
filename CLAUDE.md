@@ -70,6 +70,15 @@ Patterns repris du .NET :
 - Regex (`regexismatch`/`regexmatches`) : dialecte du module `re` ; seuls les groupes
   nommés .NET `(?<nom>…)` sont traduits en `(?P<nom>…)`. `null`/objet/tableau → `null`
   (le .NET levait sur null) ; motif invalide → `JsltError`.
+- `contains` est aussi un mot-clé (opérateur de filtre JSONPath) : la grammaire
+  l'accepte désormais comme nom de fonction (`jsonfunctionName`), sinon la fonction
+  `contains(...)` était inappelable — déjà le cas en .NET.
+- Arguments « chemin » (`distinct`, `select`, `selectmany`, `selectany`) : compilés
+  (`$.x`) **ou** en chaîne (`"$.x"`, forme .NET re-parsée à l'exécution).
+- Argument en trop → `JsltError` lisible (le .NET résolvait par types ; Python
+  levait une `TypeError` brute).
+- `parsedate` : pas de type date dans le portage → chaîne ISO 8601 ; cultures
+  « mois d'abord » = vide/invariant/en/en-US, toutes les autres « jour d'abord ».
 - Casts temporels (`uri`/`uuid`/`datetime`/`time`) rendus en chaîne (simplifié) ;
   `integer`/`decimal`/`string`/`boolean` complets.
 

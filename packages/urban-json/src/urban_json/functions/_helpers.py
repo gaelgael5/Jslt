@@ -72,3 +72,27 @@ def number_result(token: Any, fn):
     if not is_number(token):
         return None
     return fn(token)
+
+
+def as_json_path(value: Any):
+    """Chemin JSONPath d'un argument « chemin » : compilé (écrit ``$.x`` dans le
+    template, cf. ``path_args``) ou chaîne (``"$.x"``, la forme du .NET, qui
+    re-parse ses chemins à l'exécution). ``None`` si absent ; ``JsltError`` si la
+    chaîne n'est pas un chemin."""
+    if value is None:
+        return None
+    if hasattr(value, "select_values"):
+        return value
+    # Imports différés : le parseur et l'AST importent eux-mêmes les fonctions.
+    from urban_json import JsltTemplate
+    from urban_json.errors import JsltError
+
+    text = str(value)
+    try:
+        node = JsltTemplate.parse(text)._ast
+    except JsltError as exc:
+        raise JsltError(f"chemin JSONPath invalide {text!r} : {exc}") from exc
+    compiled = getattr(node, "compiled", None)
+    if compiled is None:
+        raise JsltError(f"chemin JSONPath invalide {text!r} : ce n'est pas un chemin")
+    return compiled

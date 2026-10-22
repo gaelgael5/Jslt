@@ -432,6 +432,39 @@ syntax `(?<name>…)` is accepted.
 { "valide": true, "nombres": ["12", "345"] }
 ```
 
+### Collection tests: `any`, `contains`, `selectany`
+
+`any(array)` is true for a non-empty array; `contains(array, value)` compares
+with the `==` operator's equality; `selectany(source, "path")` is true when the
+JSONPath (written as a string, as in .NET, or directly) selects at least one
+value.
+
+```jslt
+{ "plein": any($.a), "a_b": contains($.a, "b"), "grand": selectany($.n, "$[?(@ > 2)]") }
+```
+```json
+{ "a": ["a", "b"], "n": [1, 3] }
+```
+```json
+{ "plein": true, "a_b": true, "grand": true }
+```
+
+### Dates and Unicode: `parsedate`, `normalize`
+
+`parsedate(text, culture)` reads a date (ISO 8601, or numeric by culture:
+`fr-FR` day first, `en-US` or empty month first) and returns ISO 8601;
+`normalize` composes Unicode characters (form C).
+
+```jslt
+{ "fr": parsedate($.d, "fr-FR"), "us": parsedate($.u, "en-US") }
+```
+```json
+{ "d": "22/10/2026 14:05", "u": "10/22/2026" }
+```
+```json
+{ "fr": "2026-10-22T14:05:00", "us": "2026-10-22T00:00:00" }
+```
+
 ### Collections: `limit`, `union`, `select`, `selectmany`
 
 ```jslt

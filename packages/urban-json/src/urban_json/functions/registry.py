@@ -149,11 +149,45 @@ def _introspect(
     return tuple(params), _type_name(sig.return_annotation)
 
 
+def _arity_guard(info: FunctionInfo) -> JsltFunction:
+    """Refuse lisiblement un argument en trop. Sans ce contrôle, Python lève une
+    ``TypeError`` brute, ou pire, l'argument surnuméraire écrase un paramètre
+    interne. Fonction variadique ou non introspectable : appelée telle quelle."""
+    function = info.function
+    if not info.parameters and not _introspectable(function):
+        return function
+    if any(p.variadic for p in info.parameters):
+        return function
+    maximum = len(info.parameters)
+
+    def guarded(ctx: Any, *args: Any) -> Any:
+        if len(args) > maximum:
+            from urban_json.errors import JsltError
+
+            raise JsltError(
+                f"{info.name} attend au plus {maximum} argument(s), {len(args)} fourni(s) : "
+                f"{info.name}({', '.join(p.name for p in info.parameters)})"
+            )
+        return function(ctx, *args)
+
+    return guarded
+
+
+def _introspectable(function: JsltFunction) -> bool:
+    try:
+        inspect.signature(function)
+    except (ValueError, TypeError):
+        return False
+    return True
+
+
 class FunctionRegistry:
     """Table nom -> fonction, avec métadonnées de découverte."""
 
     def __init__(self) -> None:
         self._functions: dict[str, FunctionInfo] = {}
+        #: Appelables gardés par nombre d'arguments, construits à la 1re résolution.
+        self._guarded: dict[str, JsltFunction] = {}
         #: Noms d'entry points déjà chargés dans ce registre (idempotence).
         self._loaded_plugins: set[str] = set()
 
@@ -167,6 +201,7 @@ class FunctionRegistry:
     ) -> None:
         """Enregistre (ou remplace) une fonction sous ``name`` (casse ignorée)."""
         parameters, returns = _introspect(function, path_args)
+        self._guarded.pop(name.lower(), None)
         self._functions[name.lower()] = FunctionInfo(
             name=name,
             function=function,
@@ -178,8 +213,14 @@ class FunctionRegistry:
 
     # -- résolution (exécution) --------------------------------------------
     def get(self, name: str) -> JsltFunction | None:
-        info = self._functions.get(name.lower())
-        return info.function if info is not None else None
+        key = name.lower()
+        info = self._functions.get(key)
+        if info is None:
+            return None
+        guarded = self._guarded.get(key)
+        if guarded is None:
+            guarded = self._guarded[key] = _arity_guard(info)
+        return guarded
 
     def path_args_of(self, name: str) -> tuple[int, ...]:
         """Indices des arguments passés comme chemin JSONPath brut (non évalué)."""
@@ -217,6 +258,7 @@ class FunctionRegistry:
         """
         clone = FunctionRegistry()
         clone._functions = dict(self._functions)
+        clone._guarded = dict(self._guarded)
         clone._loaded_plugins = set(self._loaded_plugins)
         return clone
 

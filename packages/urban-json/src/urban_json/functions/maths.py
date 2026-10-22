@@ -61,9 +61,12 @@ def execute_log2(ctx: Any, token: Any = None) -> Any:
 
 # Trigonométrie (radians), port 1:1 des fonctions .NET du même nom.
 def _register_unary_math(name: str, fn) -> None:
+    # `fn` est capturée par la fermeture, pas passée en paramètre par défaut : un
+    # paramètre `_fn=fn` apparaissait au catalogue (`acos(token, _fn)`) et un 2e
+    # argument du template remplaçait l'opération.
     @jslt_function(name)
-    def _impl(ctx: Any, token: Any = None, _fn=fn) -> Any:
-        return number_result(token, _fn)
+    def _impl(ctx: Any, token: Any = None) -> Any:
+        return number_result(token, fn)
 
 
 for _name, _mathfn in (

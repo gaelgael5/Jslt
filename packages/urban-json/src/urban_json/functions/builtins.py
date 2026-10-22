@@ -13,7 +13,7 @@ from typing import Any
 
 from urban_json.errors import JsltError
 
-from ._helpers import coerce_bool, coerce_number, to_text
+from ._helpers import as_json_path, coerce_bool, coerce_number, to_text
 from .registry import jslt_function
 
 
@@ -64,6 +64,7 @@ def execute_distinct(ctx: Any, source: Any = None, path: Any = None) -> list:
     clés uniques. Les scalaires sont dédupliqués par valeur ; objets et ``null``
     sont ignorés. L'ordre d'apparition est conservé.
     """
+    path = as_json_path(path)
     if source is None or path is None:
         return []
     if not isinstance(source, list):

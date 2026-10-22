@@ -7,6 +7,7 @@ Convention : ``None`` -> ``None``, chaîne -> résultat, autre valeur -> ``False
 from __future__ import annotations
 
 import re
+import unicodedata
 from typing import Any
 
 from urban_json.errors import JsltError
@@ -80,6 +81,12 @@ def execute_padright(ctx: Any, token: Any = None, length: int = 0, charset: str 
 def execute_stringlenght(ctx: Any, token: Any = None) -> int:
     # Convention .NET : null -> 0 ; chaîne -> longueur ; autre -> 0.
     return len(token) if isinstance(token, str) else 0
+
+
+@jslt_function("normalize", description="Normalise une chaîne Unicode (forme C : caractères composés)")
+def execute_normalize(ctx: Any, token: Any = None) -> Any:
+    # String.Normalize() .NET = forme C par défaut.
+    return string_result(token, lambda s: unicodedata.normalize("NFC", s))
 
 
 # --- Expressions régulières (port de regexismatch / regexmatches .NET) ---------
