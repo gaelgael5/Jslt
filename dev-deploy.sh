@@ -157,7 +157,12 @@ echo "Service sain : http://$(hostname -f 2>/dev/null || hostname):$PORT/"
 # --me : enregistrée sous le workspace de l'appelant authentifié par son TOTP.
 step 8 "Déclaration à l'annuaire"
 if [[ -n "${PORTAL_TOKEN:-}" ]]; then
-  TARGET_HOST="$(hostname -I 2>/dev/null | awk '{print $1}')"
+  # Voie TOTP : le portail n'accepte qu'une IP du mesh (100.64.0.0/10) ou celle
+  # d'une machine qu'il connaît — l'IP LAN est refusée (422). On préfère donc
+  # l'adresse mesh, et on ne retombe sur la première IP qu'à défaut.
+  ips="$(hostname -I 2>/dev/null)"
+  TARGET_HOST="$(tr ' ' '\n' <<<"$ips" | grep -E '^100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.' | head -1)"
+  [[ -n "$TARGET_HOST" ]] || TARGET_HOST="$(awk '{print $1}' <<<"$ips")"
   bash "$REPO_DIR/scripts/declarer-exposition.sh" --me \
     --portal "$(env_get EXPOSE_PORTAL_URL)" \
     --workspace "$(env_get EXPOSE_WORKSPACE)" \
