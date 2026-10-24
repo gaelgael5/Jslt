@@ -5,7 +5,11 @@ Composant d'édition **jslt** réutilisable : un Web Component `<jslt-editor>` a
 source**), livré pour être intégré dans n'importe quel projet web Python.
 
 - **Sans dépendance côté navigateur** (vanilla Web Component) → aucun build node,
-  drop-in dans un projet existant.
+  drop-in dans un projet existant. Depuis la 0.2.0 il n'est plus **mono-fichier** :
+  `jslt-editor.js` importe `jslt-paths.js` en module, donc les assets doivent être
+  **servis** côte à côte (monter `assets_dir()` en statique). Injecter le JS en
+  ligne dans la page échoue sur `Failed to resolve module specifier
+  "./jslt-paths.js"`, faute de base d'URL.
 - **Intellisense des fonctions** alimentée par le catalogue de `urban-json`
   (`registry.catalog()`), donc toujours à jour — y compris les fonctions de
   plugins installés.
