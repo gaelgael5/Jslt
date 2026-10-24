@@ -169,6 +169,12 @@
       setTimeout(() => (btn.textContent = old), 1400);
     }
 
+    // Le JSON source alimente l'intellisense de chemins du template : sans lui,
+    // l'éditeur ne peut proposer que les fonctions.
+    function syncSource() {
+      $template.source = $source.value;
+    }
+
     // --- transformation ------------------------------------------------------
     let timer = null;
     async function run() {
@@ -246,13 +252,17 @@
     $run.addEventListener("click", run);
     $share.addEventListener("click", share);
     $template.addEventListener("input", autoRun);
-    $source.addEventListener("input", autoRun);
+    $source.addEventListener("input", () => {
+      syncSource();
+      autoRun();
+    });
     $funcSearch.addEventListener("input", renderFunctions);
     $examples.addEventListener("change", () => {
       const ex = ($examples._data || [])[Number($examples.value)];
       if (!ex) return;
       $template.value = ex.template;
       $source.value = ex.source;
+      syncSource();
       run();
     });
     document.addEventListener("keydown", (e) => {
@@ -340,6 +350,7 @@
       $template.value = DEFAULT_TEMPLATE;
       $source.value = DEFAULT_SOURCE;
     }
+    syncSource();
     loadExamples();
     loadFunctions();
     run();

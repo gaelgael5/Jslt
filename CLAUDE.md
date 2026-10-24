@@ -160,8 +160,17 @@ cœur, chacun comme **distribution séparée** dans un **monorepo** :
   libphonenumber que le .NET).
 - `packages/urban-json-editor/` — composant d'édition **réutilisable** : Web Component
   `<jslt-editor>` (coloration syntaxique + intellisense, **sans dépendance JS**) +
-  utilitaires Python (`assets_dir`, `catalog`, `mount`). L'intellisense est
-  alimentée par `registry.catalog()`. Distribution `urban-json-editor`, dépend de `urban-json`.
+  utilitaires Python (`assets_dir`, `catalog`, `mount`). L'intellisense des fonctions est
+  alimentée par `registry.catalog()` ; celle des **chemins** (déclenchée sur `$` et `@`)
+  par le document source passé au composant (`ed.source`) **ou** par la liste de chemins
+  que calcule l'application hôte (`ed.setPaths`, attribut `paths-url` ; elle prime, et le
+  composant ne lit aucun schéma — il replie la liste en arbre et la traverse comme un
+  document) — logique pure dans
+  `static/jslt-paths.js` (hors DOM, éprouvée sous node : `tests/paths.test.mjs`, rattachée
+  à pytest). Les propositions respectent le moteur : pas de projection implicite sur les
+  tableaux (`$.items.name` est proposé `$.items[*].name`), portée de l'élément dans un
+  filtre `[?(@…)]` et dans une boucle `{"$source": …}`. Distribution `urban-json-editor`,
+  dépend de `urban-json`.
 
 ### Applications (non publiées) — `apps/`
 

@@ -10,11 +10,15 @@
  *   <jslt-editor id="ed" catalog-url="/api/functions"></jslt-editor>
  *   ed.value = '{ "n": $.x }';           // get/set du contenu
  *   ed.setCatalog([{name, signature, description, parameters}]);  // intellisense
+ *   ed.source = '{ "x": 1 }';             // document source -> chemins proposés
+ *   ed.setPaths(["$.a[0].b"]);            // ou la liste de chemins de l'hôte
  *   ed.addEventListener("input", ...);    // émis à chaque modification
  *
  * La coloration et l'autocomplétion sont purement présentationnelles : la source
  * de vérité reste le texte (propriété `value`).
  */
+
+import { findPathStart, parseSourceDoc, suggestPaths, treeFromPaths } from "./jslt-paths.js";
 
 const KEYWORDS = new Set(["when", "switch", "default", "true", "false", "null"]);
 
@@ -71,6 +75,9 @@ class JsltEditor extends HTMLElement {
   constructor() {
     super();
     this._catalog = [];
+    this._source = undefined;
+    this._paths = [];
+    this._pathTree = undefined;
     this._ac = { open: false, items: [], index: 0, from: 0, to: 0 };
   }
 
@@ -94,6 +101,13 @@ class JsltEditor extends HTMLElement {
       delete this.value;
       this._ta.value = early == null ? "" : String(early);
     }
+    // Même piège pour les sources de chemins, souvent posées dès le chargement.
+    for (const prop of ["source", "paths"]) {
+      if (!Object.prototype.hasOwnProperty.call(this, prop)) continue;
+      const early = this[prop];
+      delete this[prop];
+      this[prop] = early;
+    }
 
     this._ta.addEventListener("input", () => this._onInput());
     this._ta.addEventListener("scroll", () => this._syncScroll());
@@ -103,6 +117,8 @@ class JsltEditor extends HTMLElement {
 
     const url = this.getAttribute("catalog-url");
     if (url) this._fetchCatalog(url);
+    const pathsUrl = this.getAttribute("paths-url");
+    if (pathsUrl) this._fetchPaths(pathsUrl);
 
     this._render();
   }
@@ -123,6 +139,34 @@ class JsltEditor extends HTMLElement {
   setCatalog(catalog) {
     this._catalog = Array.isArray(catalog) ? catalog : [];
   }
+  /** Document source (objet/tableau, ou son texte JSON) : alimente les chemins. */
+  get source() {
+    return this._source;
+  }
+  set source(doc) {
+    this.setSource(doc);
+  }
+  setSource(doc) {
+    // Analysé une fois ici, pas à chaque frappe dans le template : l'appelant
+    // repose typiquement le texte JSON à chaque modification de son éditeur.
+    this._source = parseSourceDoc(doc);
+  }
+  /**
+   * Chemins calculés par l'application hôte : `"$.a[0].b"` ou
+   * `{path, type, description}`. Pour un hôte qui connaît son modèle d'entrée
+   * sans en avoir d'instance — le composant ne lit aucun schéma, il ne replie
+   * que ce qu'on lui donne.
+   */
+  get paths() {
+    return this._paths;
+  }
+  set paths(list) {
+    this.setPaths(list);
+  }
+  setPaths(list) {
+    this._paths = Array.isArray(list) ? list : [];
+    this._pathTree = treeFromPaths(this._paths);
+  }
 
   async _fetchCatalog(url) {
     try {
@@ -131,6 +175,16 @@ class JsltEditor extends HTMLElement {
       this.setCatalog(data.functions || data);
     } catch {
       /* intellisense simplement indisponible */
+    }
+  }
+
+  async _fetchPaths(url) {
+    try {
+      const resp = await fetch(url);
+      const data = await resp.json();
+      this.setPaths(data.paths || data);
+    } catch {
+      /* complétion des chemins simplement indisponible */
     }
   }
 
@@ -161,6 +215,18 @@ class JsltEditor extends HTMLElement {
     return { word: m[1], from: pos - m[1].length, to: pos };
   }
   _maybeOpenAc() {
+    const text = this._ta.value;
+    const caret = this._ta.selectionStart;
+    // Les chemins de l'hôte font foi quand il en fournit : ils décrivent son
+    // modèle d'entrée, là où un document n'en est qu'une instance.
+    const paths = suggestPaths(text, caret, this._pathTree !== undefined ? this._pathTree : this._source);
+    if (paths) {
+      this._ac = { open: true, items: paths.items, index: 0, from: paths.from, to: paths.to };
+      return this._renderAc();
+    }
+    // Dans un chemin, les fonctions ne sont pas des candidats : `$.us` ne se
+    // complète pas en `upper()`. Mieux vaut aucune proposition qu'une fausse.
+    if (findPathStart(text, caret) !== -1) return this._closeAc();
     const w = this._wordBeforeCaret();
     if (!w || w.word.length < 1) return this._closeAc();
     const needle = w.word.toLowerCase();
@@ -221,9 +287,11 @@ class JsltEditor extends HTMLElement {
     const f = this._ac.items[this._ac.index];
     if (!f) return;
     const v = this._ta.value;
-    const insert = `${f.name}()`;
+    // Un item de chemin porte son texte d'insertion (`.name`, `[*].name`, `0]`…) ;
+    // une fonction s'insère appelée, caret entre les parenthèses.
+    const insert = f.insert !== undefined ? f.insert : `${f.name}()`;
     this._ta.value = v.slice(0, this._ac.from) + insert + v.slice(this._ac.to);
-    const caret = this._ac.from + f.name.length + 1; // entre les parenthèses
+    const caret = this._ac.from + (f.insert !== undefined ? insert.length : f.name.length + 1);
     this._ta.selectionStart = this._ta.selectionEnd = caret;
     this._closeAc();
     this._render();
