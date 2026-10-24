@@ -111,6 +111,10 @@ Les assets sont `jslt-editor.js`, `jslt-paths.js` (importé par le premier) et
 - `setCatalog(list)` — fournit le catalogue d'intellisense par programme.
 - Attribut `catalog-url` — URL d'où charger le catalogue (`{functions:[...]}`).
 - Événement `input` — émis à chaque modification.
+- Clavier : tant que la liste de propositions est ouverte, l'éditeur **capture**
+  `Tab`, `Enter`, `Escape` et ↑/↓ (`preventDefault`) ; un hôte qui câble `Enter`
+  ou `Tab` teste `event.defaultPrevented`. Hors liste ouverte, `Tab` indente de
+  deux espaces et les autres touches remontent à l'hôte.
 - Variables CSS `--jslt-ed-*` surchargeables (couleurs, police, hauteur).
 
 ## Licence
