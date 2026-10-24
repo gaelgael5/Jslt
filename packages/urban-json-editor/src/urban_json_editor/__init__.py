@@ -2,7 +2,10 @@
 
 Fournit un Web Component ``<jslt-editor>`` (assets statiques JS/CSS, sans
 dépendance côté navigateur) et de petits utilitaires Python pour l'intégrer dans
-n'importe quel projet web Python :
+n'importe quel projet web Python. L'intellisense couvre les fonctions du registre
+et les **chemins** du document d'entrée, déclenchés sur ``$`` et ``@`` : soit
+dérivés d'un document source (propriété ``source``), soit fournis par
+l'application hôte (``setPaths`` / attribut ``paths-url``) :
 
 * :func:`assets_dir` — chemin du dossier des assets à servir en statique ;
 * :func:`catalog` — catalogue de fonctions (pour l'intellisense) depuis un
@@ -27,6 +30,7 @@ puis dans la page :
     <link rel="stylesheet" href="/jslt-editor/jslt-editor.css">
     <script type="module" src="/jslt-editor/jslt-editor.js"></script>
     <jslt-editor catalog-url="/api/functions"></jslt-editor>
+    <script>document.querySelector("jslt-editor").source = '{ "x": 1 }';</script>
 """
 
 from __future__ import annotations
@@ -34,12 +38,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 __all__ = ["ASSET_FILES", "assets_dir", "catalog", "mount"]
 
-#: Fichiers d'assets livrés par le composant.
-ASSET_FILES = ("jslt-editor.js", "jslt-editor.css")
+#: Fichiers d'assets livrés par le composant (``jslt-editor.js`` importe
+#: ``jslt-paths.js`` : les deux doivent être servis côte à côte).
+ASSET_FILES = ("jslt-editor.js", "jslt-paths.js", "jslt-editor.css")
 
 
 def assets_dir() -> Path:

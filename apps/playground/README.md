@@ -7,7 +7,9 @@ le résultat transformé par le **vrai moteur** côté serveur (FastAPI).
 
 Ce n'est pas une distribution publiée — c'est une application du dépôt.
 
-Fonctionnalités : éditeur avec coloration + intellisense, **bibliothèque
+Fonctionnalités : éditeur avec coloration + intellisense (fonctions **et chemins
+du JSON source**, déclenchés sur `$` et `@` — le document saisi à droite alimente
+les propositions), **bibliothèque
 d'exemples**, **transformation automatique** (debounce, désactivable), **partage
 par URL** (l'état est encodé dans le lien), **panneau de référence** des fonctions
 disponibles (filtrable), et **débogage pas-à-pas** (trace d'évaluation nœud par
