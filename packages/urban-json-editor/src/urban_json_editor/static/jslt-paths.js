@@ -24,6 +24,53 @@ const MAX_INDEXES = 10;
 //  boucle) : la résolution est récursive, donc bornée.
 const MAX_SCOPE_DEPTH = 8;
 
+/**
+ * Messages par défaut des causes de silence, par code.
+ *
+ * Le composant est consommé par des projets qui ne sont pas tous en français et
+ * ne porte aucun dispositif de traduction : chaque cause a donc un CODE stable,
+ * et l'hôte remplace tout ou partie du dictionnaire (`setMessages`). Les textes
+ * nomment un fait, jamais une intention supposée : « @ ne désigne un élément que
+ * dans un filtre » et non « vous vouliez sûrement écrire [?( ».
+ */
+export const DEFAULT_HINT_MESSAGES = {
+  "no-source-doc": "Aucun document source n'est fourni à l'éditeur.",
+  "at-outside-filter": "@ ne désigne un élément que dans un filtre [?(…)].",
+  "at-filter-without-brackets": "Un filtre s'écrit [?(…)] : sans ses crochets, le moteur refuse la construction.",
+  "unknown-segment": "{segment} n'existe pas dans le document source.",
+  "loop-source-incomplete": "Le chemin de la boucle ($source) n'est pas encore complet.",
+  "loop-source-empty": "La boucle {path} ne désigne aucune collection du document source.",
+  "filter-path-unknown": "La collection filtrée n'est pas un chemin que l'éditeur sait résoudre.",
+  "filter-path-empty": "{path} ne désigne aucune collection du document source.",
+  "no-children": "Rien à proposer sous ce nœud : c'est une valeur, pas un objet ni un tableau.",
+  "no-match": "Aucune clé ne commence par « {prefix} » ici.",
+};
+
+/**
+ * Note la cause du silence dans le collecteur, si collecteur il y a.
+ *
+ * Première notée, première gardée : la résolution part du caret, donc la
+ * première cause rencontrée est la plus proche de ce que l'utilisateur écrit.
+ */
+function note(hint, code, data) {
+  if (hint && !hint.code) {
+    hint.code = code;
+    hint.data = data || {};
+  }
+}
+
+/** Message d'une cause, `{clé}` substitué depuis ses données. */
+export function formatHint(hint, messages) {
+  if (!hint || !hint.code) return null;
+  const table = messages || DEFAULT_HINT_MESSAGES;
+  const text = table[hint.code] !== undefined ? table[hint.code] : DEFAULT_HINT_MESSAGES[hint.code];
+  if (text === undefined) return null;
+  return text.replace(/\{(\w+)\}/g, (whole, key) => {
+    const v = hint.data ? hint.data[key] : undefined;
+    return v === undefined || v === "" ? whole : String(v);
+  });
+}
+
 /** Feuille d'un arbre construit depuis une liste de chemins : type déclaré. */
 export class PathLeaf {
   constructor(type, description) {
@@ -220,14 +267,47 @@ function skipStringForward(text, i) {
   return text.length;
 }
 
-/** Chemin donné à `"$source"` dans l'objet [start, end] et son étendue, ou null. */
+/**
+ * Index de la valeur de la clé PROPRE `"$source"` dans le corps d'un objet
+ * (`body` commence au `{`), ou -1.
+ *
+ * La clé doit être au niveau de l'objet lui-même : un `"$source"` d'un objet ou
+ * d'un tableau imbriqué appartient à cette boucle-là, pas à celle-ci. Chercher
+ * la chaîne dans tout le corps faisait lire la racine comme une boucle dès
+ * qu'un bloc de boucle s'y trouvait — propositions crédibles et fausses, hors
+ * du bloc. Les chaînes sont sautées : un `$source` écrit dans une valeur texte
+ * n'est pas une clé.
+ */
+function ownSourceValueStart(body) {
+  let depth = 0;
+  for (let i = 0; i < body.length; i++) {
+    const c = body[i];
+    if (c === '"') {
+      const close = skipStringForward(body, i);
+      if (depth === 1 && body.slice(i + 1, close) === "$source") {
+        const colon = /^\s*:\s*/.exec(body.slice(close + 1));
+        if (colon) return close + 1 + colon[0].length;
+      }
+      i = close;
+      continue;
+    }
+    if (c === "{" || c === "[" || c === "(") depth++;
+    else if (c === "}" || c === "]" || c === ")") {
+      depth--;
+      // Objet refermé (ou texte déséquilibré) : rien au-delà ne lui appartient.
+      if (depth <= 0) break;
+    }
+  }
+  return -1;
+}
+
+/** Chemin donné à la clé propre `"$source"` de l'objet [start, end], ou null. */
 function sourceExpression(text, start, end) {
   const body = text.slice(start, end);
-  const m = /"\$source"\s*:\s*/.exec(body);
-  if (!m) return null;
-  let i = m.index + m[0].length;
+  const from = ownSourceValueStart(body);
+  if (from === -1) return null;
+  let i = from;
   let depth = 0;
-  const from = i;
   for (; i < body.length; i++) {
     const c = body[i];
     if (c === '"') {
@@ -296,9 +376,9 @@ export function resolveSegments(nodes, segments) {
  * l'intellisense proposerait les clés de la racine là où le moteur lit celles
  * d'un élément — le pire des cas : des propositions crédibles et fausses.
  */
-export function scopeNodes(text, start, doc, depth = 0) {
+export function scopeNodes(text, start, doc, depth = 0, hint = null) {
   if (depth > MAX_SCOPE_DEPTH) return [];
-  if (text[start] === "@") return filterScope(text, start, doc, depth);
+  if (text[start] === "@") return filterScope(text, start, doc, depth, hint);
   let at = start;
   for (let i = 0; i < MAX_SCOPE_DEPTH; i++) {
     const open = enclosingObject(text, at);
@@ -309,13 +389,42 @@ export function scopeNodes(text, start, doc, depth = 0) {
     if (loop !== null && !(start >= loop.from && start < loop.to)) {
       const parsed = parsePath(loop.expr);
       const segments = parsed && completedSegments(parsed);
-      if (!segments) return [];
-      const collections = resolveSegments(scopeNodes(text, loop.from, doc, depth + 1), segments);
-      return elementsOf(collections);
+      if (!segments) {
+        note(hint, "loop-source-incomplete", { path: loop.expr });
+        return [];
+      }
+      const outer = scopeNodes(text, loop.from, doc, depth + 1, hint);
+      const elements = elementsOf(resolveSegments(outer, segments));
+      if (elements.length === 0) {
+        const code = beingTyped(outer, segments, parsed) ? "loop-source-incomplete" : "loop-source-empty";
+        note(hint, code, { path: loop.expr });
+      }
+      return elements;
     }
     at = open; // objet simple : la portée est celle de l'objet englobant
   }
-  return doc === undefined ? [] : [doc];
+  if (doc === undefined) {
+    note(hint, "no-source-doc");
+    return [];
+  }
+  return [doc];
+}
+
+/**
+ * Vrai si le dernier segment du chemin est le PRÉFIXE d'une clé qui existe à ce
+ * niveau : le chemin est en cours de frappe. Sans cette distinction, un
+ * `"$source": $.Anim` encore incomplet s'annonçait « ne désigne aucune
+ * collection », ce qui envoie chercher une erreur là où il n'y en a pas.
+ */
+function beingTyped(outer, segments, parsed) {
+  const last = segments[segments.length - 1];
+  if (!parsed.pending || !last || (last.kind !== "key" && last.kind !== "deep")) return false;
+  const parents = resolveSegments(outer, segments.slice(0, -1));
+  const prefix = last.key.toLowerCase();
+  for (const [k] of keysOf(parents)) {
+    if (k.length > last.key.length && k.toLowerCase().startsWith(prefix)) return true;
+  }
+  return false;
 }
 
 /** Éléments des tableaux de `nodes` (un non-tableau est son propre élément). */
@@ -328,7 +437,34 @@ function elementsOf(nodes) {
   return out;
 }
 
-function filterScope(text, atIndex, doc, depth) {
+/**
+ * Vrai si `@` est dans un `?(…)` écrit SANS ses crochets (`$.l?(@.x)`), forme
+ * que le moteur refuse. À vérifier avant le balayage des crochets : un `[`
+ * ouvert plus haut (un tableau du template) n'est pas le crochet du filtre.
+ */
+function bracketlessFilter(text, atIndex) {
+  let depth = 0;
+  for (let i = atIndex - 1; i >= 0; i--) {
+    const c = text[i];
+    if (c === ")") depth++;
+    else if (c === "(") {
+      if (depth > 0) {
+        depth--;
+        continue;
+      }
+      const before = text.slice(0, i).replace(/\s+$/, "");
+      if (!before.endsWith("?")) return false;
+      return !before.slice(0, -1).replace(/\s+$/, "").endsWith("["); // `[?(` est la forme juste
+    }
+  }
+  return false;
+}
+
+function filterScope(text, atIndex, doc, depth, hint = null) {
+  if (bracketlessFilter(text, atIndex)) {
+    note(hint, "at-filter-without-brackets");
+    return [];
+  }
   let bracketDepth = 0;
   for (let i = atIndex - 1; i >= 0; i--) {
     const c = text[i];
@@ -338,15 +474,29 @@ function filterScope(text, atIndex, doc, depth) {
         bracketDepth--;
         continue;
       }
-      if (!/^\[\s*\?/.test(text.slice(i))) return [];
+      if (!/^\[\s*\?/.test(text.slice(i))) {
+        note(hint, "at-outside-filter");
+        return [];
+      }
       const start = findPathStart(text, i);
-      if (start === -1) return [];
-      const parsed = parsePath(text.slice(start, i));
+      const parsed = start === -1 ? null : parsePath(text.slice(start, i));
       const segments = parsed && completedSegments(parsed);
-      if (!segments) return [];
-      return elementsOf(resolveSegments(scopeNodes(text, start, doc, depth + 1), segments));
+      if (!segments) {
+        note(hint, "filter-path-unknown");
+        return [];
+      }
+      const outer = scopeNodes(text, start, doc, depth + 1, hint);
+      const elements = elementsOf(resolveSegments(outer, segments));
+      if (elements.length === 0) {
+        note(hint, "filter-path-empty", { path: text.slice(start, i) });
+      }
+      return elements;
     }
   }
+  // Aucun crochet ouvert avant `@` : soit un filtre écrit sans ses crochets
+  // (`$.l?(@.x)`, que le moteur refuse), soit `@` hors de tout filtre. Les deux
+  // rendaient la même liste vide, donc le même silence.
+  note(hint, /\?\s*\(\s*$/.test(text.slice(0, atIndex)) ? "at-filter-without-brackets" : "at-outside-filter");
   return [];
 }
 
@@ -419,8 +569,41 @@ function insideString(text, caret) {
  * forme que les items de fonctions afin que l'éditeur n'ait qu'une liste.
  */
 export function suggestPaths(text, caret, source) {
-  const doc = parseSourceDoc(source);
-  if (doc === undefined || insideString(text, caret)) return null;
+  return resolveSuggestions(text, caret, source, null);
+}
+
+/**
+ * Cause du silence au caret, ou `null`.
+ *
+ * Rendue UNIQUEMENT quand aucune liste n'était possible : un message ne remplace
+ * jamais des propositions. `null` aussi quand le caret n'est pas dans un chemin
+ * — un message répond à un geste, il ne commente pas la frappe.
+ */
+export function pathHint(text, caret, source) {
+  const hint = {};
+  let items;
+  try {
+    items = resolveSuggestions(text, caret, source, hint);
+  } catch {
+    // Un template en cours de frappe n'est équilibré ni en accolades ni en
+    // guillemets : le repli silencieux vaut mieux qu'une pile dans la console.
+    return null;
+  }
+  if (items !== null) return null;
+  return hint.code ? { code: hint.code, data: hint.data } : null;
+}
+
+/** Désignation d'un segment dans un message (`.cle`, `[2]`, `[*]`, `..cle`). */
+function segmentLabel(seg) {
+  if (seg.kind === "key") return seg.key;
+  if (seg.kind === "deep") return `..${seg.key}`;
+  if (seg.kind === "index") return `[${seg.index}]`;
+  if (seg.kind === "filter") return "[?(…)]";
+  return "[*]";
+}
+
+function resolveSuggestions(text, caret, source, hint) {
+  if (insideString(text, caret)) return null;
 
   const start = findPathStart(text, caret);
   if (start === -1) return null;
@@ -432,8 +615,24 @@ export function suggestPaths(text, caret, source) {
   // `$`/`@` seul, qui est justement le déclencheur attendu.
   if (!pending && parsed.segments.length > 0) return null;
 
-  const nodes = resolveSegments(scopeNodes(text, start, doc), parsed.segments);
-  if (nodes.length === 0) return null;
+  const doc = parseSourceDoc(source);
+  if (doc === undefined) {
+    note(hint, "no-source-doc");
+    return null;
+  }
+
+  let nodes = scopeNodes(text, start, doc, 0, hint);
+  if (nodes.length === 0) return null; // cause notée par scopeNodes/filterScope
+  // Segment par segment, pour pouvoir nommer celui qui ne mène à rien : c'est
+  // la différence entre « tu t'es trompé de clé » et « il n'y a rien ici ».
+  for (const seg of parsed.segments) {
+    const next = resolveSegments(nodes, [seg]);
+    if (next.length === 0) {
+      note(hint, "unknown-segment", { segment: segmentLabel(seg) });
+      return null;
+    }
+    nodes = next;
+  }
 
   const from = pending ? start + pending.at : caret;
   const prefix = (pending ? pending.prefix : "").toLowerCase();
@@ -461,11 +660,13 @@ export function suggestPaths(text, caret, source) {
     }
     const bare = prefix.replace(/^["']/, "");
     const kept = items.filter((it) => it.name.toLowerCase().startsWith(bare)).slice(0, MAX_ITEMS);
+    if (kept.length === 0) note(hint, items.length ? "no-match" : "no-children", { prefix: bare });
     return kept.length ? { items: kept, from, to: caret } : null;
   }
 
   if (pending && pending.type === "deepKey") {
-    for (const [k, v] of deepKeysOf(nodes)) {
+    const deep = deepKeysOf(nodes);
+    for (const [k, v] of deep) {
       if (matches(k)) {
         items.push({
           name: k,
@@ -476,20 +677,18 @@ export function suggestPaths(text, caret, source) {
       }
     }
     const kept = items.slice(0, MAX_ITEMS);
+    if (kept.length === 0) note(hint, deep.size ? "no-match" : "no-children", { prefix: pending.prefix });
     return kept.length ? { items: kept, from, to: caret } : null;
   }
 
   for (const [k, v] of keysOf(nodes)) {
-    if (matches(k)) {
-      items.push({ name: k, signature: k, description: describeValue(v), insert: keyAccess(k) });
-    }
+    items.push({ name: k, signature: k, description: describeValue(v), insert: keyAccess(k) });
   }
   // Clés des ÉLÉMENTS quand le chemin désigne un tableau : proposées avec leur
   // `[*]`, sans quoi l'utilisateur écrirait `$.items.name`, qui vaut null.
   const arrays = nodes.filter(Array.isArray);
   if (arrays.length > 0) {
     for (const [k, v] of keysOf(elementsOf(arrays))) {
-      if (!matches(k)) continue;
       items.push({
         name: k,
         signature: `[*].${k}`,
@@ -498,7 +697,13 @@ export function suggestPaths(text, caret, source) {
       });
     }
   }
-  const kept = items.slice(0, MAX_ITEMS);
+  // Filtrées après coup : la liste complète dit si le silence vient d'un nœud
+  // sans enfant ou d'un préfixe qui ne correspond à rien — deux situations que
+  // l'utilisateur ne doit pas confondre.
+  const kept = items.filter((it) => matches(it.name)).slice(0, MAX_ITEMS);
+  if (kept.length === 0) {
+    note(hint, items.length ? "no-match" : "no-children", { prefix: pending ? pending.prefix : "" });
+  }
   return kept.length ? { items: kept, from, to: caret } : null;
 }
 

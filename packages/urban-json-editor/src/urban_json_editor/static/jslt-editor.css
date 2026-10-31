@@ -112,3 +112,21 @@ jslt-editor .jslt-ac-item {
 jslt-editor .jslt-ac-item.active { background: var(--jslt-ed-ac-active); }
 jslt-editor .jslt-ac-sig { color: var(--jslt-ed-fg); }
 jslt-editor .jslt-ac-desc { color: var(--jslt-ed-operator); font-size: 11px; }
+
+/* Même boîte que l'autocomplétion, une ligne de texte au lieu d'une liste :
+   le message répond au geste, donc il s'affiche là où la liste se serait
+   ouverte. Non cliquable — il informe, il ne propose rien. */
+jslt-editor .jslt-hint {
+  position: absolute;
+  z-index: 10;
+  max-width: 420px;
+  padding: 6px 10px;
+  background: var(--jslt-ed-ac-bg);
+  border: 1px solid var(--jslt-ed-border);
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+  color: var(--jslt-ed-operator);
+  font-family: var(--jslt-ed-font);
+  font-size: 11px;
+  pointer-events: none;
+}

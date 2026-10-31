@@ -1,5 +1,7 @@
 # urban-json-random
 
+*Français · [English](https://github.com/gaelgael5/Jslt/blob/main/packages/urban-json-random/README.en.md)*
+
 Plugin [urban-json](https://github.com/gaelgael5/Jslt) : **données aléatoires** dans
 les templates, via les 25 fonctions `getrandom_*` du moteur .NET d'origine (port de
 `Services.randoms.cs`). Utile pour produire des jeux de test réalistes.

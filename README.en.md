@@ -100,6 +100,12 @@ group (installing the package is enough). Details and the plugin contract in the
 - [`urban-json-excel`](packages/urban-json-excel/) — reading Excel workbooks (`loadxls`, `loadxlssheet`).
 - [`urban-json-phone`](packages/urban-json-phone/) — phone number validation (`phoneisvalid`).
 
+**Editing component** (separate distribution, not a function plugin):
+- [`urban-json-editor`](packages/urban-json-editor/) — the `<jslt-editor>` Web
+  Component: syntax highlighting and intellisense (functions **and** source
+  document paths), with no JS dependency. It is what the
+  [playground](apps/playground/) serves.
+
 ## Architecture
 
 The pipeline mirrors the .NET engine, **without** its code
@@ -139,11 +145,18 @@ The grammar is authoritative: `packages/urban-json/grammar/JsltLexer.g4` and
 
 ## Scope
 
-The port targets the engine's **core**. Out of scope (extensible): some
-set-membership filter operators (`nin`/`subsetof`/`contains`…, also absent from
-.NET), I/O functions (`csv`, `http`, `sql`…) and joins (`group`, `join`, `index`).
-The list of ported functions and the assumed deviations from .NET are documented
-in [`CLAUDE.md`](CLAUDE.md).
+The core ships **71 functions**: maths, text, encoding and hashing, collections,
+grouping and joins (`group`, `join`, `index`, `createindex`), regular
+expressions, dates and formatting (`parsedate`, `format`, `normalize`), schema
+inference, and the text-output functions. The authoritative list is
+`default_registry.names()`.
+
+Outside the core **by design**, in the `urban-json-*` packages listed above:
+input/output (files, network, database) and random generation. Not ported: a few
+set-membership filter operators (`nin`/`subsetof`/`size`…, also absent from .NET)
+and writing (`write`/`to_file`, `to_sqlserver`). The function list and the
+assumed deviations from .NET are documented in [`CLAUDE.md`](CLAUDE.md) (in
+French).
 
 ## License
 

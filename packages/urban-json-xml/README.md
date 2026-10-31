@@ -1,5 +1,7 @@
 # urban-json-xml
 
+*Français · [English](https://github.com/gaelgael5/Jslt/blob/main/packages/urban-json-xml/README.en.md)*
+
 Plugin [urban-json](https://github.com/gaelgael5/Jslt) : lecture de fichiers **XML**
 dans les templates, via la fonction `loadxml`. Suit les conventions XML↔JSON du
 `XmlNodeConverter` (.NET/Newtonsoft).

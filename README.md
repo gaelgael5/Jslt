@@ -101,6 +101,12 @@ Les **plugins tiers** sont auto-découverts via le groupe d'entry points
 - [`urban-json-excel`](packages/urban-json-excel/) — lecture de classeurs Excel (`loadxls`, `loadxlssheet`).
 - [`urban-json-phone`](packages/urban-json-phone/) — validation de numéros de téléphone (`phoneisvalid`).
 
+**Composant d'édition** (distribution séparée, pas un plugin de fonctions) :
+- [`urban-json-editor`](packages/urban-json-editor/) — Web Component `<jslt-editor>` :
+  coloration syntaxique et intellisense (fonctions **et** chemins du document
+  source), sans dépendance JS. C'est lui que sert le
+  [playground](apps/playground/).
+
 ## Architecture
 
 Le pipeline suit celui du moteur .NET, **sans** son étage de génération /
@@ -140,11 +146,18 @@ sont la source de vérité du langage, reprise du dépôt .NET.
 
 ## Périmètre
 
-Le portage cible le **cœur** du moteur. Hors périmètre (extensible) : certains
-opérateurs ensemblistes de filtre (`nin`/`subsetof`/`contains`…, absents aussi du
-.NET), les fonctions d'E-S (`csv`, `http`, `sql`…) et les jointures (`group`,
-`join`, `index`). Le détail des fonctions portées et des écarts assumés vis-à-vis
-du .NET figure dans [`CLAUDE.md`](CLAUDE.md).
+Le cœur porte **71 fonctions** : maths, texte, encodage et hachage, collections,
+regroupement et jointure (`group`, `join`, `index`, `createindex`), expressions
+régulières, dates et formatage (`parsedate`, `format`, `normalize`), schéma, et
+les fonctions de sortie texte. La liste qui fait foi est
+`default_registry.names()`.
+
+Hors du cœur **par décision**, dans les paquets `urban-json-*` ci-dessus : les
+entrées-sorties (fichiers, réseau, base) et la génération aléatoire. Non portés :
+quelques opérateurs ensemblistes de filtre (`nin`/`subsetof`/`size`…, absents du
+.NET également) et l'écriture (`write`/`to_file`, `to_sqlserver`). Le détail des
+fonctions et des écarts assumés vis-à-vis du .NET figure dans
+[`CLAUDE.md`](CLAUDE.md).
 
 ## Licence
 

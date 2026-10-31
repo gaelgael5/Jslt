@@ -589,6 +589,10 @@ produit le texte.
 { "premier": 1, "tous": [1, 2] }
 ```
 
+`selectmany` est aussi la façon de construire un **tableau de valeurs simples**
+à partir d'une collection filtrée, là où une boucle `$source` ne produirait que
+des objets — voir §12.
+
 > D'autres fonctions sont portées (trigonométrie, encodage base64 / hash,
 > `isnull`, `uuid`, `now`…). Voir la liste complète dans [`CLAUDE.md`](../CLAUDE.md).
 > `uuid()` et `now()` sont non déterministes et donc non illustrées ici.
@@ -692,6 +696,64 @@ Avec `$where` pour ne garder que les actifs :
 [ { "nom": "A" } ]
 ```
 
+
+### Tableau de valeurs simples (sans objet enveloppe)
+
+Une boucle produit toujours des **objets** : le corps de la boucle *est* l'objet
+qui porte le `$source`, il n'existe pas de forme à corps scalaire (une clé
+`"$valeur"` serait d'ailleurs ignorée, comme toute clé `$xxx` inconnue). Pour
+obtenir un tableau de chaînes ou de nombres, on ne boucle pas : on projette un
+chemin avec `selectmany` (§8).
+
+```jslt
+{ "references": selectmany($, $.produits[?(@.disponible in [true, "true"])].reference) }
+```
+```json
+{ "produits": [ { "reference": "A-100", "disponible": true }, { "reference": "B-200", "disponible": "true" }, { "reference": "C-300", "disponible": false } ] }
+```
+```json
+{ "references": ["A-100", "B-200"] }
+```
+
+Le chemin nu (`$.produits[?(…)].reference`) donne le même résultat **à partir de
+deux correspondances**, mais il suit la sémantique 0 / 1 / N (§4) : une seule
+correspondance rend la valeur seule, aucune rend `null`.
+
+```jslt
+{ "references": $.produits[?(@.disponible == true)].reference }
+```
+```json
+{ "produits": [ { "reference": "A-100", "disponible": true } ] }
+```
+```json
+{ "references": "A-100" }
+```
+
+C'est le piège quand le champ de sortie est attendu comme une liste :
+`selectmany` rend toujours un tableau, `[]` compris.
+
+```jslt
+{ "references": selectmany($, $.produits[?(@.disponible == true)].reference) }
+```
+```json
+{ "produits": [ { "reference": "A-100", "disponible": true } ] }
+```
+```json
+{ "references": ["A-100"] }
+```
+
+Pour dédoublonner la projection, `distinct` applique son chemin **au tableau
+reçu** (pas au document) : le chemin est donc relatif à ce tableau.
+
+```jslt
+{ "references": distinct($.produits[?(@.disponible == true)], $[*].reference) }
+```
+```json
+{ "produits": [ { "reference": "A-100", "disponible": true }, { "reference": "B-200", "disponible": true }, { "reference": "A-100", "disponible": true }, { "reference": "C-300", "disponible": false } ] }
+```
+```json
+{ "references": ["A-100", "B-200"] }
+```
 ---
 
 ## 13. Filtres JSONPath `?(...)`

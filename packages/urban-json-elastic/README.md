@@ -1,5 +1,7 @@
 # urban-json-elastic
 
+*Français · [English](https://github.com/gaelgael5/Jslt/blob/main/packages/urban-json-elastic/README.en.md)*
+
 Plugin [urban-json](https://github.com/gaelgael5/Jslt) : recherche **Elasticsearch**
 depuis les templates, via le client officiel `elasticsearch`.
 

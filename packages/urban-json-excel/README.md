@@ -1,5 +1,7 @@
 # urban-json-excel
 
+*Français · [English](https://github.com/gaelgael5/Jslt/blob/main/packages/urban-json-excel/README.en.md)*
+
 Plugin [urban-json](https://github.com/gaelgael5/Jslt) : **classeurs Excel** dans les
 templates (port de `ServicesXls` / `ExcelReader`, .NET).
 

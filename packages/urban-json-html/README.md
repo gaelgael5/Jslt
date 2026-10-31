@@ -1,5 +1,7 @@
 # urban-json-html
 
+*Français · [English](https://github.com/gaelgael5/Jslt/blob/main/packages/urban-json-html/README.en.md)*
+
 Plugin [urban-json](https://github.com/gaelgael5/Jslt) : **HTML vers JSON** dans les
 templates, via `loadhtml(chemin_ou_url)` (port de `ServiceHtml`, .NET). Aucune
 dépendance : `html.parser` de la bibliothèque standard.

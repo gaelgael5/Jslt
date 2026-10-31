@@ -1,5 +1,7 @@
 # urban-json-phone
 
+*Français · [English](https://github.com/gaelgael5/Jslt/blob/main/packages/urban-json-phone/README.en.md)*
+
 Plugin [urban-json](https://github.com/gaelgael5/Jslt) : **validation de numéros de
 téléphone** via `phoneisvalid(numéro, région)` (port du .NET, même bibliothèque
 libphonenumber grâce à `phonenumbers`).
