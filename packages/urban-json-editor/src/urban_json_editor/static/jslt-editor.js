@@ -14,11 +14,26 @@
  *   ed.setPaths(["$.a[0].b"]);            // ou la liste de chemins de l'hôte
  *   ed.addEventListener("input", ...);    // émis à chaque modification
  *
+ * Messages de diagnostic (OPT-IN, silence par défaut — un composant qui se met
+ * à parler dans tous les projets qui l'utilisent serait une rupture) :
+ *   <jslt-editor hints></jslt-editor>     // ou ed.hints = true
+ *   ed.setMessages({ "at-outside-filter": "@ only works in a [?(…)] filter" });
+ * Quand aucune proposition n'est possible, la cause est dite là où la liste se
+ * serait ouverte. Un message ne remplace JAMAIS une liste.
+ *
  * La coloration et l'autocomplétion sont purement présentationnelles : la source
  * de vérité reste le texte (propriété `value`).
  */
 
-import { findPathStart, parseSourceDoc, suggestPaths, treeFromPaths } from "./jslt-paths.js";
+import {
+  DEFAULT_HINT_MESSAGES,
+  findPathStart,
+  formatHint,
+  parseSourceDoc,
+  pathHint,
+  suggestPaths,
+  treeFromPaths,
+} from "./jslt-paths.js";
 
 const KEYWORDS = new Set(["when", "switch", "default", "true", "false", "null"]);
 
@@ -68,6 +83,7 @@ TEMPLATE.innerHTML = `
     <textarea class="jslt-input" spellcheck="false" autocomplete="off"
               autocapitalize="off" autocorrect="off" wrap="off"></textarea>
     <div class="jslt-ac" role="listbox" hidden></div>
+    <div class="jslt-hint" role="status" hidden></div>
   </div>
 `;
 
@@ -79,6 +95,8 @@ class JsltEditor extends HTMLElement {
     this._paths = [];
     this._pathTree = undefined;
     this._ac = { open: false, items: [], index: 0, from: 0, to: 0 };
+    this._hints = false;
+    this._messages = DEFAULT_HINT_MESSAGES;
   }
 
   connectedCallback() {
@@ -89,6 +107,8 @@ class JsltEditor extends HTMLElement {
     this._pre = this.querySelector(".jslt-highlight code");
     this._ta = this.querySelector(".jslt-input");
     this._acEl = this.querySelector(".jslt-ac");
+    this._hintEl = this.querySelector(".jslt-hint");
+    if (this.hasAttribute("hints")) this._hints = true;
 
     if (this.hasAttribute("value")) this._ta.value = this.getAttribute("value");
     // Chargé en module (différé), le composant est souvent défini APRÈS que la
@@ -102,7 +122,7 @@ class JsltEditor extends HTMLElement {
       this._ta.value = early == null ? "" : String(early);
     }
     // Même piège pour les sources de chemins, souvent posées dès le chargement.
-    for (const prop of ["source", "paths"]) {
+    for (const prop of ["source", "paths", "hints"]) {
       if (!Object.prototype.hasOwnProperty.call(this, prop)) continue;
       const early = this[prop];
       delete this[prop];
@@ -138,6 +158,22 @@ class JsltEditor extends HTMLElement {
   }
   setCatalog(catalog) {
     this._catalog = Array.isArray(catalog) ? catalog : [];
+  }
+  /** Messages de diagnostic affichés quand aucune proposition n'est possible. */
+  get hints() {
+    return this._hints;
+  }
+  set hints(on) {
+    this._hints = Boolean(on) && on !== "false";
+    if (!this._hints) this._closeHint();
+  }
+  /**
+   * Textes des messages, par code de cause (voir `DEFAULT_HINT_MESSAGES`).
+   * Fusionnés avec les défauts : l'hôte n'en remplace que ce qu'il veut, et un
+   * code inconnu de lui garde son texte livré plutôt que de redevenir muet.
+   */
+  setMessages(messages) {
+    this._messages = messages ? { ...DEFAULT_HINT_MESSAGES, ...messages } : DEFAULT_HINT_MESSAGES;
   }
   /** Document source (objet/tableau, ou son texte JSON) : alimente les chemins. */
   get source() {
@@ -217,16 +253,21 @@ class JsltEditor extends HTMLElement {
   _maybeOpenAc() {
     const text = this._ta.value;
     const caret = this._ta.selectionStart;
+    this._closeHint(); // comme la liste : recalculé à chaque frappe, jamais figé
     // Les chemins de l'hôte font foi quand il en fournit : ils décrivent son
     // modèle d'entrée, là où un document n'en est qu'une instance.
-    const paths = suggestPaths(text, caret, this._pathTree !== undefined ? this._pathTree : this._source);
+    const source = this._pathTree !== undefined ? this._pathTree : this._source;
+    const paths = suggestPaths(text, caret, source);
     if (paths) {
       this._ac = { open: true, items: paths.items, index: 0, from: paths.from, to: paths.to };
       return this._renderAc();
     }
     // Dans un chemin, les fonctions ne sont pas des candidats : `$.us` ne se
     // complète pas en `upper()`. Mieux vaut aucune proposition qu'une fausse.
-    if (findPathStart(text, caret) !== -1) return this._closeAc();
+    if (findPathStart(text, caret) !== -1) {
+      this._closeAc();
+      return this._showHint(text, caret, source);
+    }
     const w = this._wordBeforeCaret();
     if (!w || w.word.length < 1) return this._closeAc();
     const needle = w.word.toLowerCase();
@@ -251,9 +292,31 @@ class JsltEditor extends HTMLElement {
     this._positionAc();
     this._acEl.hidden = false;
   }
+  /**
+   * Dit pourquoi il n'y a rien à proposer, là où la liste se serait ouverte.
+   *
+   * N'interdit rien : l'utilisateur continue d'écrire ce qu'il veut, y compris
+   * une construction que l'éditeur ne comprend pas. Et n'informe que si l'hôte
+   * l'a demandé (`hints`).
+   */
+  _showHint(text, caret, source) {
+    if (!this._hints) return;
+    const hint = pathHint(text, caret, source);
+    const message = hint && formatHint(hint, this._messages);
+    if (!message) return;
+    this._hintEl.textContent = message;
+    this._hintEl.dataset.code = hint.code;
+    this._positionBox(this._hintEl, caret);
+    this._hintEl.hidden = false;
+  }
+  _closeHint() {
+    if (this._hintEl) this._hintEl.hidden = true;
+  }
   _positionAc() {
+    this._positionBox(this._acEl, this._ac.from);
+  }
+  _positionBox(el, pos) {
     // Coordonnées du caret via une div-miroir (technique standard).
-    const pos = this._ac.from;
     const style = getComputedStyle(this._ta);
     const mirror = document.createElement("div");
     const props = [
@@ -274,8 +337,8 @@ class JsltEditor extends HTMLElement {
     const top = marker.offsetTop - this._ta.scrollTop + marker.offsetHeight;
     const left = marker.offsetLeft - this._ta.scrollLeft;
     this._root.removeChild(mirror);
-    this._acEl.style.top = `${top}px`;
-    this._acEl.style.left = `${left}px`;
+    el.style.top = `${top}px`;
+    el.style.left = `${left}px`;
   }
   _closeAc() {
     if (this._ac.open) {
@@ -325,6 +388,9 @@ class JsltEditor extends HTMLElement {
         return this._closeAc();
       }
     }
+    // Le message ne capture aucune touche (la liste, elle, consomme Entrée et
+    // les flèches) : seul Échap le referme, comme on referme la liste.
+    if (e.key === "Escape") return this._closeHint();
     if (e.key === "Tab") {
       // Indentation : insère deux espaces plutôt que de changer de focus.
       e.preventDefault();
