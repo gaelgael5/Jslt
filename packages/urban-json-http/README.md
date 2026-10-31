@@ -1,5 +1,7 @@
 # urban-json-http
 
+*Français · [English](https://github.com/gaelgael5/Jslt/blob/main/packages/urban-json-http/README.en.md)*
+
 Plugin [urban-json](https://github.com/gaelgael5/Jslt) : appels **HTTP** depuis les
 templates. L'appel est formalisé comme un objet **Fetch / `RequestInit`** (le
 vocabulaire HTTP-en-JSON standard).

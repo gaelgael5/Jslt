@@ -1,5 +1,7 @@
 # Bancs d'essai (performance)
 
+*Français · [English](README.en.md)*
+
 Scripts de mesure du débit du moteur. **Hors suite de tests** (`pytest` ne les
 collecte pas) : ils ne tournent pas en CI, on les lance à la main.
 

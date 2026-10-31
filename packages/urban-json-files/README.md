@@ -1,5 +1,7 @@
 # urban-json-files
 
+*Français · [English](https://github.com/gaelgael5/Jslt/blob/main/packages/urban-json-files/README.en.md)*
+
 Plugin [urban-json](https://github.com/gaelgael5/Jslt) : **fichiers JSON et chemins**
 dans les templates (port des fonctions .NET `loadjson`, `IterateJsonFile`, `concatpath`).
 

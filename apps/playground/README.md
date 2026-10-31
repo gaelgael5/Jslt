@@ -1,5 +1,7 @@
 # urban-json playground
 
+*Français · [English](README.en.md)*
+
 Petite application web de **test/démo** pour `urban-json` : on saisit un template jslt
 (éditeur avec **coloration syntaxique + intellisense** via le composant
 [`urban-json-editor`](../../packages/urban-json-editor/)) et un document JSON source, et on voit

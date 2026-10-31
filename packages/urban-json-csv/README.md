@@ -1,5 +1,7 @@
 # urban-json-csv
 
+*Français · [English](https://github.com/gaelgael5/Jslt/blob/main/packages/urban-json-csv/README.en.md)*
+
 Plugin [urban-json](https://github.com/gaelgael5/Jslt) : lecture de fichiers **CSV**
 dans les templates, via la fonction `loadcsv`. Port de
 `Bb.CustomServices.ServiceCsv` (.NET).

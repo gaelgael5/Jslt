@@ -1,5 +1,7 @@
 # urban-json-editor
 
+*Français · [English](https://github.com/gaelgael5/Jslt/blob/main/packages/urban-json-editor/README.en.md)*
+
 Composant d'édition **jslt** réutilisable : un Web Component `<jslt-editor>` avec
 **coloration syntaxique** et **intellisense** (fonctions **et chemins du document
 source**), livré pour être intégré dans n'importe quel projet web Python.

@@ -1,5 +1,7 @@
 # urban-json-db
 
+*Français · [English](https://github.com/gaelgael5/Jslt/blob/main/packages/urban-json-db/README.en.md)*
+
 Plugin [urban-json](https://github.com/gaelgael5/Jslt) : lecture en **base de données
 SQL** depuis les templates. Port de `Bb.Jslt.Services.Sql.ServicesSql` (.NET).
 
