@@ -587,6 +587,10 @@ path)` returns **all** of them (compiled path):
 { "premier": 1, "tous": [1, 2] }
 ```
 
+`selectmany` is also the way to build an **array of plain values** out of a
+filtered collection, where a `$source` loop would only produce objects — see
+§12.
+
 > Other functions are ported (trigonometry, base64 encoding / hashing, `isnull`,
 > `uuid`, `now`…). See the full list in [`CLAUDE.md`](../CLAUDE.md) (in French).
 > `uuid()` and `now()` are non-deterministic and therefore not illustrated here.
@@ -690,6 +694,63 @@ With `$where` to keep only the active ones:
 [ { "nom": "A" } ]
 ```
 
+
+### Array of plain values (no wrapper object)
+
+A loop always produces **objects**: the loop body *is* the object carrying the
+`$source`, and there is no scalar-body form (a `"$valeur"` key would be ignored,
+like any unknown `$xxx` key). To get an array of strings or numbers, do not
+loop: project a path with `selectmany` (§8).
+
+```jslt
+{ "references": selectmany($, $.produits[?(@.disponible in [true, "true"])].reference) }
+```
+```json
+{ "produits": [ { "reference": "A-100", "disponible": true }, { "reference": "B-200", "disponible": "true" }, { "reference": "C-300", "disponible": false } ] }
+```
+```json
+{ "references": ["A-100", "B-200"] }
+```
+
+The bare path (`$.produits[?(…)].reference`) gives the same result **from two
+matches on**, but it follows the 0 / 1 / N semantics (§4): a single match yields
+the value alone, no match yields `null`.
+
+```jslt
+{ "references": $.produits[?(@.disponible == true)].reference }
+```
+```json
+{ "produits": [ { "reference": "A-100", "disponible": true } ] }
+```
+```json
+{ "references": "A-100" }
+```
+
+That is the trap when the output field is expected to be a list: `selectmany`
+always returns an array, `[]` included.
+
+```jslt
+{ "references": selectmany($, $.produits[?(@.disponible == true)].reference) }
+```
+```json
+{ "produits": [ { "reference": "A-100", "disponible": true } ] }
+```
+```json
+{ "references": ["A-100"] }
+```
+
+To deduplicate the projection, `distinct` applies its path **to the array it
+receives** (not to the document): the path is therefore relative to that array.
+
+```jslt
+{ "references": distinct($.produits[?(@.disponible == true)], $[*].reference) }
+```
+```json
+{ "produits": [ { "reference": "A-100", "disponible": true }, { "reference": "B-200", "disponible": true }, { "reference": "A-100", "disponible": true }, { "reference": "C-300", "disponible": false } ] }
+```
+```json
+{ "references": ["A-100", "B-200"] }
+```
 ---
 
 ## 13. JSONPath filters `?(...)`
