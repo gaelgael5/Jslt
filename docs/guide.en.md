@@ -698,7 +698,7 @@ With `$where` to keep only the active ones:
 ### Array of plain values (no wrapper object)
 
 A loop always produces **objects**: the loop body *is* the object carrying the
-`$source`, and there is no scalar-body form (a `"$valeur"` key would be ignored,
+`$source`, and there is no scalar-body form (a `"$value"` key would be ignored,
 like any unknown `$xxx` key). To get an array of strings or numbers, do not
 loop: project a path with `selectmany` (§8).
 

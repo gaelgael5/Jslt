@@ -1,13 +1,18 @@
 # urban-json
 
+*Français · [English](https://github.com/gaelgael5/Jslt/blob/main/packages/urban-json/README.en.md)*
+
 Portage Python du langage **JSLT — JSON Stylesheet Language Transformations** :
 un langage de **transformation JSON → JSON piloté par template**, initialement
 implémenté en .NET ([Black-Beard-Sdk/jslt](https://github.com/Black-Beard-Sdk/jslt)).
 
-C'est le **paquet cœur** (moteur : parser, AST, interpréteur, JSONPath, fonctions
-intégrées, extensibilité). Les capacités d'E-S (CSV, XML, SQL, HTTP, Elasticsearch)
-sont des **plugins séparés** (`urban-json-csv`, `urban-json-xml`, `urban-json-db`, `urban-json-http`,
-`urban-json-elastic`) découverts automatiquement.
+C'est le **paquet cœur** (moteur : parser, AST, interpréteur, JSONPath, 71
+fonctions intégrées, extensibilité). Les entrées-sorties et la génération
+aléatoire sont des **plugins séparés**, découverts automatiquement une fois
+installés : `urban-json-csv`, `urban-json-xml`, `urban-json-db`, `urban-json-http`,
+`urban-json-elastic`, `urban-json-files`, `urban-json-html`, `urban-json-excel`,
+`urban-json-phone`, `urban-json-random`. Le composant d'édition
+`urban-json-editor` (Web Component `<jslt-editor>`) est également distribué à part.
 
 ```python
 from urban_json import JsltTemplate

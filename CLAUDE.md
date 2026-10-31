@@ -219,7 +219,11 @@ ruff check packages
 - Fonctions de chemin : `length()` et `value()` **sont** portées (dans les
   chemins et les filtres) ; `count`/`match`/`search` (et `size`, inexistant en
   .NET) lèvent `NotImplementedError`.
-- Fonctions d'E-S (`csv`, `http`, `hash`, `randoms`, `group`, `sql`).
+- Fonctions d'E-S de fichiers, réseau et base (`loadcsv`, `loadxml`, `loadjson`,
+  `loadhtml`, `loadxls`, `http`, `readsql`, `essearch`) et génération aléatoire
+  (`getrandom_*`) : hors du cœur **par décision**, elles vivent dans les paquets
+  `urban-json-*` (voir « Extensibilité »). Le hachage (`sha256`, `crc32`…) et les
+  jointures (`group`, `join`, `index`, `createindex`), eux, **sont** dans le cœur.
 
 Sérialisation `ToString` (round-trip AST → source) : **portée** sous forme d'un
 visiteur dédié `SourceWriterVisitor` (`packages/urban-json/src/urban_json/serialization.py`), exposée via
@@ -245,15 +249,22 @@ Fonctions portées (modules dans `packages/urban-json/src/urban_json/functions/`
 - texte : `upper`, `lower`, `trim`, `split`, `startswith`, `endswith`,
   `stringcontains`, `indexof`, `lastindexof`, `padleft`, `padright`, `stringlenght`.
 - encodage : `tobase64`, `frombase64`, `crc32`, `sha256`, `sha512`.
-- collections : `limit`, `union`, `select`, `selectmany` (`select`/`selectmany`
-  prennent un argument-chemin).
+- collections : `limit`, `union`, `select`, `selectmany`, `any`, `contains`,
+  `selectany` (`select`/`selectmany`/`selectany` prennent un argument-chemin).
+- regroupement et jointure : `group`, `join`, `index`, `createindex`.
+- expressions régulières : `regexismatch`, `regexmatches`.
+- dates, formatage, Unicode : `parsedate`, `format`, `normalize`.
+- schéma : `schema` (JSON Schema déduit d'un exemple).
 - divers : `uuid`, `now`, `isnull`, `isnotnull`.
 - sortie (`kind="output"`, dans `$directives.output.mode`) : `to_json`, `to_block`.
 
+Soit **71 fonctions** dans le registre par défaut (`default_registry.names()` fait
+foi ; cette liste est un index, pas la source de vérité).
+
 Quirks .NET conservés : `floor`/`round`/`truncate`/`min`/`max`/`pow`/trig
 renvoient un flottant, `round` = arrondi bancaire, `min`/`max` sont binaires.
-Fonctions encore non portées : `format`, `normalize`, `group`/`join`/`index`/
-`createindex` (jointures), `getrandom_*`, E-S (`loadcsv`/`loadjson`/http).
+Hors du cœur : `getrandom_*` et les E-S, qui sont dans les paquets `urban-json-*`.
+Non portées nulle part : `write`/`to_file` et `to_sqlserver` (décision utilisateur).
 
 ## Développement
 
@@ -300,6 +311,15 @@ python -m twine check dist/*           # valide les distributions (métadonnées
 
 ## Conventions
 
+- **Documentation bilingue** : toute documentation destinée aux utilisateurs
+  existe en **français** (canonique) et en **anglais**, côte à côte —
+  `README.md` / `README.en.md`, `docs/guide.md` / `docs/guide.en.md`, et de même
+  pour chaque paquet et chaque application. Les deux portent un bandeau de
+  langue sous le titre ; celui des paquets publiés est en **URL absolue**
+  (`https://github.com/gaelgael5/Jslt/blob/main/...`), un lien relatif ne
+  résolvant pas sur PyPI. Une modification d'un côté n'est pas finie tant que
+  l'autre n'est pas à jour. `CLAUDE.md` (instructions d'agent) et
+  `ia_instructions/` font exception : français seulement.
 - snake_case côté code maison ; les overrides du visiteur ANTLR restent en
   camelCase (API imposée par le générateur).
 - Toute fonctionnalité portée s'accompagne de tests, dont, quand c'est possible,
