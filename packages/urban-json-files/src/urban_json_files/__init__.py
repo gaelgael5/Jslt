@@ -30,7 +30,7 @@ from typing import Any
 from urban_json import JsltError
 from urban_json.functions._helpers import as_json_path, to_text
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = ["execute_concatpath", "execute_iteratejsonfile", "execute_loadjson", "register"]
 

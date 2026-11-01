@@ -38,7 +38,7 @@ from typing import Any
 
 from urban_json import JsltError
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = ["execute_loadxls", "execute_loadxlssheet", "register"]
 

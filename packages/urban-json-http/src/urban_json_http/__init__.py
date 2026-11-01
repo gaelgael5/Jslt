@@ -28,7 +28,7 @@ from typing import Any
 
 import httpx
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 __all__ = ["execute_http", "execute_httpget", "execute_loadhttpgetjson", "register"]
 
