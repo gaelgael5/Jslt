@@ -291,6 +291,18 @@ python -m twine check dist/*           # valide les distributions (métadonnées
 - Version **single-source** : `urban_json.__version__`
   (`packages/urban-json/src/urban_json/__init__.py`), lue par `[tool.setuptools.dynamic]`.
   Pour publier une version, bumper `__version__`.
+- **Une version PyPI est immuable** : la description affichée vient de la
+  distribution publiée. Un README corrigé n'atteint donc l'index que par une
+  **nouvelle version** — un tag à version identique passe le contrôle
+  `tag == __version__` du workflow **puis** échoue à l'upload (« File already
+  exists »), run rouge trompeur. Corollaire : une correction de documentation
+  destinée aux lecteurs de PyPI vaut un patch.
+- Le job **`dist`** de `ci.yml` construit les 12 distributions et passe
+  `twine check` à chaque push et chaque PR. C'est le seul endroit qui éprouve ce
+  qui part réellement dans une sdist/wheel : le job `test` installe en
+  **éditable** et ne voit ni un fichier non versionné, ni une entrée
+  `package-data` oubliée (les assets `static/*.js` de l'éditeur n'entrent dans la
+  wheel que par là). Sans lui, ces défauts n'apparaissaient qu'au tag de release.
 - Deux canaux de publication, tous deux en **Trusted Publishing** (OIDC, aucun
   token stocké) :
   - **Prod → PyPI** (`release.yml` pour le cœur, `release-urban-json-<plugin>.yml`

@@ -53,3 +53,35 @@ jobs:
 
       - name: Tests — apps (pytest)
         run: pytest -q apps/playground/tests
+
+  # Construit les 12 distributions et les valide, à chaque push et chaque PR.
+  #
+  # Le job `test` ci-dessus installe en *éditable* : il ne prouve rien sur ce qui
+  # part réellement dans une sdist/wheel. Toute une classe de défauts n'apparaît
+  # alors qu'au tag de release, trop tard : un fichier présent en local mais non
+  # versionné, une entrée `package-data` oubliée (les assets `static/*.js` de
+  # l'éditeur ne sont dans la wheel que par ce biais), un README que `twine check`
+  # refuse, un `__version__` illisible par `[tool.setuptools.dynamic]`.
+  #
+  # Construire depuis le checkout — et non depuis un répertoire de travail — est
+  # ce qui fait voir les fichiers non versionnés.
+  dist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Outillage de build
+        run: python -m pip install --upgrade pip build twine
+
+      - name: Construire et vérifier chaque distribution
+        run: |
+          for d in packages/*/; do
+            echo "::group::$(basename "$d")"
+            python -m build "$d"
+            python -m twine check "$d"dist/*
+            echo "::endgroup::"
+          done
