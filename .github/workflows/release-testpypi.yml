@@ -21,6 +21,15 @@ name: Release (dev → TestPyPI)
 # ce qui évite des échecs rouges avant que les éditeurs de confiance ci-dessus
 # soient déclarés. Une fois prêt : créer les projets + pending publishers, puis
 # mettre `PUBLISH_TESTPYPI=true`.
+#
+# ÉTAT AU 2026-11-01 : la variable n'est PAS positionnée, ce workflow n'a donc
+# jamais rien publié. Ne pas le croire actif. Décision assumée : la garantie
+# qu'on cherchait — « un paquet se construit avant son tag de prod » — est
+# apportée par le job `dist` de `ci.yml` (build + twine check des 12
+# distributions, sur chaque PR), sans projet à créer et sans version consommée.
+# Il reste à TestPyPI la seule couverture du chemin d'upload et d'installation
+# depuis un index ; l'activer demanderait 12 projets et leurs éditeurs de
+# confiance, TestPyPI plafonnant à 3 pending publishers (4 vagues).
 
 on:
   push:

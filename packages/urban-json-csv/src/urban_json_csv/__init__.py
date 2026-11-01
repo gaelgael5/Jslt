@@ -26,7 +26,7 @@ from typing import Any
 
 from .mcsv import execute_loadmcsv
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = ["execute_loadcsv", "execute_loadmcsv", "register"]
 
