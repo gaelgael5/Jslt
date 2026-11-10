@@ -105,3 +105,47 @@ def test_format_cas_limites(value, mask, expected) -> None:
 def test_format_X_refuse_un_decimal() -> None:
     with pytest.raises(JsltError, match="entiers"):
         fmt(1.5, "X")
+
+
+# --- décalage horaire ---------------------------------------------------------
+# `parsedate(..., fuseau)` rend des dates avec décalage : `format` doit savoir
+# les lire et les écrire, sinon l'aller-retour est impossible.
+
+
+@pytest.mark.parametrize(
+    ("value", "mask", "expected"),
+    [
+        pytest.param("2026-11-10T08:30:00+01:00", "zzz", "+01:00", id="zzz-positif"),
+        pytest.param("2026-11-10T08:30:00-05:00", "zzz", "-05:00", id="zzz-negatif"),
+        pytest.param("2026-11-10T08:30:00+05:30", "zzz", "+05:30", id="zzz-demi-heure"),
+        pytest.param("2026-11-10T08:30:00+01:00", "zz", "+01", id="zz"),
+        pytest.param("2026-11-10T08:30:00+01:00", "HH'h'z", "08h+1", id="z-dans-un-masque"),
+        pytest.param("2026-11-10T08:30:00+01:00", "HH:mmK", "08:30+01:00", id="K-avec-decalage"),
+        pytest.param("2026-11-10T08:30:00Z", "HH:mmK", "08:30Z", id="K-utc"),
+        pytest.param("2026-11-10T08:30:00", "HH:mmK", "08:30", id="K-naif-vide"),
+        pytest.param("2026-11-10T08:30:00", "zzz", "+00:00", id="zzz-naif-vaut-zero"),
+        pytest.param(
+            "2026-11-10T08:30:00+01:00",
+            "yyyy-MM-dd'T'HH:mm:sszzz",
+            "2026-11-10T08:30:00+01:00",
+            id="aller-retour-iso-complet",
+        ),
+    ],
+)
+def test_format_decalage_horaire(value, mask, expected) -> None:
+    assert fmt(value, mask) == expected
+
+
+def test_format_lit_le_z_finale_comme_utc() -> None:
+    # `fromisoformat` n'accepte le 'Z' final qu'à partir de Python 3.11 : sans
+    # normalisation, une date UTC n'était pas reconnue comme date et ressortait
+    # telle quelle au lieu d'être formatée.
+    assert fmt("2026-11-10T08:30:00Z", "HH:mm") == "08:30"
+
+
+@pytest.mark.parametrize("mask", ["z", "K"])
+def test_format_specificateur_de_fuseau_seul_refuse(mask) -> None:
+    # Fidèle au .NET : un masque d'une seule lettre est un masque *standard*,
+    # et ni 'z' ni 'K' n'en sont — il faut les écrire dans un masque plus long.
+    with pytest.raises(JsltError, match="masque"):
+        fmt("2026-11-10T08:30:00+01:00", mask)

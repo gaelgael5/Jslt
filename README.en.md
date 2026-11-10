@@ -145,9 +145,10 @@ The grammar is authoritative: `packages/urban-json/grammar/JsltLexer.g4` and
 
 ## Scope
 
-The core ships **71 functions**: maths, text, encoding and hashing, collections,
+The core ships **75 functions**: maths, text, encoding and hashing, collections,
 grouping and joins (`group`, `join`, `index`, `createindex`), regular
-expressions, dates and formatting (`parsedate`, `format`, `normalize`), schema
+expressions, dates (`parsedate` with mask and timezone, `dateadd`, `datesub`,
+`datediff`, `datepart`, `now`) and formatting (`format`, `normalize`), schema
 inference, and the text-output functions. The authoritative list is
 `default_registry.names()`.
 

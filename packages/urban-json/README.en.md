@@ -6,7 +6,7 @@ Python port of the **JSLT — JSON Stylesheet Language Transformations** languag
 a **template-driven JSON → JSON transformation** language, originally implemented
 in .NET ([Black-Beard-Sdk/jslt](https://github.com/Black-Beard-Sdk/jslt)).
 
-This is the **core package** (engine: parser, AST, interpreter, JSONPath, 71
+This is the **core package** (engine: parser, AST, interpreter, JSONPath, 75
 built-in functions, extensibility). Input/output and random generation live in
 **separate plugins**, discovered automatically once installed:
 `urban-json-csv`, `urban-json-xml`, `urban-json-db`, `urban-json-http`,

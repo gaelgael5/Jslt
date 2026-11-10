@@ -15,6 +15,7 @@ extensible pour les ajouter ou en enregistrer de nouvelles.
 from . import (  # noqa: F401
     builtins,
     collection,
+    dates,
     encoding,
     formatting,
     grouping,

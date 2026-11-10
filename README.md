@@ -146,9 +146,10 @@ sont la source de vérité du langage, reprise du dépôt .NET.
 
 ## Périmètre
 
-Le cœur porte **71 fonctions** : maths, texte, encodage et hachage, collections,
+Le cœur porte **75 fonctions** : maths, texte, encodage et hachage, collections,
 regroupement et jointure (`group`, `join`, `index`, `createindex`), expressions
-régulières, dates et formatage (`parsedate`, `format`, `normalize`), schéma, et
+régulières, dates (`parsedate` avec masque et fuseau, `dateadd`, `datesub`,
+`datediff`, `datepart`, `now`) et formatage (`format`, `normalize`), schéma, et
 les fonctions de sortie texte. La liste qui fait foi est
 `default_registry.names()`.
 
