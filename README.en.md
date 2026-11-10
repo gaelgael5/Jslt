@@ -47,7 +47,20 @@ the library — only to *regenerate* the parser after changing the grammars.
 
 The **[full guide with many runnable examples](docs/guide.en.md)** covers every
 construct in detail. All of its examples are executed by the test suite
-(`tests/test_guide_examples.py`), so they can never go stale.
+(`tests/test_guide_examples.py`), so they can never go stale. It is split by
+theme, so you can go straight to the one you need:
+
+| Theme | Contents |
+|---|---|
+| [JSONPath paths](docs/chemins.en.md) | access, 0 / 1 / N semantics, filters `?(...)`, `length()` / `value()` |
+| [Expressions](docs/expressions.en.md) | variables, operators, coalescing `??`, casts `#type`, chaining `->` |
+| [Conditionals and loops](docs/conditions-et-boucles.en.md) | `when` / `switch`, `$source` / `$where` |
+| [Data and collections](docs/collections.en.md) | `sum`, `distinct`, `select`, `group`, `join`, `schema` |
+| [Numbers and math](docs/nombres.en.md) | `min`, `max`, `round`, `sqrt`… |
+| [Text, regex and formatting](docs/texte.en.md) | `upper`, `split`, `regexmatches`, `normalize`, `format` |
+| [Dates and times](docs/dates.en.md) | `parsedate` (culture, mask, timezone), `dateadd`, `datesub`, `datediff`, `datepart` |
+| [Text output](docs/sortie.en.md) | `to_json`, `to_block`, `$directives.output` |
+| [Extensibility and debugging](docs/extensibilite.en.md) | registry, plugins, step-by-step, `to_source()` |
 
 ## Public API
 
@@ -86,7 +99,7 @@ default_registry.describe("double").signature()   # 'double(x)'
 
 **Third-party plugins** are auto-discovered via the `urban_json.functions` entry point
 group (installing the package is enough). Details and the plugin contract in the
-[guide, §Extensibility](docs/guide.en.md#16-extensibility-functions-and-plugins).
+[guide, Extensibility](docs/extensibilite.en.md).
 
 **Official plugins** (monorepo, separate distributions):
 - [`urban-json-csv`](packages/urban-json-csv/) — reading CSV files (`loadcsv`, `loadmcsv`).

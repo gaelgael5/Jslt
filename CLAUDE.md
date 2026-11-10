@@ -360,6 +360,20 @@ python -m twine check dist/*           # valide les distributions (métadonnées
   résolvant pas sur PyPI. Une modification d'un côté n'est pas finie tant que
   l'autre n'est pas à jour. `CLAUDE.md` (instructions d'agent) et
   `ia_instructions/` font exception : français seulement.
+- **Guide découpé par thème** : `docs/guide.md` est le **hub** (modèle mental,
+  constantes, appel des fonctions, erreurs, aide-mémoire, sommaire) ; chaque
+  thème a son document, doublé en anglais — `chemins`, `expressions`,
+  `conditions-et-boucles`, `collections`, `nombres`, `texte`, `dates`, `sortie`,
+  `extensibilite`. Le **nom de fichier reste français** des deux côtés
+  (`dates.md` / `dates.en.md`), comme `README.en.md` : le radical identifie le
+  document, `.en` la langue. Ajouter un document, c'est l'ajouter dans les deux
+  langues, le lier depuis le sommaire du hub et depuis les deux README.
+  Trois tests tiennent l'ensemble, parce qu'un lien mort ne se voit pas :
+  `test_docs_links.py` (toute ancre et tout chemin relatif de `docs/` résolvent,
+  et chaque document a sa traduction), et dans `test_guide_examples.py` l'égalité
+  du nombre d'exemples entre les deux langues. Les exemples sont extraits par
+  `tests/_docs.py` (partagé avec `test_compiler.py`, qui rejoue tout le guide par
+  le chemin compilé) : la liste des fichiers balayés n'existe qu'à cet endroit.
 - snake_case côté code maison ; les overrides du visiteur ANTLR restent en
   camelCase (API imposée par le générateur).
 - Toute fonctionnalité portée s'accompagne de tests, dont, quand c'est possible,

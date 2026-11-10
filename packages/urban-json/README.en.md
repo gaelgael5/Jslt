@@ -34,9 +34,14 @@ bundled (no ANTLR tooling, no Java required to *use* the library).
 
 ## Documentation
 
-- **Full guide with runnable examples**:
+- **Full guide with runnable examples** (split by theme):
   <https://github.com/gaelgael5/Jslt/blob/main/docs/guide.en.md>
-  ([Français](https://github.com/gaelgael5/Jslt/blob/main/docs/guide.md))
+  ([Français](https://github.com/gaelgael5/Jslt/blob/main/docs/guide.md)) — notably
+  [paths](https://github.com/gaelgael5/Jslt/blob/main/docs/chemins.en.md),
+  [expressions](https://github.com/gaelgael5/Jslt/blob/main/docs/expressions.en.md),
+  [collections](https://github.com/gaelgael5/Jslt/blob/main/docs/collections.en.md),
+  [text and formatting](https://github.com/gaelgael5/Jslt/blob/main/docs/texte.en.md),
+  [dates and times](https://github.com/gaelgael5/Jslt/blob/main/docs/dates.en.md)
 - **Project and plugin overview**:
   <https://github.com/gaelgael5/Jslt>
 

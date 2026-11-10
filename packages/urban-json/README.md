@@ -33,9 +33,14 @@ embarqué (aucun outil ANTLR ni Java requis pour *utiliser* la librairie).
 
 ## Documentation
 
-- **Guide complet avec exemples testables** :
+- **Guide complet avec exemples testables** (découpé par thème) :
   <https://github.com/gaelgael5/Jslt/blob/main/docs/guide.md>
-  ([English](https://github.com/gaelgael5/Jslt/blob/main/docs/guide.en.md))
+  ([English](https://github.com/gaelgael5/Jslt/blob/main/docs/guide.en.md)) — notamment
+  [chemins](https://github.com/gaelgael5/Jslt/blob/main/docs/chemins.md),
+  [expressions](https://github.com/gaelgael5/Jslt/blob/main/docs/expressions.md),
+  [collections](https://github.com/gaelgael5/Jslt/blob/main/docs/collections.md),
+  [texte et formatage](https://github.com/gaelgael5/Jslt/blob/main/docs/texte.md),
+  [dates et heures](https://github.com/gaelgael5/Jslt/blob/main/docs/dates.md)
 - **Vue d'ensemble du projet et des plugins** :
   <https://github.com/gaelgael5/Jslt>
 
