@@ -7,11 +7,25 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.11", "3.13"]
+        # L'image `ubuntu-latest` est passée à Ubuntu 26.04 (19 octobre 2026),
+        # qui ne fournit plus de build Python 3.9 : le job mourait à l'étape
+        # `Set up Python`, sans exécuter un seul test. On épingle donc l'image
+        # la plus récente qui porte encore 3.9 (24.04) plutôt que d'abandonner
+        # un support que les 13 `pyproject.toml` annoncent (`>=3.9`) et pour
+        # lequel le code fait des détours explicites (le `Z` final normalisé à
+        # la main dans `format`, `fromisoformat` ne l'acceptant qu'à partir de
+        # 3.11). À retirer le jour où l'on cesse d'annoncer 3.9.
+        include:
+          - python-version: "3.9"
+            os: ubuntu-24.04
+          - python-version: "3.11"
+            os: ubuntu-latest
+          - python-version: "3.13"
+            os: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
