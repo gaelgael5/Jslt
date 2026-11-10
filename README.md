@@ -48,7 +48,20 @@ grammaires.
 
 Le **[guide complet avec de nombreux exemples testables](docs/guide.md)** détaille
 chaque construction. Tous ses exemples sont exécutés par la suite de tests
-(`tests/test_guide_examples.py`), ils ne peuvent donc pas « pourrir ».
+(`tests/test_guide_examples.py`), ils ne peuvent donc pas « pourrir ». Il est
+découpé par thème — on va droit à celui qu'on cherche :
+
+| Thème | Contenu |
+|---|---|
+| [Chemins JSONPath](docs/chemins.md) | accès, sémantique 0 / 1 / N, filtres `?(...)`, `length()` / `value()` |
+| [Expressions](docs/expressions.md) | variables, opérateurs, coalescence `??`, casts `#type`, chaînage `->` |
+| [Conditions et boucles](docs/conditions-et-boucles.md) | `when` / `switch`, `$source` / `$where` |
+| [Données et collections](docs/collections.md) | `sum`, `distinct`, `select`, `group`, `join`, `schema` |
+| [Nombres et maths](docs/nombres.md) | `min`, `max`, `round`, `sqrt`… |
+| [Texte, regex et formatage](docs/texte.md) | `upper`, `split`, `regexmatches`, `normalize`, `format` |
+| [Dates et heures](docs/dates.md) | `parsedate` (culture, masque, fuseau), `dateadd`, `datesub`, `datediff`, `datepart` |
+| [Sortie texte](docs/sortie.md) | `to_json`, `to_block`, `$directives.output` |
+| [Extensibilité et débogage](docs/extensibilite.md) | registre, plugins, pas à pas, `to_source()` |
 
 ## API publique
 
@@ -87,7 +100,7 @@ default_registry.describe("double").signature()   # 'double(x)'
 
 Les **plugins tiers** sont auto-découverts via le groupe d'entry points
 `urban_json.functions` (installer le paquet suffit). Détails et contrat de plugin dans le
-[guide, §Extensibilité](docs/guide.md#16-extensibilité--fonctions-et-plugins).
+[guide, Extensibilité](docs/extensibilite.md).
 
 **Plugins officiels** (monorepo, distributions séparées) :
 - [`urban-json-csv`](packages/urban-json-csv/) — lecture de fichiers CSV (`loadcsv`, `loadmcsv`).
@@ -146,9 +159,10 @@ sont la source de vérité du langage, reprise du dépôt .NET.
 
 ## Périmètre
 
-Le cœur porte **71 fonctions** : maths, texte, encodage et hachage, collections,
+Le cœur porte **75 fonctions** : maths, texte, encodage et hachage, collections,
 regroupement et jointure (`group`, `join`, `index`, `createindex`), expressions
-régulières, dates et formatage (`parsedate`, `format`, `normalize`), schéma, et
+régulières, dates (`parsedate` avec masque et fuseau, `dateadd`, `datesub`,
+`datediff`, `datepart`, `now`) et formatage (`format`, `normalize`), schéma, et
 les fonctions de sortie texte. La liste qui fait foi est
 `default_registry.names()`.
 

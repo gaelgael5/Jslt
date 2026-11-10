@@ -6,7 +6,7 @@ Python port of the **JSLT — JSON Stylesheet Language Transformations** languag
 a **template-driven JSON → JSON transformation** language, originally implemented
 in .NET ([Black-Beard-Sdk/jslt](https://github.com/Black-Beard-Sdk/jslt)).
 
-This is the **core package** (engine: parser, AST, interpreter, JSONPath, 71
+This is the **core package** (engine: parser, AST, interpreter, JSONPath, 75
 built-in functions, extensibility). Input/output and random generation live in
 **separate plugins**, discovered automatically once installed:
 `urban-json-csv`, `urban-json-xml`, `urban-json-db`, `urban-json-http`,
@@ -34,9 +34,14 @@ bundled (no ANTLR tooling, no Java required to *use* the library).
 
 ## Documentation
 
-- **Full guide with runnable examples**:
+- **Full guide with runnable examples** (split by theme):
   <https://github.com/gaelgael5/Jslt/blob/main/docs/guide.en.md>
-  ([Français](https://github.com/gaelgael5/Jslt/blob/main/docs/guide.md))
+  ([Français](https://github.com/gaelgael5/Jslt/blob/main/docs/guide.md)) — notably
+  [paths](https://github.com/gaelgael5/Jslt/blob/main/docs/chemins.en.md),
+  [expressions](https://github.com/gaelgael5/Jslt/blob/main/docs/expressions.en.md),
+  [collections](https://github.com/gaelgael5/Jslt/blob/main/docs/collections.en.md),
+  [text and formatting](https://github.com/gaelgael5/Jslt/blob/main/docs/texte.en.md),
+  [dates and times](https://github.com/gaelgael5/Jslt/blob/main/docs/dates.en.md)
 - **Project and plugin overview**:
   <https://github.com/gaelgael5/Jslt>
 

@@ -8,11 +8,10 @@ nœud) **et** sur tous les exemples du guide.
 from __future__ import annotations
 
 import json
-import re
-from pathlib import Path
 
 import pytest
 
+from _docs import doc_triples
 from urban_json import FunctionRegistry, JsltTemplate
 
 # --- cas ciblés : un par construction --------------------------------------
@@ -62,37 +61,14 @@ def test_compiled_matches_interpreter(template: str, source) -> None:
 
 
 # --- équivalence sur tous les exemples du guide ----------------------------
+# Les exemples sont extraits par `_docs.py`, partagé avec `test_guide_examples.py` :
+# un document thématique ajouté entre donc dans les deux suites à la fois.
 
-def _find_docs() -> Path:
-    for parent in Path(__file__).resolve().parents:
-        candidate = parent / "docs"
-        if (candidate / "guide.md").is_file():
-            return candidate
-    raise FileNotFoundError("dossier docs/ introuvable")
-
-
-_BLOCK_RE = re.compile(r"```(\w+)[^\n]*\n(.*?)```", re.DOTALL)
-
-
-def _guide_triples() -> list:
-    cases = []
-    for guide in sorted(_find_docs().glob("guide*.md")):
-        blocks = _BLOCK_RE.findall(guide.read_text(encoding="utf-8"))
-        for i in range(len(blocks) - 2):
-            (l0, tpl), (l1, src), (l2, out) = blocks[i], blocks[i + 1], blocks[i + 2]
-            if l0 == "jslt" and l1 == "json" and l2 == "json":
-                cases.append(
-                    pytest.param(tpl.strip(), src.strip(), out.strip(),
-                                 id=f"{guide.name}-{i}")
-                )
-    return cases
-
-
-GUIDE_CASES = _guide_triples()
+GUIDE_CASES = doc_triples()
 
 
 def test_guide_cases_found() -> None:
-    assert len(GUIDE_CASES) >= 20
+    assert len(GUIDE_CASES) >= 100
 
 
 @pytest.mark.parametrize("template, source, expected", GUIDE_CASES)

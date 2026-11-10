@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 
@@ -323,7 +323,32 @@ def _date_token(moment: datetime, token: str, culture: _Culture, mask: str) -> s
     if kind == "t":
         designator = culture.am if moment.hour < 12 else culture.pm
         return designator[:1] if size == 1 else designator
-    raise _unsupported(mask, f"fuseau '{token}' (dates sans fuseau dans le portage)")
+    if kind in "zK":
+        return _offset_text(moment, kind, size)
+    raise _unsupported(mask, f"jeton de date inconnu '{token}'")
+
+
+def _offset_text(moment: datetime, kind: str, size: int) -> str:
+    """Décalage horaire d'une date, pour les jetons ``z``/``zz``/``zzz``/``K``."""
+    offset = moment.utcoffset()
+    if kind == "K":
+        # Sémantique .NET de `K` : vide pour une date sans fuseau, 'Z' pour UTC,
+        # le décalage sinon.
+        if offset is None:
+            return ""
+        return "Z" if not offset else _offset_digits(offset, 3)
+    # `z` sur une date sans décalage : le .NET écrirait celui de la machine, ce
+    # qui rendrait la sortie dépendante du serveur — on écrit zéro.
+    return _offset_digits(offset or timedelta(0), size)
+
+
+def _offset_digits(offset: timedelta, size: int) -> str:
+    minutes_total = int(offset.total_seconds()) // 60
+    sign = "-" if minutes_total < 0 else "+"
+    hours, minutes = divmod(abs(minutes_total), 60)
+    if size >= 3:
+        return f"{sign}{hours:02d}:{minutes:02d}"
+    return f"{sign}{hours:0{size}d}"
 
 
 _STANDARD_DATE = {
@@ -352,8 +377,14 @@ def _format_date(moment: datetime, mask: str, culture: _Culture) -> str:
 
 
 def _as_date(value: str) -> datetime | None:
+    text = value.strip()
+    # Le 'Z' final n'est accepté par fromisoformat qu'à partir de Python 3.11 ;
+    # sans cette normalisation, une date UTC n'était pas vue comme une date et
+    # ressortait brute au lieu d'être formatée (le paquet supporte 3.9).
+    if text.endswith(("Z", "z")):
+        text = f"{text[:-1]}+00:00"
     try:
-        return datetime.fromisoformat(value.strip())
+        return datetime.fromisoformat(text)
     except ValueError:
         return None
 

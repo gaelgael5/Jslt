@@ -79,9 +79,34 @@ Patterns repris du .NET :
   levait une `TypeError` brute).
 - `parsedate` : pas de type date dans le portage → chaîne ISO 8601 ; cultures
   « mois d'abord » = vide/invariant/en/en-US, toutes les autres « jour d'abord ».
+  **Étendu au-delà du .NET** (`functions/dates.py`) : 3e argument `masque` (lecture
+  stricte selon le vocabulaire .NET de `format`, inversé dans `functions/_dateread.py`
+  pour que lire et écrire partagent un seul vocabulaire ; largeurs strictes façon
+  `ParseExact`) et 4e argument `fuseau` (nom IANA via `zoneinfo`, `UTC`/`Z`, ou
+  décalage fixe ; il **qualifie** une date naïve et **convertit** une date qui porte
+  déjà un décalage). Composante absente du masque → époque Unix, pas « aujourd'hui »
+  comme le .NET : le résultat d'un template ne doit pas dépendre du jour d'exécution.
+- **Calcul, écart et extraction de dates, sans contrepartie .NET** : `dateadd` /
+  `datesub` (unités `second`→`year`, pluriel toléré, `n` entier), `datediff(début,
+  fin, unité)` et `datepart` (`year`, `month`, `day`, `dayofweek`, `hour`, `minute`,
+  `second`). `month`/`year` sont calendaires : `dateadd` **borne** le jour sur les
+  mois courts (comme `AddMonths`), `datediff` ne compte un mois que si le jour et
+  l'heure de `fin` ont rattrapé ceux de `début` — les deux ne sont donc pas
+  exactement inverses, et c'est documenté dans le guide. `datediff` tronque **vers
+  zéro** (pas vers -∞ comme `//`) et refuse de comparer une date avec fuseau à une
+  date sans fuseau. `dayofweek` suit la convention `DayOfWeek` du .NET
+  (dimanche = 0), pas ISO. `null` est propagé, mais une valeur qui n'est pas une
+  date ISO lève — un `null` silencieux ferait découvrir le défaut de données très
+  loin de sa cause.
 - `format` : masques .NET **traduits** (sous-ensemble courant nombres/dates, 7
   cultures) dans `functions/formatting.py` ; hors sous-ensemble → `JsltError`. Une
-  chaîne ISO est formatée comme une date (Newtonsoft convertit les ISO en dates).
+  chaîne ISO est formatée comme une date (Newtonsoft convertit les ISO en dates),
+  `Z` final compris (`fromisoformat` ne l'accepte qu'à partir de Python 3.11, on
+  normalise). Les jetons de décalage `z`/`zz`/`zzz`/`K` sont **écrits** (ils
+  levaient), pour que `parsedate(…, fuseau)` et `format` fassent l'aller-retour ;
+  `z` sur une date sans décalage écrit zéro, là où le .NET prendrait celui de la
+  machine — la sortie ne doit pas dépendre du serveur. Un spécificateur seul
+  (`"z"`, `"K"`) reste refusé, comme en .NET (masque d'une lettre = masque standard).
 - `group` multi-chemins : sous-groupes imbriqués (le .NET les perdait) ; `join` ne
   modifie pas la source (le .NET mutait la gauche) ; `createindex` rend un objet
   `{clé: élément}` (le .NET : `JDictionaryValue` opaque).
@@ -253,12 +278,15 @@ Fonctions portées (modules dans `packages/urban-json/src/urban_json/functions/`
   `selectany` (`select`/`selectmany`/`selectany` prennent un argument-chemin).
 - regroupement et jointure : `group`, `join`, `index`, `createindex`.
 - expressions régulières : `regexismatch`, `regexmatches`.
-- dates, formatage, Unicode : `parsedate`, `format`, `normalize`.
+- dates : `parsedate` (culture, masque, fuseau), `dateadd`, `datesub`, `datediff`,
+  `datepart` (fonctions et calcul dans `dates.py`, lecture du texte — détection,
+  masque, fuseau — dans `_dateread.py`).
+- formatage, Unicode : `format`, `normalize`.
 - schéma : `schema` (JSON Schema déduit d'un exemple).
 - divers : `uuid`, `now`, `isnull`, `isnotnull`.
 - sortie (`kind="output"`, dans `$directives.output.mode`) : `to_json`, `to_block`.
 
-Soit **71 fonctions** dans le registre par défaut (`default_registry.names()` fait
+Soit **75 fonctions** dans le registre par défaut (`default_registry.names()` fait
 foi ; cette liste est un index, pas la source de vérité).
 
 Quirks .NET conservés : `floor`/`round`/`truncate`/`min`/`max`/`pow`/trig
@@ -332,6 +360,20 @@ python -m twine check dist/*           # valide les distributions (métadonnées
   résolvant pas sur PyPI. Une modification d'un côté n'est pas finie tant que
   l'autre n'est pas à jour. `CLAUDE.md` (instructions d'agent) et
   `ia_instructions/` font exception : français seulement.
+- **Guide découpé par thème** : `docs/guide.md` est le **hub** (modèle mental,
+  constantes, appel des fonctions, erreurs, aide-mémoire, sommaire) ; chaque
+  thème a son document, doublé en anglais — `chemins`, `expressions`,
+  `conditions-et-boucles`, `collections`, `nombres`, `texte`, `dates`, `sortie`,
+  `extensibilite`. Le **nom de fichier reste français** des deux côtés
+  (`dates.md` / `dates.en.md`), comme `README.en.md` : le radical identifie le
+  document, `.en` la langue. Ajouter un document, c'est l'ajouter dans les deux
+  langues, le lier depuis le sommaire du hub et depuis les deux README.
+  Trois tests tiennent l'ensemble, parce qu'un lien mort ne se voit pas :
+  `test_docs_links.py` (toute ancre et tout chemin relatif de `docs/` résolvent,
+  et chaque document a sa traduction), et dans `test_guide_examples.py` l'égalité
+  du nombre d'exemples entre les deux langues. Les exemples sont extraits par
+  `tests/_docs.py` (partagé avec `test_compiler.py`, qui rejoue tout le guide par
+  le chemin compilé) : la liste des fichiers balayés n'existe qu'à cet endroit.
 - snake_case côté code maison ; les overrides du visiteur ANTLR restent en
   camelCase (API imposée par le générateur).
 - Toute fonctionnalité portée s'accompagne de tests, dont, quand c'est possible,
