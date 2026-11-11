@@ -13,6 +13,7 @@ extensible pour les ajouter ou en enregistrer de nouvelles.
 
 # Chaque module importé enregistre ses fonctions dans le registre par défaut.
 from . import (  # noqa: F401
+    aggregate,
     builtins,
     collection,
     dates,
@@ -21,9 +22,14 @@ from . import (  # noqa: F401
     grouping,
     maths,
     misc,
+    numbers,
+    objects,
+    ordering,
     outputs,
+    regexes,
     schema,
     text,
+    types,
 )
 from .registry import (
     PLUGIN_GROUP,

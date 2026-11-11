@@ -242,8 +242,10 @@ def test_datepart_sur_une_date_seule() -> None:
 
 
 def test_datepart_partie_inconnue_leve_en_listant_les_parties() -> None:
+    # `quarter` tenait ce rôle avant de devenir une partie reconnue : le message
+    # doit toujours énumérer les parties disponibles.
     with pytest.raises(JsltError, match="dayofweek"):
-        run('{ "r": datepart($.d, "quarter") }', {"d": "2026-11-10T08:30:00"})
+        run('{ "r": datepart($.d, "fortnight") }', {"d": "2026-11-10T08:30:00"})
 
 
 # --- null et valeurs non datables --------------------------------------------

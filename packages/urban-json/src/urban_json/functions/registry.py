@@ -91,6 +91,11 @@ class FunctionInfo:
     name: str
     function: JsltFunction = field(repr=False)
     path_args: tuple[int, ...] = ()
+    #: Positions reçues **non évaluées**, sous forme de callable sans argument,
+    #: que la fonction appelle quand (et autant de fois qu') elle veut : `sort`
+    #: calcule ainsi une clef par élément, `trydefault` n'évalue son repli que
+    #: si la première expression lève.
+    lazy_args: tuple[int, ...] = ()
     description: str = ""
     parameters: tuple[ParameterInfo, ...] = ()
     returns: str | None = None
@@ -116,6 +121,7 @@ class FunctionInfo:
             "returns": self.returns,
             "signature": self.signature(),
             "path_args": list(self.path_args),
+            "lazy_args": list(self.lazy_args),
             "kind": self.kind,
         }
 
@@ -207,6 +213,7 @@ class FunctionRegistry:
         path_args: tuple[int, ...] = (),
         description: str = "",
         kind: str = "function",
+        lazy_args: tuple[int, ...] = (),
     ) -> None:
         """Enregistre (ou remplace) une fonction sous ``name`` (casse ignorée).
 
@@ -221,11 +228,26 @@ class FunctionRegistry:
             name=name,
             function=function,
             path_args=path_args,
+            lazy_args=lazy_args,
             description=description or (inspect.getdoc(function) or "").split("\n", 1)[0],
             parameters=parameters,
             returns=returns,
             kind=kind,
         )
+
+    def remove(self, name: str) -> bool:
+        """Retire une fonction du registre (casse ignorée) ; dit si elle y était.
+
+        Le pendant de ``register``, pour **dériver un registre restreint** :
+        ``default_registry.copy()`` puis retirer ce qu'on refuse. Sans cette
+        méthode, restreindre imposait de reconstruire un registre à partir de
+        rien, donc de connaître les callables à ré-enregistrer — une liste qui
+        aurait vieilli à chaque fonction ajoutée au cœur, et c'est exactement la
+        liste qu'un bac à sable ne doit pas oublier de mettre à jour.
+        """
+        key = name.lower()
+        self._guarded.pop(key, None)
+        return self._functions.pop(key, None) is not None
 
     # -- résolution (exécution) --------------------------------------------
     def get(self, name: str) -> JsltFunction | None:
@@ -260,6 +282,11 @@ class FunctionRegistry:
         if guarded is None:
             guarded = self._guarded[key] = _arity_guard(info)
         return guarded
+
+    def lazy_args_of(self, name: str) -> tuple[int, ...]:
+        """Positions des arguments reçus non évalués (cf. ``FunctionInfo.lazy_args``)."""
+        info = self.describe(name)
+        return info.lazy_args if info is not None else ()
 
     def path_args_of(self, name: str) -> tuple[int, ...]:
         """Indices des arguments passés comme chemin JSONPath brut (non évalué)."""
@@ -316,17 +343,23 @@ default_registry = FunctionRegistry()
 
 
 def jslt_function(
-    name: str, path_args: tuple[int, ...] = (), description: str = "", kind: str = "function"
+    name: str,
+    path_args: tuple[int, ...] = (),
+    description: str = "",
+    kind: str = "function",
+    lazy_args: tuple[int, ...] = (),
 ) -> Callable[[JsltFunction], JsltFunction]:
     """Décorateur enregistrant une fonction dans le registre par défaut.
 
     ``path_args`` liste les indices d'arguments (0 = premier argument du template)
     reçus comme chemin JSONPath compilé plutôt que comme valeur évaluée.
+    ``lazy_args`` liste ceux reçus comme **callable sans argument** : la fonction
+    décide quand les évaluer, et contre quelle source courante.
     ``description`` documente la fonction (sinon la 1re ligne du docstring sert).
     """
 
     def decorator(function: JsltFunction) -> JsltFunction:
-        default_registry.register(name, function, path_args, description, kind)
+        default_registry.register(name, function, path_args, description, kind, lazy_args)
         return function
 
     return decorator

@@ -20,6 +20,7 @@ l'interpréteur.
 
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING, Any, Callable
 
 from urban_json.ast import (
@@ -203,10 +204,15 @@ def _c_function(node: JsltFunctionCall) -> Program:
         if function is None:
             raise JsltError(f"fonction inconnue : {name}")
         path_args = ctx.functions.path_args_of(name)
+        lazy_args = ctx.functions.lazy_args_of(name)
         values = []
         for index in range(count):
             if is_path[index] and index in path_args:
                 values.append(path_objs[index])
+            elif index in lazy_args:
+                # Même contrat que dans l'interpréteur : un callable sans
+                # argument, évalué par la fonction quand elle le décide.
+                values.append(partial(compiled_args[index], ctx))
             else:
                 values.append(compiled_args[index](ctx))
         return function(ctx, *values)

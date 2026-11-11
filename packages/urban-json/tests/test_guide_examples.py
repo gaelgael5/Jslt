@@ -16,8 +16,13 @@ import json
 
 import pytest
 
-from _docs import counts_by_language, doc_triples
+from _docs import DOCS, NO_DOCS, counts_by_language, doc_triples
 from urban_json import JsltTemplate
+
+# Sans `docs/`, ces tests n'ont pas de matière : on le dit au lieu de les faire
+# échouer (cf. `_docs.find_docs`).
+pytestmark = pytest.mark.skipif(DOCS is None, reason=NO_DOCS)
+
 
 CASES = doc_triples()
 

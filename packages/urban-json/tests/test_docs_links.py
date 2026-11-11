@@ -10,7 +10,14 @@ from __future__ import annotations
 
 import re
 
-from _docs import DOCS
+import pytest
+
+from _docs import DOCS, NO_DOCS
+
+# Sans `docs/`, ces tests n'ont pas de matière : on le dit au lieu de les faire
+# échouer (cf. `_docs.find_docs`).
+pytestmark = pytest.mark.skipif(DOCS is None, reason=NO_DOCS)
+
 
 # Liens markdown hors blocs de code (un exemple jslt peut contenir des crochets).
 _FENCE_RE = re.compile(r"```.*?```", re.DOTALL)

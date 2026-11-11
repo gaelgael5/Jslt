@@ -10,7 +10,10 @@ from __future__ import annotations
 import math
 from typing import Any
 
+from urban_json.errors import JsltError
+
 from ._helpers import coerce_number, is_number, number_result
+from .aggregate import numbers_of
 from .registry import jslt_function
 
 
@@ -25,8 +28,17 @@ def execute_floor(ctx: Any, token: Any = None) -> Any:
 
 
 @jslt_function("round", description="Arrondi à l'entier le plus proche, demi vers le pair (2.5 -> 2.0, 3.5 -> 4.0), rendu en décimal")
-def execute_round(ctx: Any, token: Any = None) -> Any:
-    return number_result(token, lambda n: float(round(n)))  # arrondi bancaire
+def execute_round(ctx: Any, token: Any = None, digits: Any = None) -> Any:
+    """Arrondi bancaire, à l'entier par défaut ou à ``digits`` décimales.
+
+    L'argument de précision est une extension : sans lui, arrondir un montant à
+    deux décimales demandait de multiplier par 100, arrondir et rediviser — avec
+    l'erreur de représentation que ça traîne.
+    """
+    if digits is None:
+        return number_result(token, lambda n: float(round(n)))  # arrondi bancaire
+    places = int(coerce_number(digits))
+    return number_result(token, lambda n: round(float(n), places))
 
 
 @jslt_function("truncate", description="Partie entière d'un nombre, sans arrondi (-2.7 -> -2.0), rendue en décimal")
@@ -107,18 +119,38 @@ def execute_pow(ctx: Any, base: Any = None, exponent: Any = None) -> Any:
     return float(math.pow(base, coerce_number(exponent)))
 
 
-@jslt_function("min", description="Plus petit de deux nombres, rendu en décimal (pas un agrégat de tableau)")
+@jslt_function("min", description="Plus petit de deux nombres, ou du tableau donné (décimal pour deux nombres)")
 def execute_min(ctx: Any, left: Any = None, right: Any = None) -> Any:
+    if isinstance(left, list):
+        return _extreme(left, min, "min", right)
     if not is_number(left):
         return None
     return float(min(left, coerce_number(right)))  # .NET renvoie un double
 
 
-@jslt_function("max", description="Plus grand de deux nombres, rendu en décimal (pas un agrégat de tableau)")
+@jslt_function("max", description="Plus grand de deux nombres, ou du tableau donné (décimal pour deux nombres)")
 def execute_max(ctx: Any, left: Any = None, right: Any = None) -> Any:
+    if isinstance(left, list):
+        return _extreme(left, max, "max", right)
     if not is_number(left):
         return None
     return float(max(left, coerce_number(right)))  # .NET renvoie un double
+
+
+def _extreme(values: list, pick, name: str, right: Any) -> Any:
+    """Agrégat sur un tableau, ajouté à la forme binaire .NET.
+
+    Deux formes dans une fonction plutôt qu'un `minof` / `maxof` de plus : c'est
+    la même question (« le plus petit »), et `sum($.n)` agrège déjà un tableau.
+    Le type est conservé ici (un entier reste entier), là où la forme binaire
+    garde le quirk .NET du décalage en décimal — passer un tableau est un usage
+    neuf, il n'a pas de compatibilité à respecter.
+    """
+    if right is not None:
+        # Sinon le second argument serait ignoré en silence.
+        raise JsltError(f"{name} sur un tableau n'attend pas de second argument : {right!r}")
+    numbers = numbers_of(values, name)
+    return pick(numbers) if numbers else None
 
 
 @jslt_function("pi", description="Constante pi (3.14159…)")

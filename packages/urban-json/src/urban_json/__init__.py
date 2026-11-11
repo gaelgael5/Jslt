@@ -64,7 +64,7 @@ __all__ = [
     "load_plugins",
 ]
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 # Chargement paresseux (une fois) des plugins tiers dans le registre par défaut.
 _default_plugins_loaded = False
@@ -134,7 +134,10 @@ class JsltTemplate:
         return self
 
     def transform(
-        self, source: Any = None, functions: FunctionRegistry | None = None
+        self,
+        source: Any = None,
+        functions: FunctionRegistry | None = None,
+        parameters: dict[str, Any] | None = None,
     ) -> Any:
         """Applique le template au document source et renvoie le résultat.
 
@@ -143,14 +146,21 @@ class JsltTemplate:
             functions: registre de fonctions à utiliser. Par défaut, le registre
                 global (fonctions intégrées + plugins découverts). Passer un
                 registre dédié permet d'isoler/limiter les fonctions disponibles.
+            parameters: réglages externes lus par ``param("nom")`` dans le
+                template (date de référence, identifiant de lot…). Ils ne sont
+                **pas** visibles dans les chemins JSONPath : un réglage n'est pas
+                une donnée du document.
 
         Returns:
             Le document transformé (structures Python).
         """
-        return self._run(self._context(source, functions))
+        return self._run(self._context(source, functions, parameters))
 
     def render(
-        self, source: Any = None, functions: FunctionRegistry | None = None
+        self,
+        source: Any = None,
+        functions: FunctionRegistry | None = None,
+        parameters: dict[str, Any] | None = None,
     ) -> str:
         """Applique le template puis sa directive de sortie, et renvoie le texte produit.
 
@@ -164,11 +174,12 @@ class JsltTemplate:
         Args:
             source: le document source.
             functions: registre de fonctions (défaut : registre global).
+            parameters: réglages externes lus par ``param("nom")``.
 
         Returns:
             Le texte produit.
         """
-        context = self._context(source, functions)
+        context = self._context(source, functions, parameters)
         result = self._run(context)
         output = self._output_configuration()
         if output is None:
@@ -181,11 +192,18 @@ class JsltTemplate:
         context.token_result = result
         return function(context, *arguments)
 
-    def _context(self, source: Any, functions: FunctionRegistry | None) -> RuntimeContext:
+    def _context(
+        self,
+        source: Any,
+        functions: FunctionRegistry | None,
+        parameters: dict[str, Any] | None = None,
+    ) -> RuntimeContext:
         if functions is None:
             _ensure_default_plugins()
             functions = default_registry
-        return RuntimeContext(Sources(source), functions)
+        if parameters is not None and not isinstance(parameters, dict):
+            raise JsltError(f"paramètres attendus sous forme d'objet, reçu : {parameters!r}")
+        return RuntimeContext(Sources(source), functions, parameters)
 
     def _run(self, context: RuntimeContext) -> Any:
         # Chemin compilé si build() a été appelé (identique, plus rapide en masse) ;
@@ -207,6 +225,7 @@ class JsltTemplate:
         break_functions: Any = (),
         break_lines: Any = (),
         max_steps: int = 10_000,
+        parameters: dict[str, Any] | None = None,
     ) -> DebugResult:
         """Évalue le template en collectant une trace pas-à-pas (débogage).
 
@@ -229,7 +248,7 @@ class JsltTemplate:
         if functions is None:
             _ensure_default_plugins()
             functions = default_registry
-        context = RuntimeContext(Sources(source), functions)
+        context = RuntimeContext(Sources(source), functions, parameters)
         return evaluate_with_trace(
             self._ast, context, break_functions, break_lines, max_steps
         )

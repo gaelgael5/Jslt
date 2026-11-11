@@ -171,3 +171,21 @@ def test_load_plugins_dict_api(monkeypatch) -> None:
     target = FunctionRegistry()
     assert load_plugins(target) == ["legacy"]
     assert "shout" in target
+
+
+def test_remove_retire_une_fonction_du_registre() -> None:
+    from urban_json import JsltError, JsltTemplate, default_registry
+
+    sandbox = default_registry.copy()
+    assert sandbox.remove("upper") is True
+    assert "upper" not in sandbox.names()
+    # Le registre global n'est pas touché : la copie est indépendante.
+    assert "upper" in default_registry.names()
+    with pytest.raises(JsltError, match="fonction inconnue"):
+        JsltTemplate.parse('{ "r": upper($.t) }').transform({"t": "a"}, functions=sandbox)
+
+
+def test_remove_dit_quand_la_fonction_n_existait_pas() -> None:
+    from urban_json import default_registry
+
+    assert default_registry.copy().remove("zzz-inconnue") is False

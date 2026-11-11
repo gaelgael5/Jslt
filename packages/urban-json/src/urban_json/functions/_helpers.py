@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from urban_json.errors import JsltError
+
 
 def to_text(value: Any) -> str:
     """Représentation chaîne façon .NET (``True``/``False`` capitalisés)."""
@@ -40,8 +42,15 @@ def coerce_number(value: Any) -> int | float:
         try:
             return int(value)
         except ValueError:
+            pass
+        try:
             return float(value)
-    raise ValueError(f"conversion numérique impossible : {value!r}")
+        except ValueError as exc:
+            # `JsltError` et non `ValueError` : une erreur de données doit être
+            # rattrapable par un template (`trydefault`) et lisible dans un
+            # message, pas une exception Python brute remontée à l'appelant.
+            raise JsltError(f"conversion numérique impossible : {value!r}") from exc
+    raise JsltError(f"conversion numérique impossible : {value!r}")
 
 
 def coerce_bool(value: Any) -> bool:

@@ -1,4 +1,7 @@
-"""``schema(fragment)`` — JSON Schema (draft-04) déduit d'un exemple.
+"""``schema`` (déduire un JSON Schema) et sa validation (``schemaerrors``,
+``schemaisvalid``).
+
+``schema(fragment)`` — JSON Schema (draft-04) déduit d'un exemple.
 
 Port de ``LoadSchema`` (.NET), qui délègue à ``JsonSchema.FromSampleJson`` de
 NJsonSchema (``SampleJsonSchemaGenerator``, dont le source est embarqué dans le
@@ -21,6 +24,9 @@ import re
 from datetime import datetime
 from typing import Any
 
+from urban_json.errors import JsltError
+
+from ._schemacheck import errors as schema_errors
 from .registry import jslt_function
 
 _DRAFT4 = "http://json-schema.org/draft-04/schema#"
@@ -167,3 +173,34 @@ def execute_schema(ctx: Any, fragment: Any = None) -> dict:
     if generator.definitions:
         result["definitions"] = {name: generator.to_json(s) for name, s in generator.definitions.items()}
     return result
+
+
+# --- validation contre un schéma ---------------------------------------------
+# `schema` déduisait un schéma sans qu'on puisse jamais valider contre lui : le
+# cas d'usage évident (accepter ou refuser un flux entrant) manquait.
+
+
+@jslt_function(
+    "schemaerrors",
+    description="Liste des erreurs de validation d'un document contre un JSON Schema (vide si conforme)",
+)
+def execute_schemaerrors(ctx: Any, fragment: Any = None, schema_document: Any = None) -> list:
+    """Erreurs de validation, chacune localisée (``$.tags[1] : …``).
+
+    Rendre la **liste** plutôt qu'un booléen : un message qui nomme le champ
+    fautif est ce qui permet de rejeter un flux en expliquant pourquoi, et
+    ``schemaisvalid`` s'en déduit.
+    """
+    if not isinstance(schema_document, dict):
+        raise JsltError(f"schéma JSON attendu (objet), reçu : {schema_document!r}")
+    return schema_errors(fragment, schema_document)
+
+
+@jslt_function(
+    "schemaisvalid",
+    description="Vrai si le document respecte le JSON Schema donné (sous-ensemble géré)",
+)
+def execute_schemaisvalid(ctx: Any, fragment: Any = None, schema_document: Any = None) -> bool:
+    if not isinstance(schema_document, dict):
+        raise JsltError(f"schéma JSON attendu (objet), reçu : {schema_document!r}")
+    return not schema_errors(fragment, schema_document)
