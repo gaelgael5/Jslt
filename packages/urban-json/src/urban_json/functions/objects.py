@@ -25,13 +25,13 @@ def _as_object(value: Any) -> dict | None:
     return value if isinstance(value, dict) else None
 
 
-@jslt_function("keys", description="Clés d'un objet, dans l'ordre du document (null si ce n'est pas un objet)")
+@jslt_function("keys", description="Clés d'un objet, dans l'ordre du document (null si ce n'est pas un objet)", description_en="Keys of an object, in document order (null when it is not an object)")
 def execute_keys(ctx: Any, token: Any = None) -> Any:
     obj = _as_object(token)
     return None if obj is None else list(obj.keys())
 
 
-@jslt_function("values", description="Valeurs d'un objet, dans l'ordre du document (null si ce n'est pas un objet)")
+@jslt_function("values", description="Valeurs d'un objet, dans l'ordre du document (null si ce n'est pas un objet)", description_en="Values of an object, in document order (null when it is not an object)")
 def execute_values(ctx: Any, token: Any = None) -> Any:
     obj = _as_object(token)
     return None if obj is None else list(obj.values())
@@ -40,6 +40,7 @@ def execute_values(ctx: Any, token: Any = None) -> Any:
 @jslt_function(
     "entries",
     description="Paires d'un objet en tableau de { key, value }, dans l'ordre du document",
+    description_en="Pairs of an object as an array of { key, value }, in document order",
 )
 def execute_entries(ctx: Any, token: Any = None) -> Any:
     """Objet -> tableau de ``{key, value}``.
@@ -57,6 +58,7 @@ def execute_entries(ctx: Any, token: Any = None) -> Any:
 @jslt_function(
     "fromentries",
     description="Reconstruit un objet depuis un tableau de { key, value } ou de paires [clé, valeur]",
+    description_en="Rebuilds an object from an array of { key, value } or of [key, value] pairs",
 )
 def execute_fromentries(ctx: Any, token: Any = None) -> Any:
     if token is None:
@@ -81,13 +83,20 @@ def execute_fromentries(ctx: Any, token: Any = None) -> Any:
 
 @jslt_function(
     "merge",
-    description="Fusionne deux objets, la droite gagnant les clés communes (deep à true pour fusionner les sous-objets)",
+    description=(
+        "Fusionne deux objets, la droite gagnant les clés communes (deep pour les "
+        "sous-objets, arrays pour concaténer les tableaux)"
+    ),
+    description_en="Merges two objects, the right one winning the shared keys (deep for sub-objects, arrays to concatenate arrays)",
 )
-def execute_merge(ctx: Any, left: Any = None, right: Any = None, deep: Any = None) -> Any:
+def execute_merge(
+    ctx: Any, left: Any = None, right: Any = None, deep: Any = None, arrays: Any = None
+) -> Any:
     """Fusion de deux objets, sans toucher aux sources.
 
     Plate par défaut : une clé commune est **remplacée**, y compris si sa valeur
-    est un objet. ``deep`` descend dans les sous-objets. Le .NET mutait sa source
+    est un objet. ``deep`` descend dans les sous-objets, ``arrays`` concatène les
+    tableaux au lieu de les remplacer. Le .NET mutait sa source
     dans ``join`` ; ici les deux entrées sortent intactes (copie profonde des
     valeurs reprises).
     """
@@ -98,14 +107,19 @@ def execute_merge(ctx: Any, left: Any = None, right: Any = None, deep: Any = Non
             raise JsltError(f"merge attend des objets, reçu : {side!r}")
     if left is None or right is None:
         return copy.deepcopy(left if right is None else right)
-    return _merge(left, right, coerce_bool(deep))
+    return _merge(left, right, coerce_bool(deep), coerce_bool(arrays))
 
 
-def _merge(left: dict, right: dict, deep: bool) -> dict:
+def _merge(left: dict, right: dict, deep: bool, arrays: bool = False) -> dict:
     merged = copy.deepcopy(left)
     for key, value in right.items():
         if deep and isinstance(merged.get(key), dict) and isinstance(value, dict):
-            merged[key] = _merge(merged[key], value, True)
+            merged[key] = _merge(merged[key], value, True, arrays)
+        elif arrays and isinstance(merged.get(key), list) and isinstance(value, list):
+            # Concaténation et non remplacement : le défaut reste le
+            # remplacement, parce que « fusionner » deux listes de longueurs
+            # différentes n'a pas de sens unique (concaténer ? par indice ?).
+            merged[key] = merged[key] + copy.deepcopy(value)
         else:
             merged[key] = copy.deepcopy(value)
     return merged
@@ -124,7 +138,7 @@ def _key_list(keys: Any) -> list[str]:
     return [to_text(keys)]
 
 
-@jslt_function("pick", description="Sous-objet limité aux clés demandées (une clé ou un tableau de clés)")
+@jslt_function("pick", description="Sous-objet limité aux clés demandées (une clé ou un tableau de clés)", description_en="Sub-object limited to the requested keys (one key or an array of keys)")
 def execute_pick(ctx: Any, token: Any = None, keys: Any = None) -> Any:
     obj = _as_object(token)
     if obj is None:
@@ -136,7 +150,7 @@ def execute_pick(ctx: Any, token: Any = None, keys: Any = None) -> Any:
     return {key: value for key, value in obj.items() if key in wanted}
 
 
-@jslt_function("omit", description="Objet privé des clés demandées (une clé ou un tableau de clés)")
+@jslt_function("omit", description="Objet privé des clés demandées (une clé ou un tableau de clés)", description_en="Object without the requested keys (one key or an array of keys)")
 def execute_omit(ctx: Any, token: Any = None, keys: Any = None) -> Any:
     obj = _as_object(token)
     if obj is None:
@@ -148,6 +162,7 @@ def execute_omit(ctx: Any, token: Any = None, keys: Any = None) -> Any:
 @jslt_function(
     "has",
     description="Vrai si l'objet porte cette clé, même avec une valeur nulle",
+    description_en="True when the object carries that key, even with a null value",
 )
 def execute_has(ctx: Any, token: Any = None, key: Any = None) -> bool:
     """Présence d'une clé — ce qu'``isnull`` ne sait pas dire.
@@ -163,6 +178,7 @@ def execute_has(ctx: Any, token: Any = None, key: Any = None) -> bool:
 @jslt_function(
     "renamekeys",
     description="Renomme les clés d'un objet selon un mapping { ancien: nouveau }",
+    description_en="Renames the keys of an object according to a { old: new } mapping",
 )
 def execute_renamekeys(ctx: Any, token: Any = None, mapping: Any = None) -> Any:
     obj = _as_object(token)

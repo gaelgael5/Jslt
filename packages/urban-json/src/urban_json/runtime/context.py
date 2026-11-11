@@ -54,6 +54,11 @@ class RuntimeContext:
         #: lot) n'est pas une donnée à transformer, et les mélanger obligeait à
         #: fabriquer un faux document autour du vrai.
         self.parameters: dict[str, Any] = dict(parameters) if parameters else {}
+        #: Valeurs observées par `trace()`, dans l'ordre. Portées par le contexte
+        #: et non par un état global : deux exécutions, même concurrentes, ne
+        #: voient jamais les traces l'une de l'autre. Un intégrateur les lit ici
+        #: après coup, sans que le template ait à les recopier dans sa sortie.
+        self.traces: list[dict[str, Any]] = []
         self.variables = VariableManager()
         self.functions = functions if functions is not None else default_registry
         # Pile de la source courante (``RootSource`` en .NET). Le sommet est la

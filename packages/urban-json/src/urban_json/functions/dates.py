@@ -42,6 +42,7 @@ from .registry import jslt_function
         "Lit une date texte et la rend en ISO 8601 : détection selon la culture, "
         "ou masque explicite (dd/MM/yyyy…), avec un fuseau optionnel"
     ),
+    description_en="Reads a date from text and returns it in ISO 8601: detection by culture, or an explicit mask (dd/MM/yyyy…), with an optional timezone",
 )
 def execute_parsedate(
     ctx: Any, token: Any = None, culture: Any = None, mask: Any = None, timezone: Any = None
@@ -73,6 +74,7 @@ def execute_parsedate(
         "Ajoute une durée à une date ISO 8601 : unité second, minute, hour, day, "
         "week, month ou year, et un nombre entier (négatif pour retrancher)"
     ),
+    description_en="Adds a duration to an ISO 8601 date: unit second, minute, hour, day, week, month or year, and a whole number (negative to subtract)",
 )
 def execute_dateadd(ctx: Any, token: Any = None, unit: Any = None, amount: Any = None) -> Any:
     """Décale une date d'un nombre entier d'unités.
@@ -92,6 +94,7 @@ def execute_dateadd(ctx: Any, token: Any = None, unit: Any = None, amount: Any =
         "Retranche une durée à une date ISO 8601 : unité second, minute, hour, day, "
         "week, month ou year, et un nombre entier"
     ),
+    description_en="Subtracts a duration from an ISO 8601 date: unit second, minute, hour, day, week, month or year, and a whole number",
 )
 def execute_datesub(ctx: Any, token: Any = None, unit: Any = None, amount: Any = None) -> Any:
     """Inverse de ``dateadd`` : ``datesub(d, u, n)`` vaut ``dateadd(d, u, -n)``."""
@@ -106,6 +109,7 @@ def execute_datesub(ctx: Any, token: Any = None, unit: Any = None, amount: Any =
         "Extrait une composante entière d'une date ISO 8601 : year, month, day, "
         "dayofweek (dimanche = 0), hour, minute ou second"
     ),
+    description_en="Extracts a whole component from an ISO 8601 date: year, month, day, dayofweek (Sunday = 0), hour, minute or second",
 )
 def execute_datepart(ctx: Any, token: Any = None, part: Any = None) -> Any:
     """Rend une composante de la date, en nombre.
@@ -130,6 +134,7 @@ def execute_datepart(ctx: Any, token: Any = None, part: Any = None) -> Any:
         "Compte les unités entières écoulées entre deux dates ISO 8601 : second, "
         "minute, hour, day, week, month ou year, négatif si la fin précède le début"
     ),
+    description_en="Counts the whole units elapsed between two ISO 8601 dates: second, minute, hour, day, week, month or year, negative when the end precedes the start",
 )
 def execute_datediff(ctx: Any, start: Any = None, end: Any = None, unit: Any = None) -> Any:
     """Écart entre deux dates, en unités **entières**.
@@ -155,6 +160,7 @@ def execute_datediff(ctx: Any, start: Any = None, end: Any = None, unit: Any = N
         "Premier instant de la période contenant la date : year, quarter, month, "
         "week (lundi), day, hour ou minute"
     ),
+    description_en="First instant of the period holding the date: year, quarter, month, week (Monday), day, hour or minute",
 )
 def execute_datestartof(ctx: Any, token: Any = None, period: Any = None) -> Any:
     """Borne basse d'une période, décalage horaire conservé."""
@@ -169,6 +175,7 @@ def execute_datestartof(ctx: Any, token: Any = None, period: Any = None) -> Any:
         "Dernier instant de la période contenant la date (borne inclusive, à la "
         "microseconde près)"
     ),
+    description_en="Last instant of the period holding the date (inclusive bound, to the microsecond)",
 )
 def execute_dateendof(ctx: Any, token: Any = None, period: Any = None) -> Any:
     if token is None:
@@ -182,6 +189,7 @@ def execute_dateendof(ctx: Any, token: Any = None, period: Any = None) -> Any:
         "Attribue un fuseau à une date sans décalage, ou convertit une date qui "
         "en porte déjà un"
     ),
+    description_en="Attaches a timezone to a date without offset, or converts a date that already carries one",
 )
 def execute_datezone(ctx: Any, token: Any = None, zone: Any = None) -> Any:
     """Conversion de fuseau explicite.
@@ -202,6 +210,7 @@ def execute_datezone(ctx: Any, token: Any = None, zone: Any = None) -> Any:
 @jslt_function(
     "today",
     description="Date du jour à minuit en ISO 8601 : locale, ou UTC si utc vaut true",
+    description_en="Today's date at midnight in ISO 8601: local, or UTC when utc is true",
 )
 def execute_today(ctx: Any, utc: Any = False) -> str:
     """Minuit du jour courant — ``now`` porte l'heure, ce qui empêche de comparer
@@ -216,6 +225,7 @@ def execute_today(ctx: Any, utc: Any = False) -> str:
         "Décompose l'intervalle entre deux dates en années, mois, jours, heures, "
         "minutes et secondes"
     ),
+    description_en="Splits the interval between two dates into years, months, days, hours, minutes and seconds",
 )
 def execute_dateduration(ctx: Any, start: Any = None, end: Any = None) -> Any:
     """Durée décomposée, avec un drapeau ``negative`` si la fin précède le début.

@@ -48,7 +48,7 @@ def _compile(pattern: Any) -> re.Pattern[str]:
         raise JsltError(f"motif regex invalide {pattern!r} : {exc}") from exc
 
 
-@jslt_function("regexismatch", description="Vrai si le texte contient une correspondance du motif regex")
+@jslt_function("regexismatch", description="Vrai si le texte contient une correspondance du motif regex", description_en="True when the text holds a match of the regex pattern")
 def execute_regexismatch(ctx: Any, token: Any = None, pattern: str = "") -> Any:
     subject = _regex_subject(token)
     if subject is None:
@@ -57,7 +57,7 @@ def execute_regexismatch(ctx: Any, token: Any = None, pattern: str = "") -> Any:
     return _compile(pattern).search(subject) is not None
 
 
-@jslt_function("regexmatches", description="Liste des correspondances du motif regex dans le texte")
+@jslt_function("regexmatches", description="Liste des correspondances du motif regex dans le texte", description_en="List of the matches of the regex pattern in the text")
 def execute_regexmatches(ctx: Any, token: Any = None, pattern: str = "") -> Any:
     subject = _regex_subject(token)
     if subject is None:
@@ -91,6 +91,7 @@ def _substitution(replacement: str) -> str:
 @jslt_function(
     "regexreplace",
     description="Remplace les correspondances d'un motif regex ($1, ${nom}, $& pour les groupes)",
+    description_en="Replaces the matches of a regex pattern ($1, ${name}, $& for the groups)",
 )
 def execute_regexreplace(
     ctx: Any, token: Any = None, pattern: Any = None, replacement: Any = None
@@ -99,3 +100,18 @@ def execute_regexreplace(
     if subject is None:
         return None
     return _compile(pattern).sub(_substitution(to_text(replacement)), subject)
+
+
+@jslt_function(
+    "splitregex",
+    description="Découpe un texte sur les correspondances d'un motif regex",
+    description_en="Cuts a text on the matches of a regex pattern",
+)
+def execute_splitregex(ctx: Any, token: Any = None, pattern: Any = None, limit: Any = None) -> Any:
+    """Découpe sur un motif, pour les séparateurs à géométrie variable
+    (« a ; b;c »), que ni `split` ni `splitstring` ne savent couper."""
+    subject = _regex_subject(token)
+    if subject is None:
+        return None
+    cuts = 0 if limit is None else int(limit)
+    return _compile(pattern).split(subject, maxsplit=cuts)

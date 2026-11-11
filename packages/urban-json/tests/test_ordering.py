@@ -116,3 +116,109 @@ def test_sort_puis_limit_donne_un_top_n():
     # Le cas qui motivait le sujet : « les 2 plus gros montants ».
     template = '{ "top": selectmany(limit(sort($.v, $, true), 2), $.*) }'
     assert run(template, {"v": [5, 50, 15, 2]}) == {"top": [50, 15]}
+
+
+# --- ordre des tableaux et des objets ----------------------------------------
+# Régression : l'ordre total comparait tableaux et objets par leur **JSON
+# compact**, donc par points de code. Un tri multi-clefs (clef = tableau de
+# clefs, usage naturel puisque la clef est une expression) ordonnait alors
+# « [10] » avant « [2] ». Comparaison élément par élément désormais.
+
+
+def test_tri_multi_clefs_ordonne_les_nombres_numeriquement():
+    template = '{ "r": selectmany(sort($.l, [$.a, $.b]), $.*.a) }'
+    source = {"l": [{"a": 9, "b": 1}, {"a": 10, "b": 1}, {"a": 2, "b": 1}]}
+    assert run(template, source) == {"r": [2, 9, 10]}
+
+
+def test_tri_multi_clefs_departage_sur_la_seconde_clef():
+    template = '{ "r": selectmany(sort($.l, [$.a, $.b]), $.*.id) }'
+    source = {"l": [
+        {"id": 1, "a": 1, "b": 20},
+        {"id": 2, "a": 1, "b": 3},
+        {"id": 3, "a": 0, "b": 99},
+    ]}
+    assert run(template, source) == {"r": [3, 2, 1]}
+
+
+def test_tableaux_compares_element_par_element():
+    source = {"n": [[2], [10], [1, 1], [1], []]}
+    assert run('{ "r": sort($.n) }', source) == {"r": [[], [1], [1, 1], [2], [10]]}
+
+
+def test_tableaux_de_types_differents_restent_comparables():
+    # Le rang du premier élément départage, sans jamais lever.
+    source = {"n": [["b"], [2], [None], [True]]}
+    assert run('{ "r": sort($.n) }', source) == {"r": [[None], [True], [2], ["b"]]}
+
+
+def test_objets_compares_par_clefs_puis_valeurs():
+    source = {"n": [{"a": 10}, {"a": 2}, {"a": 2, "b": 1}, {"b": 0}]}
+    assert run('{ "r": sort($.n) }', source) == {
+        "r": [{"a": 2}, {"a": 2, "b": 1}, {"a": 10}, {"b": 0}]
+    }
+
+
+def test_tri_imbrique_profondement_ne_leve_pas():
+    source = {"n": [{"a": [{"b": [2]}]}, {"a": [{"b": [10]}]}]}
+    assert run('{ "r": sort($.n) }', source) == {
+        "r": [{"a": [{"b": [2]}]}, {"a": [{"b": [10]}]}]
+    }
+
+
+# --- sens de tri par clef (catégorie « tri et regroupement ») ------------------
+
+
+def test_sort_un_sens_par_clef():
+    # Ville croissante, montant décroissant : impossible avec un seul `reverse`.
+    source = {
+        "l": [
+            {"id": 1, "ville": "Lyon", "montant": 20},
+            {"id": 2, "ville": "Brest", "montant": 9},
+            {"id": 3, "ville": "Lyon", "montant": 50},
+        ]
+    }
+    template = '{ "r": selectmany(sort($.l, [$.ville, $.montant], [false, true]), $.*.id) }'
+    assert run(template, source) == {"r": [2, 3, 1]}
+
+
+def test_sort_tous_les_sens_descendants_vaut_le_booleen():
+    source = {"l": [{"a": 1}, {"a": 3}, {"a": 2}]}
+    par_liste = run('{ "r": selectmany(sort($.l, [$.a], [true]), $.*.a) }', source)
+    par_booleen = run('{ "r": selectmany(sort($.l, $.a, true), $.*.a) }', source)
+    assert par_liste == par_booleen == {"r": [3, 2, 1]}
+
+
+def test_sort_sens_manquant_est_croissant():
+    # Deux clefs, un seul sens donné : la seconde reste croissante.
+    source = {"l": [{"a": 1, "b": 2}, {"a": 1, "b": 1}, {"a": 2, "b": 9}]}
+    template = '{ "r": selectmany(sort($.l, [$.a, $.b], [true]), $.*.b) }'
+    assert run(template, source) == {"r": [9, 1, 2]}
+
+
+def test_sort_par_sens_reste_stable():
+    source = {"l": [{"a": 1, "i": 1}, {"a": 1, "i": 2}, {"a": 1, "i": 3}]}
+    template = '{ "r": selectmany(sort($.l, [$.a], [true]), $.*.i) }'
+    assert run(template, source) == {"r": [1, 2, 3]}
+
+
+def test_sort_sens_non_booleen_leve():
+    with pytest.raises(JsltError, match="sens de tri"):
+        run('{ "r": sort($.l, [$.a], ["oui"]) }', {"l": [{"a": 1}]})
+
+
+def test_sort_plus_de_sens_que_de_clefs_leve():
+    # La faute d'écriture la plus probable : un sens de trop passerait inaperçu.
+    with pytest.raises(JsltError, match="sens de tri"):
+        run('{ "r": sort($.l, [$.a], [true, false]) }', {"l": [{"a": 1}]})
+
+
+def test_sort_sens_par_clef_exige_une_clef_en_tableau():
+    with pytest.raises(JsltError, match="tableau"):
+        run('{ "r": sort($.l, $.a, [true]) }', {"l": [{"a": 1}]})
+
+
+def test_sort_sens_par_clef_ordonne_aussi_les_textes():
+    source = {"l": [{"n": "b"}, {"n": "a"}, {"n": "c"}]}
+    template = '{ "r": selectmany(sort($.l, [$.n], [true]), $.*.n) }'
+    assert run(template, source) == {"r": ["c", "b", "a"]}

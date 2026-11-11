@@ -56,6 +56,7 @@ def _group_level(items: list, paths: list) -> list[dict]:
 @jslt_function(
     "group",
     description="Regroupe un tableau par chemins JSONPath successifs en {Label, Items} imbriqués",
+    description_en="Groups an array by successive JSONPath paths into nested {Label, Items}",
 )
 def execute_group(ctx: Any, source: Any = None, group_paths: Any = None) -> list:
     if not isinstance(source, list) or not group_paths:
@@ -79,6 +80,7 @@ def _right_rule(rule: Any) -> tuple[str, Any, list]:
     "join",
     path_args=(1,),
     description="Jointure gauche : rattache aux objets de gauche les éléments de droite de même clé",
+    description_en="Left join: attaches to the left objects the right elements sharing the key",
 )
 def execute_join(
     ctx: Any, source_left: Any = None, key_left: Any = None, clean_source: Any = None, rights: Any = None
@@ -122,6 +124,7 @@ def _without_key(item: Any, key_path: Any) -> Any:
 @jslt_function(
     "createindex",
     description="Construit un index {clé: élément} à partir d'une source, d'un chemin de découpe et d'un chemin de clé",
+    description_en="Builds an index {key: element} from a source, a splitting path and a key path",
 )
 def execute_createindex(ctx: Any, source: Any = None, object_path: Any = None, key: Any = None) -> dict:
     index: dict[str, Any] = {}
@@ -139,7 +142,7 @@ def execute_createindex(ctx: Any, source: Any = None, object_path: Any = None, k
     return index
 
 
-@jslt_function("index", description="Élément d'un index (créé par createindex) pour une clé, ou null")
+@jslt_function("index", description="Élément d'un index (créé par createindex) pour une clé, ou null", description_en="Element of an index (built by createindex) for a key, or null")
 def execute_index(ctx: Any, index: Any = None, key: Any = None) -> Any:
     if not isinstance(index, dict) or key is None:
         return None

@@ -36,32 +36,33 @@ def type_name(value: Any) -> str:
 @jslt_function(
     "typeof",
     description="Type JSON d'une valeur : null, boolean, number, string, array ou object",
+    description_en="JSON type of a value: null, boolean, number, string, array or object",
 )
 def execute_typeof(ctx: Any, token: Any = None) -> str:
     return type_name(token)
 
 
-@jslt_function("isarray", description="Vrai si la valeur est un tableau JSON")
+@jslt_function("isarray", description="Vrai si la valeur est un tableau JSON", description_en="True when the value is a JSON array")
 def execute_isarray(ctx: Any, token: Any = None) -> bool:
     return isinstance(token, list)
 
 
-@jslt_function("isobject", description="Vrai si la valeur est un objet JSON")
+@jslt_function("isobject", description="Vrai si la valeur est un objet JSON", description_en="True when the value is a JSON object")
 def execute_isobject(ctx: Any, token: Any = None) -> bool:
     return isinstance(token, dict)
 
 
-@jslt_function("isstring", description="Vrai si la valeur est une chaîne de caractères")
+@jslt_function("isstring", description="Vrai si la valeur est une chaîne de caractères", description_en="True when the value is a string")
 def execute_isstring(ctx: Any, token: Any = None) -> bool:
     return isinstance(token, str)
 
 
-@jslt_function("isnumber", description="Vrai si la valeur est un nombre (un booléen n'en est pas un)")
+@jslt_function("isnumber", description="Vrai si la valeur est un nombre (un booléen n'en est pas un)", description_en="True when the value is a number (a boolean is not one)")
 def execute_isnumber(ctx: Any, token: Any = None) -> bool:
     return is_number(token)
 
 
-@jslt_function("isboolean", description="Vrai si la valeur est un booléen (true ou false)")
+@jslt_function("isboolean", description="Vrai si la valeur est un booléen (true ou false)", description_en="True when the value is a boolean (true or false)")
 def execute_isboolean(ctx: Any, token: Any = None) -> bool:
     return isinstance(token, bool)
 
@@ -70,6 +71,7 @@ def execute_isboolean(ctx: Any, token: Any = None) -> bool:
     "trydefault",
     lazy_args=(0, 1),
     description="Valeur de l'expression, ou celle du repli si l'expression lève une erreur",
+    description_en="Value of the expression, or that of the fallback when the expression raises an error",
 )
 def execute_trydefault(ctx: Any, expression: Any = None, fallback: Any = None) -> Any:
     """Repli sur erreur — ce que ``??`` ne couvre pas.
@@ -93,6 +95,7 @@ def execute_trydefault(ctx: Any, expression: Any = None, fallback: Any = None) -
 @jslt_function(
     "parsejson",
     description="Lit un texte JSON et rend la valeur correspondante (objet, tableau ou scalaire)",
+    description_en="Reads JSON text and returns the matching value (object, array or scalar)",
 )
 def execute_parsejson(ctx: Any, token: Any = None) -> Any:
     """Ouvre une chaîne qui **contient** du JSON.

@@ -392,6 +392,7 @@ def _as_date(value: str) -> datetime | None:
 @jslt_function(
     "format",
     description="Formate un nombre ou une date (chaîne ISO) avec un masque .NET et une culture",
+    description_en="Formats a number or a date (ISO string) with a .NET mask and a culture",
 )
 def execute_format(ctx: Any, token: Any = None, mask: Any = None, culture: Any = None) -> Any:
     if token is None:

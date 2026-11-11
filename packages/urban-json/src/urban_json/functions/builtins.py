@@ -17,7 +17,7 @@ from ._helpers import as_json_path, coerce_bool, coerce_number, to_text
 from .registry import jslt_function
 
 
-@jslt_function("sum", description="Somme des nombres d'un tableau (0 pour un tableau vide ou null)")
+@jslt_function("sum", description="Somme des nombres d'un tableau (0 pour un tableau vide ou null)", description_en="Sum of the numbers in an array (0 for an empty array or null)")
 def execute_sum(ctx: Any, token: Any = None) -> Any:
     """Somme des éléments numériques d'un tableau (port de ``ExecuteSum``).
 
@@ -38,7 +38,7 @@ def execute_sum(ctx: Any, token: Any = None) -> Any:
     raise JsltError("sum attend un tableau")
 
 
-@jslt_function("concat", description="Joint les éléments d'un tableau en un texte, séparés par split_char suivi de delimit_char")
+@jslt_function("concat", description="Joint les éléments d'un tableau en un texte, séparés par split_char suivi de delimit_char", description_en="Joins the elements of an array into text, separated by split_char then delimit_char")
 def execute_concat(
     ctx: Any, token: Any = None, split_char: str | None = None, delimit_char: str | None = None
 ) -> str:
@@ -55,7 +55,7 @@ def execute_concat(
     return to_text(token)
 
 
-@jslt_function("distinct", path_args=(1,), description="Valeurs uniques sélectionnées par un chemin JSONPath dans un tableau, dans l'ordre d'apparition")
+@jslt_function("distinct", path_args=(1,), description="Valeurs uniques sélectionnées par un chemin JSONPath dans un tableau, dans l'ordre d'apparition", description_en="Unique values selected by a JSONPath path in an array, in order of appearance")
 def execute_distinct(ctx: Any, source: Any = None, path: Any = None) -> list:
     """Déduplique les valeurs d'un tableau sélectionnées par un chemin.
 
@@ -86,7 +86,7 @@ def execute_distinct(ctx: Any, source: Any = None, path: Any = None) -> list:
 _DEFAULTS = {"integer": 0, "decimal": 0.0, "string": "", "boolean": False}
 
 
-@jslt_function("convert", description="Convertit une valeur vers un type : integer, decimal, string, boolean (uri, uuid, datetime, time en texte)")
+@jslt_function("convert", description="Convertit une valeur vers un type : integer, decimal, string, boolean (uri, uuid, datetime, time en texte)", description_en="Converts a value to a type: integer, decimal, string, boolean (uri, uuid, datetime, time as text)")
 def execute_convert(ctx: Any, token: Any = None, target_type: str = "string") -> Any:
     """Convertit une valeur vers un type cible (port de ``ExecuteConvert``).
 

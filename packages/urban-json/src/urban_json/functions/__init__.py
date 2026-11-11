@@ -15,9 +15,12 @@ extensible pour les ajouter ou en enregistrer de nouvelles.
 from . import (  # noqa: F401
     aggregate,
     builtins,
+    bykey,
     collection,
     dates,
+    deep,
     encoding,
+    folding,
     formatting,
     grouping,
     maths,
@@ -26,8 +29,10 @@ from . import (  # noqa: F401
     objects,
     ordering,
     outputs,
+    quality,
     regexes,
     schema,
+    similarity,
     text,
     types,
 )
