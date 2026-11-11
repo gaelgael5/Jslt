@@ -4,7 +4,7 @@
 
 *[Français](concat.md) · English*
 
-Joins the elements of an array into text, separated by split_char then delimit_char
+Joins the elements of an array into text, separated by split_char then delimit_char (this is the string "join"; join itself is the SQL-style join)
 
 ```
 concat(token, split_char, delimit_char)

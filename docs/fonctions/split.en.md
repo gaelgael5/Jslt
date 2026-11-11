@@ -4,7 +4,7 @@
 
 *[Français](split.md) · English*
 
-Cuts a text into an array on the first character of charset
+Cuts a text into an array on the first character of charset (whole separator: splitstring)
 
 ```
 split(token, charset)

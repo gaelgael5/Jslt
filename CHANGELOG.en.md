@@ -12,6 +12,150 @@ in [Embedding the engine](docs/integration.en.md).
 Versions follow [SemVer](https://semver.org/); a PyPI version is immutable, so a
 documentation fix aimed at the index is worth a patch release.
 
+## urban-json 0.8.0 — 2026-11-11
+
+The language's elementary gaps, filled (182 → 210): walking an array with an
+expression, creating one, splitting a text, **choosing** a value from a
+condition, reading a **computed** key, and rounding like an invoice.
+
+### Added — walking with an expression
+
+`map`, `filter`, `find`, `findindex`, `every`, `some`, `reduce`, `minby`,
+`maxby`, `cumsum`. The `{"$source": …}` loop already did the job of `map`, but
+**in value position only**: it could not be passed as an argument to a function.
+`reduce` had no equivalent at all — yet it is the general fold of which `sum`,
+`product` and `sumby` are special cases.
+
+- `reduce` presents `{acc, value, index}` as the **current source**: a jslt
+  expression has only one source, and the language has no second parameter. With
+  no initial value, the fold starts from the first element.
+- `some` and `every` rather than `any` and `all`: `any` already exists with the
+  .NET meaning "non-empty array", and giving it a predicate would have silently
+  changed the result of ported templates.
+- `every` of an empty array is **true** (no counter-example), `some` is false.
+- `minby` / `maxby` return the **element**, where `min` / `max` return the
+  extreme value without saying who carries it.
+
+### Added — building and editing an array
+
+`range`, `slice`, `append`, `insert`, `removeat`. `range` is the **only**
+function in the engine that creates a series: everything else transforms what
+comes in, and "the twelve months" was inexpressible unless the data carried
+them. End **excluded** and a single argument counting from zero, to line up with
+the indices of `skip` and `slice`; a zero step and series of more than a million
+elements are **refused**, because this is the only place where a template can
+ask for an outsized array. The four edits return a **copy**.
+
+### Added — splitting a text
+
+`chars` (by grapheme), `lines` (all three line endings, empty ones included),
+`words`, `removeprefix` / `removesuffix`, `capitalize`. Three of these needs had
+an answer that **looked** like it worked: `splitstring($.t, "")` returns the
+whole text, `trimstart` removes a **set of characters** and not a prefix (on
+"bacab", `trimstart($.t, "ab")` returns "cab" although the prefix is not there),
+and `titlecase` upper-cases **every** initial.
+
+### Added — a conditional in expression position
+
+`ifelse(condition, if_true, if_false)`. The language had **none**: `when`
+switches on a **value** (it compares `==` against each case name), so a composed
+condition — `$.n > 10 && $.actif` — first had to be computed, then switched on
+its `"true"` / `"false"` text. It was the engine's most elementary gap, and the
+only one with no readable workaround.
+
+Only the **chosen** branch is evaluated (lazy arguments), so
+`ifelse($.d == 0, 0, 100 / $.d)` is safe: with evaluated arguments, the function
+would have been useless exactly where it is most wanted. The condition reads like
+`filter`'s, not like `requirethat`'s assertion. Real `if … else` syntax would
+require changing the ANTLR grammar, hence `java`, absent from the container — the
+function gets the same semantics without touching it.
+
+### Added — access by computed key
+
+`get(value, key)` and `getpath(value, path, separator)`. A path is **literal**:
+`$.o[$.k]` is not a supported selector, and `select` too only accepts a path
+written in the template. Reading a configuration whose keys *are* data required a
+detour through `entries` + `filter` + a variable — four functions for one key
+lookup.
+
+- Missing key, out-of-bounds index, source that is neither object nor array:
+  `null`, the objects family's convention. No fallback argument: `??` already
+  says it, and a fallback as an argument would be evaluated even when the key
+  exists; to require the value, `require(get(…), "message")`.
+- `get` accepts a **negative** index (from the end), like `slice`.
+- `getpath` is the reciprocal of `setpath`, which had none: same steps, array
+  indices included, same adjustable separator.
+
+### Added — the roundings `round` cannot do
+
+`roundhalfup`, `roundto`, `toprecision`. `round` is **banker's** rounding (a kept
+quirk): `round(0.125, 2)` gives `0.12` where an invoice expects `0.13`. The
+engine therefore could not write the commonest rounding in commerce, nor round to
+a multiple (a till's 0.05 step), nor to a number of **significant** digits.
+
+- Halves go **away from zero**: `-0.5` gives `-1`, so that a credit note rounds
+  like the invoice it cancels.
+- All three read the number as it is **written**: `2.675` is stored as
+  `2.67499999…`, and that is what the workaround `round($.n * 20) / 20`
+  returned.
+- A zero or negative step **raises**, rather than returning a value that was
+  rounded to nothing.
+
+### Changed — widened, compatible signature
+
+- `indexof(text_or_array, value, start)`: a 3rd argument, the starting position.
+  Walking every occurrence used to mean re-splitting the text at each turn.
+- `stringlength` **spells** `stringlenght` correctly, the original name being a
+  typo. Both names register the **same** implementation, so they cannot diverge;
+  removing the old one would break the templates written with it.
+- Seven registry descriptions clear up a neighbouring name right where the reader
+  meets it — in the editor's tooltip: `join` points to `concat` (joining text),
+  `any` to `some`, `split` to `splitstring`, `round` to `roundhalfup`, `index` to
+  `get`. The guide carries the full table ("Misleading names").
+
+### Documented internals
+
+- New modules: `functions/iteration.py`, `functions/sequences.py`,
+  `functions/textparts.py`, `functions/conditions.py`, `functions/access.py`,
+  `functions/rounding.py`.
+
+## urban-json 0.7.0 — 2026-11-11
+
+Three operators returned a **wrong answer** where they could not give a right
+one. An answer goes unnoticed; an error does not.
+
+### Fixed
+
+- **`==` on two containers always said `false`.** Two identical objects, two
+  identical arrays: `false`, and `!=` said `true`. There was no structural
+  equality in the language at all, and nothing signalled it. Equality now
+  descends into arrays (same length, element by element) and objects (same keys,
+  same values), **with the language's rule** — `[2] == ["2"]` is true, just as
+  `2 == "2"` is at the first level. To tell a number from its text, use
+  `indexof([$.a], $.b) == 0`.
+- **`+` on two arrays said `false`.** It **concatenates**, as for two strings.
+  Between two objects it **raises**, naming `merge`, which carries the options
+  (deep, arrays) a silent `+` would hide; between an array and a value it raises
+  naming `union`, because "append an element" and "concatenate" are equally
+  defensible readings.
+- **`"text" + $.array` leaked the Python `repr`** (`a[1, 'x']`). That is the
+  defect fixed in 0.6.0 inside `to_text`… which the operators' private copy had
+  kept. Both copies are replaced by a leaf module, `urban_json._text`: there is
+  now **one** text rendering in the engine, and it is compact JSON.
+- **`- * / % & | ^` and `< <= > >=` on a container** returned `false`. They
+  raise. For comparisons `false` was contradictory too: `a < b` and `a >= b`
+  cannot both be false. Ordering between containers exists, but it is `sort`'s,
+  not the operators'.
+
+`null` is not a container: it keeps its historical fallback to `false`
+(`$.absent + 1` returns `false`), which templates rely on.
+
+### Why a minor and not a patch
+
+An existing template can change output: a comparison that was `false` may become
+`true`, and an operation that returned `false` may now raise. That is the point
+of the fix, but it is visible from the outside.
+
 ## Plugins — 2026-11-11
 
 Versions ready to be published alongside the 0.6.0 core.

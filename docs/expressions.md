@@ -78,6 +78,42 @@ opérande est décimale, la division est réelle.
 { "eq": false, "lt": true, "ge": false }
 ```
 
+### Tableaux et objets dans une expression
+
+Un opérateur appliqué à un **conteneur** ne rend jamais une réponse approximative :
+il fait la seule chose juste, ou il **lève**.
+
+| Écrit | Rend |
+|---|---|
+| `$.a == $.b` sur deux tableaux ou deux objets | l'égalité **structurelle** : mêmes éléments, mêmes clés, mêmes valeurs |
+| `$.a + $.b` sur deux tableaux | la **concaténation**, comme pour deux chaînes |
+| `"texte" + $.l` | le texte suivi du **JSON compact** du conteneur |
+| `$.x + $.y` sur deux objets | lève — c'est `merge(gauche, droite)` qui fusionne, avec ses options |
+| `$.l + 3` | lève — ajouter un élément s'écrit `union([$.l, [3]])` |
+| `- * / %` et `& \| ^` sur un conteneur | lèvent |
+| `< <= > >=` sur un conteneur | lèvent — l'ordre entre conteneurs existe, mais c'est celui de [`sort`](collections.md#trier-et-ordonner-sort-reverse-first-last) |
+
+```jslt
+{
+  "identiques": $.x == $.y,
+  "concatenes": $.a + $.b,
+  "en_texte": "lot=" + $.a
+}
+```
+```json
+{ "x": { "k": 1 }, "y": { "k": 1 }, "a": [1, "z"], "b": [2] }
+```
+```json
+{ "identiques": true, "concatenes": [1, "z", 2], "en_texte": "lot=[1,\"z\"]" }
+```
+
+L'égalité descend avec **la règle du langage**, pas une autre : `[2] == ["2"]` est
+vrai, comme `2 == "2"` l'est au premier niveau. Pour une égalité qui distingue le
+nombre de son texte, c'est `indexof([$.a], $.b) == 0`.
+
+`null` n'est pas un conteneur : il garde son repli historique à `false`
+(`$.absent + 1` rend `false`, et ne lève pas).
+
 ### Logique booléenne `&& || !`
 
 ```jslt

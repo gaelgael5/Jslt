@@ -62,7 +62,7 @@ def execute_selectmany(ctx: Any, source: Any = None, path: Any = None) -> list:
     return path.select_values(source)
 
 
-@jslt_function("any", description="Vrai si la source est un tableau non vide", description_en="True when the source is a non-empty array")
+@jslt_function("any", description="Vrai si la source est un tableau non vide (avec un prédicat, c'est some)", description_en="True when the source is a non-empty array (with a predicate, that is some)")
 def execute_any(ctx: Any, source: Any = None) -> bool:
     # Port de ExecuteAny : seul un tableau compte, un objet ou une chaîne donnent faux.
     return isinstance(source, list) and len(source) > 0

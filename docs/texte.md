@@ -231,6 +231,46 @@ sert aussi à **trier** (cf. [`sort`](collections.md#trier-et-ordonner-sort-reve
 
 ---
 
+## Découper et retoucher (`chars`, `lines`, `words`, `removeprefix`, `capitalize`)
+
+Trois de ces besoins avaient une réponse qui **semblait** fonctionner :
+`splitstring($.t, "")` rend le texte entier, `trimstart` retire un **jeu de
+caractères** et non un préfixe, et `titlecase` met **toutes** les initiales.
+
+| Fonction | Rend |
+|---|---|
+| `chars(t)` | un tableau de caractères, par **graphème** |
+| `lines(t)` | les lignes (`\n`, `\r\n`, `\r`), les vides comprises |
+| `words(t)` | les mots, sur les espaces |
+| `removeprefix(t, p)` / `removesuffix(t, s)` | le texte sans l'**affixe entier**, inchangé s'il est absent |
+| `capitalize(t)` | la **première** lettre en majuscule, le reste intact |
+
+```jslt
+{
+  "lettres": chars($.mot),
+  "mots": words($.phrase),
+  "sans_extension": removesuffix($.fichier, ".json"),
+  "affixe": removeprefix($.code, "ab"),
+  "jeu_de_caracteres": trimstart($.code, "ab")
+}
+```
+
+```json
+{ "mot": "été", "phrase": "  le   petit chat ", "fichier": "contrat.json", "code": "bacab" }
+```
+
+```json
+{ "lettres": ["é", "t", "é"], "mots": ["le", "petit", "chat"], "sans_extension": "contrat", "affixe": "bacab", "jeu_de_caracteres": "cab" }
+```
+
+Les deux dernières colonnes disent la différence : le préfixe « ab » n'est pas
+là, donc `removeprefix` ne touche à rien, alors que `trimstart` retire les `b` et
+`a` du début. `chars` travaille par graphème, comme `reverse` : découper par
+point de code collerait un accent sur la lettre voisine.
+
+`indexof` accepte désormais une **position de départ** (3ᵉ argument), de quoi
+parcourir toutes les occurrences sans redécouper le texte à chaque tour.
+
 ## Découper finement : `splitstring`, `splitregex`
 
 **`split` ne retient que le premier caractère du séparateur.** C'est la fidélité

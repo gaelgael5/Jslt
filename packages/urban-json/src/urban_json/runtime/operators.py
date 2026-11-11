@@ -22,18 +22,28 @@ from __future__ import annotations
 
 from typing import Any
 
+from urban_json._text import to_text as _to_str
 from urban_json.ast import OperationEnum
 from urban_json.errors import JsltError
 
 
-def _to_str(value: Any) -> str:
-    if value is None:
-        return ""
-    if value is True:
-        return "True"
-    if value is False:
-        return "False"
-    return str(value)
+def _kind(value: Any) -> str:
+    return "tableau" if isinstance(value, list) else "objet"
+
+
+def _refuse_container(symbol: str, left: Any, right: Any, hint: str = "") -> None:
+    """Refuse un opérateur qui n'a pas de réponse juste sur un conteneur.
+
+    Ces opérateurs rendaient ``false`` — une **réponse**, donc invisible, et
+    contradictoire pour les comparaisons : ``a < b`` et ``a >= b`` ne peuvent pas
+    être faux ensemble. Le refus porte sur les tableaux et les objets seulement :
+    ``null`` garde son repli à ``false`` (fidélité .NET), sur lequel des
+    templates s'appuient.
+    """
+    for value in (left, right):
+        if isinstance(value, (list, dict)):
+            message = f"opérateur {symbol} inapplicable à un {_kind(value)}"
+            raise JsltError(f"{message} : {hint}" if hint else message)
 
 
 def _to_number(value: Any) -> Any:
@@ -89,10 +99,41 @@ def _equal(left: Any, right: Any) -> bool:
         return left == _to_str(right)
     if isinstance(left, (int, float)):
         return left == _to_number(right)
+    if isinstance(left, list):
+        # Égalité **structurelle** : deux tableaux identiques se disaient
+        # différents, et rien ne le signalait. Élément par élément avec la même
+        # règle qu'au premier niveau (`"2" == 2` reste vrai), pour ne pas
+        # introduire une troisième notion d'égalité dans le langage.
+        return (
+            isinstance(right, list)
+            and len(left) == len(right)
+            and all(_equal(a, b) for a, b in zip(left, right))
+        )
+    if isinstance(left, dict):
+        # Mêmes clés (l'ordre d'écriture ne compte pas) et mêmes valeurs.
+        return (
+            isinstance(right, dict)
+            and left.keys() == right.keys()
+            and all(_equal(value, right[key]) for key, value in left.items())
+        )
     return False
 
 
+_COMPARISON_SYMBOLS = {
+    OperationEnum.GREATER_THAN: ">",
+    OperationEnum.GREATER_THAN_OR_EQUAL: ">=",
+    OperationEnum.LESS_THAN: "<",
+    OperationEnum.LESS_THAN_OR_EQUAL: "<=",
+}
+
+
 def _compare(left: Any, right: Any, op: OperationEnum) -> bool:
+    _refuse_container(
+        _COMPARISON_SYMBOLS.get(op, "<"),
+        left,
+        right,
+        "l'ordre entre conteneurs est celui de sort(), pas celui des opérateurs",
+    )
     if not _is_number(left):
         return False
     right_num = _to_number(right)
@@ -117,18 +158,36 @@ def _add(left: Any, right: Any) -> Any:
         return left + _to_str(right)
     if _is_number(left):
         return left + _to_number(right)
+    if isinstance(left, list):
+        if isinstance(right, list):
+            # Deux tableaux se concatènent, comme deux chaînes : c'est la seule
+            # lecture possible, et elle rendait `false`.
+            return [*left, *right]
+        # Concaténer ou ajouter un élément ? Les deux se défendent, donc on
+        # refuse plutôt que de choisir en silence.
+        raise JsltError(
+            "opérateur + entre un tableau et une valeur : pour ajouter un élément, "
+            "union([tableau, [valeur]])"
+        )
+    if isinstance(left, dict):
+        # Fusionner deux objets demande de décider du profond et des tableaux :
+        # `merge` porte ces options, un `+` muet les cacherait.
+        raise JsltError("opérateur + entre deux objets : utiliser merge(gauche, droite)")
     return False
 
 
 def _subtract(left: Any, right: Any) -> Any:
+    _refuse_container("-", left, right)
     return left - _to_number(right) if _is_number(left) else False
 
 
 def _multiply(left: Any, right: Any) -> Any:
+    _refuse_container("*", left, right)
     return left * _to_number(right) if _is_number(left) else False
 
 
 def _divide(left: Any, right: Any) -> Any:
+    _refuse_container("/", left, right)
     if not _is_number(left):
         return False
     right_num = _to_number(right)
@@ -139,18 +198,22 @@ def _divide(left: Any, right: Any) -> Any:
 
 
 def _modulo(left: Any, right: Any) -> Any:
+    _refuse_container("%", left, right)
     return left % _to_number(right) if _is_number(left) else False
 
 
 def _xor(left: Any, right: Any) -> Any:  # ^ = XOR entier (cf. .NET)
+    _refuse_container("^", left, right)
     return int(left) ^ int(_to_number(right)) if _is_number(left) else False
 
 
 def _bitand(left: Any, right: Any) -> Any:  # & = ET bit-à-bit
+    _refuse_container("&", left, right)
     return int(left) & int(_to_number(right)) if _is_number(left) else False
 
 
 def _bitor(left: Any, right: Any) -> Any:  # | = OU bit-à-bit
+    _refuse_container("|", left, right)
     return int(left) | int(_to_number(right)) if _is_number(left) else False
 
 

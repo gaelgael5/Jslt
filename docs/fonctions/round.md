@@ -4,7 +4,7 @@
 
 *Français · [English](round.en.md)*
 
-Arrondi à l'entier le plus proche, demi vers le pair (2.5 -> 2.0, 3.5 -> 4.0), rendu en décimal
+Arrondi à l'entier le plus proche, demi vers le pair (2.5 -> 2.0, 3.5 -> 4.0), rendu en décimal (arrondi commercial : roundhalfup)
 
 ```
 round(token, digits)

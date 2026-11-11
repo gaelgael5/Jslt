@@ -4,7 +4,7 @@
 
 *[Français](any.md) · English*
 
-True when the source is a non-empty array
+True when the source is a non-empty array (with a predicate, that is some)
 
 ```
 any(source)

@@ -36,7 +36,7 @@ def execute_trim(ctx: Any, token: Any = None, txt: str | None = None) -> Any:
     return string_result(token, lambda s: s.strip(txt) if txt else s.strip())
 
 
-@jslt_function("split", description="Découpe un texte en tableau sur le premier caractère de charset", description_en="Cuts a text into an array on the first character of charset")
+@jslt_function("split", description="Découpe un texte en tableau sur le premier caractère de charset (séparateur entier : splitstring)", description_en="Cuts a text into an array on the first character of charset (whole separator: splitstring)")
 def execute_split(ctx: Any, token: Any = None, charset: str = "") -> Any:
     if token is None:
         return None
@@ -64,14 +64,20 @@ def execute_stringcontains(ctx: Any, token: Any = None, contain_str: str = "") -
     "indexof",
     description=(
         "Position (à partir de 0) de la première occurrence dans un texte ou un "
-        "tableau, -1 si absent"
+        "tableau, -1 si absent ; start cherche à partir de cette position"
     ),
-    description_en="Position (from 0) of the first occurrence in a text or an array, -1 when absent",
+    description_en=(
+        "Position (from 0) of the first occurrence in a text or an array, -1 when absent; "
+        "start searches from that position"
+    ),
 )
-def execute_indexof(ctx: Any, token: Any = None, txt: Any = "") -> Any:
+def execute_indexof(ctx: Any, token: Any = None, txt: Any = "", start: Any = 0) -> Any:
+    # `start` cherche l'occurrence SUIVANTE : sans lui, parcourir toutes les
+    # occurrences demandait de découper le texte à chaque tour.
+    first = int(coerce_number(start))
     if isinstance(token, list):
-        return _position(token, txt, last=False)
-    return string_result(token, lambda s: s.find(to_text(txt)))  # -1 si absent
+        return _position(token, txt, last=False, start=first)
+    return string_result(token, lambda s: s.find(to_text(txt), first))  # -1 si absent
 
 
 @jslt_function(
@@ -88,7 +94,7 @@ def execute_lastindexof(ctx: Any, token: Any = None, txt: Any = "") -> Any:
     return string_result(token, lambda s: s.rfind(to_text(txt)))
 
 
-def _position(source: list, value: Any, last: bool) -> int:
+def _position(source: list, value: Any, last: bool, start: int = 0) -> int:
     """Position d'une valeur dans un tableau, -1 si absente.
 
     Égalité **structurelle** (la clef d'ordre), comme les opérations
@@ -97,7 +103,8 @@ def _position(source: list, value: Any, last: bool) -> int:
     du langage pour rester fidèle au .NET — l'écart est volontaire.
     """
     marker = order_key(value)
-    positions = range(len(source) - 1, -1, -1) if last else range(len(source))
+    first = start if start >= 0 else max(0, len(source) + start)
+    positions = range(len(source) - 1, first - 1, -1) if last else range(first, len(source))
     for index in positions:
         if order_key(source[index]) == marker:
             return index
@@ -116,7 +123,12 @@ def execute_padright(ctx: Any, token: Any = None, length: int = 0, charset: str 
     return string_result(token, lambda s: s.ljust(length, fill))
 
 
-@jslt_function("stringlenght", description="Nombre de caractères d'un texte (0 pour null ou une non-chaîne) — orthographe d'origine conservée", description_en="Number of characters of a text (0 for null or a non-string) — original spelling kept")
+# Deux noms, une seule implémentation. `stringlenght` porte une faute de frappe
+# d'origine : la retirer casserait les templates écrits avec, la garder seule
+# obligeait à écrire une faute pour appeler la fonction. Les deux décorateurs
+# enregistrent la **même** callable : les deux noms ne peuvent donc pas diverger.
+@jslt_function("stringlength", description="Nombre de caractères d'un texte (0 pour null ou une non-chaîne)", description_en="Number of characters of a text (0 for null or a non-string)")
+@jslt_function("stringlenght", description="Nombre de caractères d'un texte — orthographe d'origine, fautive, conservée : voir stringlength", description_en="Number of characters of a text — original, misspelled name kept: see stringlength")
 def execute_stringlenght(ctx: Any, token: Any = None) -> int:
     # Convention .NET : null -> 0 ; chaîne -> longueur ; autre -> 0.
     return len(token) if isinstance(token, str) else 0

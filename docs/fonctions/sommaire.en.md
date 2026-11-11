@@ -6,42 +6,63 @@
 
 One page per function, generated from the registry: signature, arguments and description. The prose and the examples live in the guide's chapters.
 
+## [Conditionals and loops](../conditions-et-boucles.en.md)
+
+| Function | Description |
+|---|---|
+| [`ifelse`](ifelse.en.md) | Value of the 2nd expression when the condition is true, otherwise that of the 3rd (only the chosen branch is evaluated) |
+
 ## [Data and collections](../collections.en.md)
 
 | Function | Description |
 |---|---|
-| [`any`](any.en.md) | True when the source is a non-empty array |
+| [`any`](any.en.md) | True when the source is a non-empty array (with a predicate, that is some) |
+| [`append`](append.en.md) | Copy of the array with a value added at the end |
 | [`avg`](avg.en.md) | Mean of the numbers in an array (null for an empty array) |
 | [`avgby`](avgby.en.md) | Mean per computed key, as an object { key: mean } (the value defaults to the element) |
 | [`chunk`](chunk.en.md) | Cuts an array into consecutive slices of size elements |
-| [`concat`](concat.en.md) | Joins the elements of an array into text, separated by split_char then delimit_char |
+| [`concat`](concat.en.md) | Joins the elements of an array into text, separated by split_char then delimit_char (this is the string "join"; join itself is the SQL-style join) |
 | [`contains`](contains.en.md) | True when the array holds an element equal to the value |
 | [`convert`](convert.en.md) | Converts a value to a type: integer, decimal, string, boolean (uri, uuid, datetime, time as text) |
 | [`count`](count.en.md) | Number of items: elements of an array, keys of an object, characters of a text, 0 for null |
 | [`countby`](countby.en.md) | Counts the elements of an array per computed key, as an object { key: count } |
 | [`createindex`](createindex.en.md) | Builds an index {key: element} from a source, a splitting path and a key path |
+| [`cumsum`](cumsum.en.md) | Running totals of an array of numbers ([1,2,3] -> [1,3,6]) |
 | [`difference`](difference.en.md) | Elements of the left array absent from the right one, deduplicated |
 | [`distinct`](distinct.en.md) | Unique values selected by a JSONPath path in an array, in order of appearance |
 | [`distinctby`](distinctby.en.md) | Deduplicates an array on a key computed per element, keeping the first |
+| [`every`](every.en.md) | True when the predicate holds for every element (true for an empty array) |
+| [`filter`](filter.en.md) | Keeps the elements of an array for which the predicate is true |
+| [`find`](find.en.md) | First element of an array for which the predicate is true, otherwise null |
+| [`findindex`](findindex.en.md) | Position of the first element satisfying the predicate, -1 when there is none |
 | [`first`](first.en.md) | First element of an array, or null when it is empty |
 | [`flatten`](flatten.en.md) | Flattens an array of arrays, all the way down by default or over depth levels |
 | [`group`](group.en.md) | Groups an array by successive JSONPath paths into nested {Label, Items} |
 | [`groupby`](groupby.en.md) | Groups an array into an object { key: elements }, key computed per element; nested adds one level per key of an array of keys |
-| [`index`](index.en.md) | Element of an index (built by createindex) for a key, or null |
+| [`index`](index.en.md) | Element of an index (built by createindex) for a key, or null (for a computed key in any object, that is get) |
+| [`insert`](insert.en.md) | Copy of the array with a value inserted at the given index (negative from the end) |
 | [`intersect`](intersect.en.md) | Elements of the left array also present on the right, deduplicated |
-| [`join`](join.en.md) | Left join: attaches to the left objects the right elements sharing the key |
+| [`join`](join.en.md) | Left join between two arrays: attaches to the left objects the right elements sharing the key (joining text is concat) |
 | [`last`](last.en.md) | Last element of an array, or null when it is empty |
 | [`limit`](limit.en.md) | The first max_items elements of an array |
+| [`map`](map.en.md) | Applies an expression to each element of an array and returns the results |
+| [`maxby`](maxby.en.md) | Element of an array whose computed key is the largest (null when empty) |
 | [`median`](median.en.md) | Median value of the numbers in an array (null for an empty array) |
+| [`minby`](minby.en.md) | Element of an array whose computed key is the smallest (null when empty) |
 | [`mode`](mode.en.md) | Most frequent value of an array (the first one seen in case of a tie) |
 | [`partition`](partition.en.md) | Splits an array into { true, false } according to a predicate evaluated per element |
 | [`percentile`](percentile.en.md) | Percentile p (0 to 100) of the numbers in an array, by linear interpolation |
 | [`product`](product.en.md) | Product of the numbers in an array (1 for an empty array) |
+| [`range`](range.en.md) | A series of integers: range(end), range(start, end) or range(start, end, step); the end is excluded |
+| [`reduce`](reduce.en.md) | Folds an array into a single value; the expression sees { acc, value, index } and returns the new accumulator |
+| [`removeat`](removeat.en.md) | Copy of the array without the element at the given index (negative from the end) |
 | [`reverse`](reverse.en.md) | Reverses the order of an array or of a text, without modifying the source |
 | [`select`](select.en.md) | First value selected by a JSONPath path in the source, or null |
 | [`selectany`](selectany.en.md) | True when the JSONPath path selects at least one value in the source |
 | [`selectmany`](selectmany.en.md) | All the values selected by a JSONPath path in the source |
 | [`skip`](skip.en.md) | Drops the first n elements of an array (the complement of limit) |
+| [`slice`](slice.en.md) | Slice of an array from start to end excluded (negative indices from the end) |
+| [`some`](some.en.md) | True when the predicate holds for at least one element (false for an empty array) |
 | [`sort`](sort.en.md) | Sorts an array: on the elements, or on a key computed per element, smallest first (descending true, or one direction per key, for the reverse) |
 | [`stddev`](stddev.en.md) | Standard deviation of the numbers in an array: of population by default, of sample when sample is true |
 | [`sum`](sum.en.md) | Sum of the numbers in an array (0 for an empty array or null) |
@@ -128,7 +149,9 @@ One page per function, generated from the registry: signature, arguments and des
 | [`parsenumber`](parsenumber.en.md) | Reads a number written as text according to a culture (1 234,56 in fr-FR) |
 | [`pi`](pi.en.md) | The constant pi (3.14159…) |
 | [`pow`](pow.en.md) | Power: base raised to the exponent, returned as a decimal |
-| [`round`](round.en.md) | Rounds to the nearest integer, halves to even (2.5 -> 2.0, 3.5 -> 4.0), returned as a decimal |
+| [`round`](round.en.md) | Rounds to the nearest integer, halves to even (2.5 -> 2.0, 3.5 -> 4.0), returned as a decimal (commercial rounding: roundhalfup) |
+| [`roundhalfup`](roundhalfup.en.md) | Commercial rounding: halves go away from zero (0.125 -> 0.13), to the integer or to digits decimals |
+| [`roundto`](roundto.en.md) | Rounds to the nearest multiple (roundto(2.34, 0.05) -> 2.35), halves away from zero |
 | [`shiftleft`](shiftleft.en.md) | Shifts the bits of an integer to the left (multiplies by 2^bits) |
 | [`shiftright`](shiftright.en.md) | Shifts the bits of an integer to the right (divides by 2^bits) |
 | [`sign`](sign.en.md) | Sign of a number: -1, 0 or 1 |
@@ -139,6 +162,7 @@ One page per function, generated from the registry: signature, arguments and des
 | [`tanh`](tanh.en.md) | Hyperbolic tangent |
 | [`tobase`](tobase.en.md) | Writes an integer in a base from 2 to 36, padded to width digits |
 | [`tohex`](tohex.en.md) | Writes an integer in lower-case hexadecimal, padded to width digits |
+| [`toprecision`](toprecision.en.md) | Rounds to a number of significant digits (toprecision(1234.5, 3) -> 1230) |
 | [`truncate`](truncate.en.md) | Cuts towards zero (-2.7 -> -2.0), to the integer or to digits decimals |
 
 ## [Objects and deep structures](../objets.en.md)
@@ -148,6 +172,8 @@ One page per function, generated from the registry: signature, arguments and des
 | [`entries`](entries.en.md) | Pairs of an object as an array of { key, value }, in document order |
 | [`flattenobject`](flattenobject.en.md) | Flattens an object into dotted keys (a.b.c), arrays indexed by their position |
 | [`fromentries`](fromentries.en.md) | Rebuilds an object from an array of { key, value } or of [key, value] pairs |
+| [`get`](get.en.md) | Value of a computed object key or array index (null when absent) |
+| [`getpath`](getpath.en.md) | Value at the end of a computed dotted path (null when a step is missing) |
 | [`has`](has.en.md) | True when the object carries that key, even with a null value |
 | [`keys`](keys.en.md) | Keys of an object, in document order (null when it is not an object) |
 | [`merge`](merge.en.md) | Merges two objects, the right one winning the shared keys (deep for sub-objects, arrays to concatenate arrays) |
@@ -188,13 +214,16 @@ One page per function, generated from the registry: signature, arguments and des
 
 | Function | Description |
 |---|---|
+| [`capitalize`](capitalize.en.md) | Upper-cases the first letter only, leaving the rest untouched |
+| [`chars`](chars.en.md) | Splits a text into an array of characters (by grapheme) |
 | [`deaccent`](deaccent.en.md) | Removes diacritics (accents, cedillas) without touching the case |
 | [`endswith`](endswith.en.md) | True when the text ends with txt |
 | [`foldtext`](foldtext.en.md) | Comparison key for a text: lowercase without accents by default, or case / accents only |
 | [`format`](format.en.md) | Formats a number or an ISO date according to a mask (N2, #,##0.00, dd/MM/yyyy…) and a culture |
-| [`indexof`](indexof.en.md) | Position (from 0) of the first occurrence in a text or an array, -1 when absent |
+| [`indexof`](indexof.en.md) | Position (from 0) of the first occurrence in a text or an array, -1 when absent; start searches from that position |
 | [`lastindexof`](lastindexof.en.md) | Position (from 0) of the last occurrence in a text or an array, -1 when absent |
 | [`levenshtein`](levenshtein.en.md) | Number of characters to insert, delete or replace to go from one text to the other |
+| [`lines`](lines.en.md) | Splits a text into lines (\n, \r\n or \r), empty lines included |
 | [`lower`](lower.en.md) | Text in lower case (null stays null, a non-string gives false) |
 | [`normalize`](normalize.en.md) | Normalizes a Unicode string: form C (default), D, KC or KD |
 | [`padleft`](padleft.en.md) | Pads the text on the left up to length with the 1st character of charset (space by default) |
@@ -202,23 +231,27 @@ One page per function, generated from the registry: signature, arguments and des
 | [`regexismatch`](regexismatch.en.md) | True when the text holds a match of the regex pattern |
 | [`regexmatches`](regexmatches.en.md) | List of the matches of the regex pattern in the text |
 | [`regexreplace`](regexreplace.en.md) | Replaces the matches of a regex pattern ($1, ${name}, $& for the groups) |
+| [`removeprefix`](removeprefix.en.md) | Removes a whole prefix when present, otherwise returns the text unchanged |
+| [`removesuffix`](removesuffix.en.md) | Removes a whole suffix when present, otherwise returns the text unchanged |
 | [`repeat`](repeat.en.md) | Repeats the text count times (0 or negative: empty string) |
 | [`replace`](replace.en.md) | Replaces every occurrence of search with replacement |
 | [`shorten`](shorten.en.md) | Shortens a text to length characters at most, suffix included (… by default) |
 | [`similarity`](similarity.en.md) | Closeness of two texts between 0 (all differs) and 1 (identical) |
 | [`slugify`](slugify.en.md) | Turns a text into a URL identifier: no accents, lower case, words joined by a dash |
-| [`split`](split.en.md) | Cuts a text into an array on the first character of charset |
+| [`split`](split.en.md) | Cuts a text into an array on the first character of charset (whole separator: splitstring) |
 | [`splitregex`](splitregex.en.md) | Cuts a text on the matches of a regex pattern |
 | [`splitstring`](splitstring.en.md) | Cuts a text on a whole separator (several characters), at most limit times |
 | [`startswith`](startswith.en.md) | True when the text starts with txt |
 | [`stringcontains`](stringcontains.en.md) | True when the text holds contain_str |
-| [`stringlenght`](stringlenght.en.md) | Number of characters of a text (0 for null or a non-string) — original spelling kept |
+| [`stringlenght`](stringlenght.en.md) | Number of characters of a text — original, misspelled name kept: see stringlength |
+| [`stringlength`](stringlength.en.md) | Number of characters of a text (0 for null or a non-string) |
 | [`substring`](substring.en.md) | Extracts length characters from start (negative start = from the end, length absent = to the end) |
 | [`titlecase`](titlecase.en.md) | Upper-cases the first letter of every word, leaving the rest alone |
 | [`trim`](trim.en.md) | Removes the spaces at both ends, or the characters of txt when it is given |
 | [`trimend`](trimend.en.md) | Removes the trailing spaces, or the characters of txt |
 | [`trimstart`](trimstart.en.md) | Removes the leading spaces, or the characters of txt |
 | [`upper`](upper.en.md) | Text in upper case (null stays null, a non-string gives false) |
+| [`words`](words.en.md) | Splits a text into words on whitespace (empty ones are dropped) |
 
 ## [Types, error fallback and validation](../types.en.md)
 

@@ -382,6 +382,78 @@ that is its main use; on a tie, the first one seen wins.
 { "spread": 2.0, "p90": 7.6, "frequent": "b" }
 ```
 
+## Walking with an expression (`map`, `filter`, `find`, `every`, `some`, `reduce`)
+
+The `{"$source": …}` loop does the job of `map`, but only in **value position**:
+it cannot be passed as an argument. This family takes an **expression evaluated
+per element**, like `sort`'s key, and can therefore be used anywhere.
+
+| Function | Returns |
+|---|---|
+| `map(l, expr)` | an array of the same length |
+| `filter(l, pred)` | the elements whose predicate is true |
+| `find(l, pred)` / `findindex(l, pred)` | the first element / its position, `null` / `-1` otherwise |
+| `some(l, pred)` / `every(l, pred)` | at least one / all (true on an empty array) |
+| `reduce(l, expr, initial)` | **one** value, the expression seeing `{acc, value, index}` |
+| `minby(l, key)` / `maxby(l, key)` | the **element** carrying the extremum |
+| `cumsum(l)` | the running totals |
+
+`some` does not replace `any`, which says "non-empty array"; and `filter` does
+not replace the JSONPath filter `$.l[?(…)]`, which is shorter — but a filter
+cannot call a function.
+
+```jslt
+{
+  "noms": map($.l, $.n),
+  "majeurs": map(filter($.l, $.age >= 18), $.n),
+  "total": reduce($.l, $.acc + $.value.age, 0),
+  "plus_jeune": map([minby($.l, $.age)], $.n)
+}
+```
+
+```json
+{ "l": [{ "n": "Ana", "age": 30 }, { "n": "Bo", "age": 15 }] }
+```
+
+```json
+{ "noms": ["Ana", "Bo"], "majeurs": ["Ana"], "total": 45, "plus_jeune": ["Bo"] }
+```
+
+`reduce` is the engine's only **general fold**: `sum`, `product` and `sumby` are
+special cases of it. The accumulator and the element are presented together as
+the current source (`$.acc`, `$.value`, `$.index`), because an expression has
+only one source and the language has no second parameter.
+
+## Building and editing (`range`, `slice`, `append`, `insert`, `removeat`)
+
+`range` is the only function that **creates** a series: everything else in the
+engine transforms what comes in. The end is **excluded**, and a single argument
+counts from zero — so the series lines up with the indices of `skip` and
+`slice`.
+
+```jslt
+{
+  "douze_mois": count(range(1, 13)),
+  "page": slice($.l, 1, 3),
+  "avec_un_de_plus": append($.l, 9),
+  "sans_le_premier": removeat($.l, 0)
+}
+```
+
+```json
+{ "l": [1, 2, 3, 4] }
+```
+
+```json
+{ "douze_mois": 12, "page": [2, 3], "avec_un_de_plus": [1, 2, 3, 4, 9], "sans_le_premier": [2, 3, 4] }
+```
+
+The four edits return a **copy**: a function that modified the input array would
+break the other readings of the same document. The bounds are tolerant like
+`substring`'s (an over-large index does not raise), while `range` does refuse a
+zero step or a series of more than a million elements — it is the only place
+where a template can ask for an outsized array.
+
 ## Aggregating per group (`groupby`, `countby`, `sumby`, `avgby`)
 
 `group` returns `{ "Label", "Items" }` groups. `groupby(l, key)` returns an

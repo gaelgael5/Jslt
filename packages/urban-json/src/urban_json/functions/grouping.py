@@ -79,8 +79,8 @@ def _right_rule(rule: Any) -> tuple[str, Any, list]:
 @jslt_function(
     "join",
     path_args=(1,),
-    description="Jointure gauche : rattache aux objets de gauche les éléments de droite de même clé",
-    description_en="Left join: attaches to the left objects the right elements sharing the key",
+    description="Jointure gauche entre deux tableaux : rattache aux objets de gauche les éléments de droite de même clé (joindre des textes, c'est concat)",
+    description_en="Left join between two arrays: attaches to the left objects the right elements sharing the key (joining text is concat)",
 )
 def execute_join(
     ctx: Any, source_left: Any = None, key_left: Any = None, clean_source: Any = None, rights: Any = None
@@ -142,7 +142,7 @@ def execute_createindex(ctx: Any, source: Any = None, object_path: Any = None, k
     return index
 
 
-@jslt_function("index", description="Élément d'un index (créé par createindex) pour une clé, ou null", description_en="Element of an index (built by createindex) for a key, or null")
+@jslt_function("index", description="Élément d'un index (créé par createindex) pour une clé, ou null (pour une clef calculée dans un objet quelconque, c'est get)", description_en="Element of an index (built by createindex) for a key, or null (for a computed key in any object, that is get)")
 def execute_index(ctx: Any, index: Any = None, key: Any = None) -> Any:
     if not isinstance(index, dict) or key is None:
         return None

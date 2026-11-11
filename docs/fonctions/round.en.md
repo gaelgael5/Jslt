@@ -4,7 +4,7 @@
 
 *[Français](round.md) · English*
 
-Rounds to the nearest integer, halves to even (2.5 -> 2.0, 3.5 -> 4.0), returned as a decimal
+Rounds to the nearest integer, halves to even (2.5 -> 2.0, 3.5 -> 4.0), returned as a decimal (commercial rounding: roundhalfup)
 
 ```
 round(token, digits)

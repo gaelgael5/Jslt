@@ -4,7 +4,7 @@
 
 *Français · [English](index.en.md)*
 
-Élément d'un index (créé par createindex) pour une clé, ou null
+Élément d'un index (créé par createindex) pour une clé, ou null (pour une clef calculée dans un objet quelconque, c'est get)
 
 ```
 index(index, key)

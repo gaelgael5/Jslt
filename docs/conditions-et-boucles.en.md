@@ -7,6 +7,46 @@ suite** (`tests/test_guide_examples.py`) as *template → input → output* trip
 
 ---
 
+## Choosing a value: `ifelse`
+
+`ifelse(condition, if_true, if_false)` is the conditional in **expression**
+position. It is what `when` does not do: `when` switches on a **value** (it
+compares `==` against each case name), so a composed condition first had to be
+computed, then switched on its `"true"` / `"false"` text.
+
+```jslt
+{ "mention": ifelse($.note >= 10 && $.present, "admis", "ajourné") }
+```
+```json
+{ "note": 12, "present": true }
+```
+```json
+{ "mention": "admis" }
+```
+
+Only the **chosen** branch is evaluated, and that is the whole point: the branch
+left aside may raise without consequence, so `ifelse($.d == 0, 0, 100 / $.d)` is
+safe even when the divisor is zero. For more than two cases, `ifelse` nests; as
+soon as the cases are **values** of one field, `when` takes over and reads
+better.
+
+```jslt
+{ "palier": ifelse($.n < 0, "négatif", ifelse($.n == 0, "nul", "positif")), "ratio": ifelse($.d == 0, 0, 100 / $.d) }
+```
+```json
+{ "n": 0, "d": 0 }
+```
+```json
+{ "palier": "nul", "ratio": 0 }
+```
+
+The condition reads like [`filter`](collections.en.md#walking-with-an-expression-map-filter-find-every-some-reduce)'s
+and not like an assertion: `null`, `0`, `""`, an empty array or object are
+**false**, and so is the text `"false"`. A missing third branch gives `null`,
+like a `when` without `default`.
+
+---
+
 ## `when` / `switch`
 
 `when(expr) { "case": block, ..., "default": block }` compares `expr` (`==`) to

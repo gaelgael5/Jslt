@@ -77,6 +77,42 @@ is decimal, division is real.
 { "eq": false, "lt": true, "ge": false }
 ```
 
+### Arrays and objects in an expression
+
+An operator applied to a **container** never returns an approximate answer: it
+does the only right thing, or it **raises**.
+
+| Written | Returns |
+|---|---|
+| `$.a == $.b` on two arrays or two objects | **structural** equality: same elements, same keys, same values |
+| `$.a + $.b` on two arrays | the **concatenation**, as for two strings |
+| `"text" + $.l` | the text followed by the container's **compact JSON** |
+| `$.x + $.y` on two objects | raises — `merge(left, right)` is what merges, with its options |
+| `$.l + 3` | raises — adding an element is written `union([$.l, [3]])` |
+| `- * / %` and `& \| ^` on a container | raise |
+| `< <= > >=` on a container | raise — ordering between containers exists, but it is [`sort`](collections.en.md#sorting-and-ordering-sort-reverse-first-last)'s |
+
+```jslt
+{
+  "identiques": $.x == $.y,
+  "concatenes": $.a + $.b,
+  "en_texte": "lot=" + $.a
+}
+```
+```json
+{ "x": { "k": 1 }, "y": { "k": 1 }, "a": [1, "z"], "b": [2] }
+```
+```json
+{ "identiques": true, "concatenes": [1, "z", 2], "en_texte": "lot=[1,\"z\"]" }
+```
+
+Equality descends with **the language's rule**, not another one: `[2] == ["2"]`
+is true, just as `2 == "2"` is at the first level. For an equality that tells a
+number from its text, use `indexof([$.a], $.b) == 0`.
+
+`null` is not a container: it keeps its historical fallback to `false`
+(`$.absent + 1` returns `false`, and does not raise).
+
 ### Boolean logic `&& || !`
 
 ```jslt

@@ -228,6 +228,46 @@ have doubled the semantics of the first, and because the same key also serves to
 
 ---
 
+## Splitting and editing (`chars`, `lines`, `words`, `removeprefix`, `capitalize`)
+
+Three of these needs had an answer that **looked** like it worked:
+`splitstring($.t, "")` returns the whole text, `trimstart` removes a **set of
+characters** and not a prefix, and `titlecase` upper-cases **every** initial.
+
+| Function | Returns |
+|---|---|
+| `chars(t)` | an array of characters, by **grapheme** |
+| `lines(t)` | the lines (`\n`, `\r\n`, `\r`), empty ones included |
+| `words(t)` | the words, on whitespace |
+| `removeprefix(t, p)` / `removesuffix(t, s)` | the text without the **whole affix**, unchanged when absent |
+| `capitalize(t)` | the **first** letter upper-cased, the rest untouched |
+
+```jslt
+{
+  "lettres": chars($.mot),
+  "mots": words($.phrase),
+  "sans_extension": removesuffix($.fichier, ".json"),
+  "affixe": removeprefix($.code, "ab"),
+  "jeu_de_caracteres": trimstart($.code, "ab")
+}
+```
+
+```json
+{ "mot": "été", "phrase": "  le   petit chat ", "fichier": "contrat.json", "code": "bacab" }
+```
+
+```json
+{ "lettres": ["é", "t", "é"], "mots": ["le", "petit", "chat"], "sans_extension": "contrat", "affixe": "bacab", "jeu_de_caracteres": "cab" }
+```
+
+The last two columns show the difference: the prefix "ab" is not there, so
+`removeprefix` touches nothing, whereas `trimstart` removes the `b` and the `a`
+at the start. `chars` works by grapheme, like `reverse`: splitting by code point
+would stick an accent onto the neighbouring letter.
+
+`indexof` now accepts a **starting position** (3rd argument), enough to walk
+every occurrence without re-splitting the text at each turn.
+
 ## Splitting precisely: `splitstring`, `splitregex`
 
 **`split` only keeps the first character of the separator.** That is historical,
