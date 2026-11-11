@@ -10,6 +10,20 @@ Construit un index {clé: élément} à partir d'une source, d'un chemin de déc
 createindex(source, object_path, key)
 ```
 
+**Exemple**
+
+```jslt
+{ "i:": createindex($.p, "", "$.nom"), "ana": index(i:, "Ana") }
+```
+
+```json
+{ "p": [{ "nom": "Ana", "ville": "Lyon" }] }
+```
+
+```json
+{ "ana": { "nom": "Ana", "ville": "Lyon" } }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |

@@ -10,6 +10,20 @@ Deduplicates an array on a key computed per element, keeping the first
 distinctby(source, key)
 ```
 
+**Example**
+
+```jslt
+{ "r": distinctby($.l, $.ville) }
+```
+
+```json
+{ "l": [{ "id": 1, "ville": "Lyon" }, { "id": 2, "ville": "Lyon" }, { "id": 3, "ville": "Brest" }] }
+```
+
+```json
+{ "r": [{ "id": 1, "ville": "Lyon" }, { "id": 3, "ville": "Brest" }] }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

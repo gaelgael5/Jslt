@@ -10,6 +10,20 @@ Complète le texte à gauche jusqu'à length avec le 1er caractère de charset (
 padleft(token, length, charset)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": padleft($.t, 6, "0") }
+```
+
+```json
+{ "t": "42" }
+```
+
+```json
+{ "r": "000042" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

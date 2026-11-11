@@ -10,6 +10,20 @@ Vrai si le texte contient une correspondance du motif regex
 regexismatch(token, pattern)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": regexismatch($.t, "^[A-Z]{2}[0-9]+$") }
+```
+
+```json
+{ "t": "FR123" }
+```
+
+```json
+{ "r": true }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

@@ -10,6 +10,20 @@ Vrai si le texte a la forme d'un UUID (accolades tolérées)
 isuuid(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": isuuid(uuid()) }
+```
+
+```json
+{}
+```
+
+```json
+{ "r": true }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

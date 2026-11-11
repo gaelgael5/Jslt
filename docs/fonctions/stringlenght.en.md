@@ -10,6 +10,20 @@ Number of characters of a text (0 for null or a non-string) — original spellin
 stringlenght(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": stringlenght($.t) }
+```
+
+```json
+{ "t": "bonjour" }
+```
+
+```json
+{ "r": 7 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

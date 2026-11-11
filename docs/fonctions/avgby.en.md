@@ -10,6 +10,20 @@ Mean per computed key, as an object { key: mean } (the value defaults to the ele
 avgby(source, key, value)
 ```
 
+**Example**
+
+```jslt
+{ "r": avgby($.l, $.ville, $.m) }
+```
+
+```json
+{ "l": [{ "ville": "Lyon", "m": 10 }, { "ville": "Lyon", "m": 20 }, { "ville": "Brest", "m": 7 }] }
+```
+
+```json
+{ "r": { "Lyon": 15.0, "Brest": 7.0 } }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

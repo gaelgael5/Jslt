@@ -25,6 +25,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+# Import après `sys.path` : c'est un script, pas un module du paquet.
+from function_examples import EXAMPLES
+
 #: Chapitre d'où chaque module de fonctions tire sa prose et ses exemples.
 #: Clé = nom du module ``urban_json.functions.*``, valeur = (fichier, titre FR, titre EN).
 THEMES: dict[str, tuple[str, str, str]] = {
@@ -80,6 +85,9 @@ LABELS = {
             "mais se déclare dans `\"$directives\": {\"output\": {\"mode\": …}}`."
         ),
         "no_params": "Cette fonction ne prend aucun argument.",
+        "example": "**Exemple**",
+        "examples": "**Exemples**",
+        "render": "`render()` produit :",
         "chapter": "**Chapitre** :",
         "index": "**Index** : [toutes les fonctions](sommaire.md)",
         "back": "[← Guide jslt](../guide.md)",
@@ -97,6 +105,9 @@ LABELS = {
             "in `\"$directives\": {\"output\": {\"mode\": …}}`."
         ),
         "no_params": "This function takes no argument.",
+        "example": "**Example**",
+        "examples": "**Examples**",
+        "render": "`render()` produces:",
         "chapter": "**Chapter**:",
         "index": "**Index**: [all functions](sommaire.en.md)",
         "back": "[← jslt guide](../guide.en.md)",
@@ -131,6 +142,34 @@ def _notes(info: Any, index: int, param: Any, labels: dict[str, str]) -> str:
     return " · ".join(notes)
 
 
+def _example_lines(info: Any, labels: dict[str, str]) -> list[str]:
+    """Exemples de la fonction, en triplets du guide.
+
+    Le même code sert les deux langues : les clés des documents sont courtes et
+    neutres, et un exemple traduit serait un second exemple à maintenir — donc à
+    laisser diverger. Ces triplets sont rejoués par la suite du guide, qui balaie
+    aussi `docs/fonctions/`.
+    """
+    examples = EXAMPLES.get(info.name.lower(), [])
+    if not examples:
+        raise SystemExit(
+            f"aucun exemple pour {info.name} : compléter EXAMPLES dans function_examples.py"
+        )
+    lines = [labels["examples"] if len(examples) > 1 else labels["example"], ""]
+    for example in examples:
+        lines += ["```jslt", example["template"], "```", ""]
+        lines += ["```json", example["source"], "```", ""]
+        lines += ["```json", example["output"], "```", ""]
+        if "render" in example:
+            # CRLF ramené à LF pour l'affichage : un fichier markdown relu par
+            # Python normalise les fins de ligne, et la page serait sinon
+            # éternellement « à régénérer ». Le CRLF réel du CSV (RFC 4180) reste
+            # dans la donnée, et c'est lui que le test de `render()` vérifie.
+            shown = example["render"].replace("\r\n", "\n").rstrip("\n")
+            lines += [labels["render"], "", "```text", shown, "```", ""]
+    return lines
+
+
 def render_page(info: Any, lang: str) -> str:
     labels = LABELS[lang]
     chapter, title_fr, title_en = theme_of(info)
@@ -140,6 +179,7 @@ def render_page(info: Any, lang: str) -> str:
 
     lines = [GENERATED, "", f"# `{info.name}`", "", labels["banner"].format(name=info.name.lower()), ""]
     lines += [description, "", "```", info.signature(), "```", ""]
+    lines += _example_lines(info, labels)
     if info.parameters:
         lines += [labels["params"], "|---|---|---|"]
         for index, param in enumerate(info.parameters):

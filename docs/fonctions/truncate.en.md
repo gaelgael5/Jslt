@@ -10,6 +10,20 @@ Cuts towards zero (-2.7 -> -2.0), to the integer or to digits decimals
 truncate(token, digits)
 ```
 
+**Example**
+
+```jslt
+{ "vers_zero": truncate($.n), "deux_decimales": truncate($.n, 2) }
+```
+
+```json
+{ "n": -2.789 }
+```
+
+```json
+{ "vers_zero": -2.0, "deux_decimales": -2.78 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

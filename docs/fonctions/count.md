@@ -10,6 +10,20 @@ Nombre d'éléments : éléments d'un tableau, clés d'un objet, caractères d'u
 count(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "tableau": count($.l), "objet": count($.o), "texte": count($.t) }
+```
+
+```json
+{ "l": [1, 2], "o": { "a": 1 }, "t": "abc" }
+```
+
+```json
+{ "tableau": 2, "objet": 1, "texte": 3 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

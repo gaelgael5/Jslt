@@ -10,6 +10,20 @@ Vérifie une condition et lève avec le message donné si elle n'est pas vraie
 requirethat(condition, message)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": trydefault(requirethat($.n > 100, "montant trop faible"), "refusé") }
+```
+
+```json
+{ "n": 10 }
+```
+
+```json
+{ "r": "refusé" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `condition` | optionnel |  |

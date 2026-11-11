@@ -10,6 +10,20 @@ Pads the text on the left up to length with the 1st character of charset (space 
 padleft(token, length, charset)
 ```
 
+**Example**
+
+```jslt
+{ "r": padleft($.t, 6, "0") }
+```
+
+```json
+{ "t": "42" }
+```
+
+```json
+{ "r": "000042" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

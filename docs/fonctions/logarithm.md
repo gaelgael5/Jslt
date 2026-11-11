@@ -10,6 +10,20 @@ Logarithme népérien (base e) d'un nombre
 logarithm(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": logarithm($.n) }
+```
+
+```json
+{ "n": 1 }
+```
+
+```json
+{ "r": 0.0 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

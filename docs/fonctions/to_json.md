@@ -10,6 +10,28 @@ Sortie : sérialise le résultat en JSON, indenté si indented vaut true ; ignor
 to_json(indented, ignore_null_and_empty_value)
 ```
 
+**Exemple**
+
+```jslt
+{ "$directives": { "output": { "mode": to_json(true) } }, "ville": $.v }
+```
+
+```json
+{ "v": "Lyon" }
+```
+
+```json
+{ "ville": "Lyon" }
+```
+
+`render()` produit :
+
+```text
+{
+  "ville": "Lyon"
+}
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `indented` | optionnel |  |

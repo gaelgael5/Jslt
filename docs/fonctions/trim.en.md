@@ -10,6 +10,20 @@ Removes the spaces at both ends, or the characters of txt when it is given
 trim(token, txt)
 ```
 
+**Example**
+
+```jslt
+{ "espaces": trim($.a), "caracteres": trim($.b, "*") }
+```
+
+```json
+{ "a": "  ok  ", "b": "**ok**" }
+```
+
+```json
+{ "espaces": "ok", "caracteres": "ok" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

@@ -10,6 +10,20 @@ Turns a text into a URL identifier: no accents, lower case, words joined by a da
 slugify(token, separator)
 ```
 
+**Example**
+
+```jslt
+{ "r": slugify($.t) }
+```
+
+```json
+{ "t": "Évêché de Lyon" }
+```
+
+```json
+{ "r": "eveche-de-lyon" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

@@ -10,6 +10,20 @@ Lit un nombre écrit en texte selon une culture (1 234,56 en fr-FR)
 parsenumber(token, culture)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": parsenumber($.t, "fr-FR") }
+```
+
+```json
+{ "t": "1 234,56" }
+```
+
+```json
+{ "r": 1234.56 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

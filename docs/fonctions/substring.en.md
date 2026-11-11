@@ -10,6 +10,20 @@ Extracts length characters from start (negative start = from the end, length abs
 substring(token, start, length)
 ```
 
+**Example**
+
+```jslt
+{ "debut": substring($.t, 0, 3), "depuis_la_fin": substring($.t, -2) }
+```
+
+```json
+{ "t": "bonjour" }
+```
+
+```json
+{ "debut": "bon", "depuis_la_fin": "ur" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

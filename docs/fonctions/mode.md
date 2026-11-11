@@ -10,6 +10,20 @@ Valeur la plus fréquente d'un tableau (la première apparue en cas d'égalité)
 mode(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": mode($.l) }
+```
+
+```json
+{ "l": ["a", "b", "a"] }
+```
+
+```json
+{ "r": "a" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

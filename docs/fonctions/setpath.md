@@ -10,6 +10,20 @@ Copie de l'objet avec une valeur posée au bout d'un chemin pointé (niveaux cr�
 setpath(token, path, value, separator)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": setpath($.o, "client.ville", "Lyon") }
+```
+
+```json
+{ "o": { "client": { "nom": "Ana" } } }
+```
+
+```json
+{ "r": { "client": { "nom": "Ana", "ville": "Lyon" } } }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

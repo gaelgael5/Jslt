@@ -10,6 +10,20 @@ Date du jour à minuit en ISO 8601 : locale, ou UTC si utc vaut true
 today(utc)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": datepart(today(), "hour") }
+```
+
+```json
+{}
+```
+
+```json
+{ "r": 0 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `utc` | optionnel |  |

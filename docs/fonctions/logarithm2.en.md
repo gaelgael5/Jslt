@@ -10,6 +10,20 @@ Binary logarithm (base 2) of a number
 logarithm2(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": logarithm2($.n) }
+```
+
+```json
+{ "n": 8 }
+```
+
+```json
+{ "r": 3.0 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

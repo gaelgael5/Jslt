@@ -10,6 +10,20 @@ Encode une valeur pour une URL (mode path pour conserver les barres obliques)
 urlencode(token, mode)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": urlencode($.t) }
+```
+
+```json
+{ "t": "café noir" }
+```
+
+```json
+{ "r": "caf%C3%A9%20noir" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

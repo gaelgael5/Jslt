@@ -10,6 +10,20 @@ JSON Schema (draft-04) inferred from a sample JSON fragment
 schema(fragment)
 ```
 
+**Example**
+
+```jslt
+{ "r": schema($.o) }
+```
+
+```json
+{ "o": { "nom": "Ana" } }
+```
+
+```json
+{ "r": { "$schema": "http://json-schema.org/draft-04/schema#", "type": "object", "properties": { "nom": { "type": "string" } } } }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `fragment` | optional |  |

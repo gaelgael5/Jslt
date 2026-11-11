@@ -10,6 +10,20 @@ Flattens an array of arrays by one level
 union(source)
 ```
 
+**Example**
+
+```jslt
+{ "r": union($.l) }
+```
+
+```json
+{ "l": [[1, 2], [3]] }
+```
+
+```json
+{ "r": [1, 2, 3] }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

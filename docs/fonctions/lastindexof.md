@@ -10,6 +10,20 @@ Position (à partir de 0) de la dernière occurrence dans un texte ou un tableau
 lastindexof(token, txt)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": lastindexof($.t, "o") }
+```
+
+```json
+{ "t": "bonjour" }
+```
+
+```json
+{ "r": 4 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

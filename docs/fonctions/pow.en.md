@@ -10,6 +10,20 @@ Power: base raised to the exponent, returned as a decimal
 pow(base, exponent)
 ```
 
+**Example**
+
+```jslt
+{ "r": pow($.b, $.e) }
+```
+
+```json
+{ "b": 2, "e": 10 }
+```
+
+```json
+{ "r": 1024.0 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `base` | optional |  |

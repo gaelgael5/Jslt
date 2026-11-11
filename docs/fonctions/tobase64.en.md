@@ -10,6 +10,20 @@ Encodes a value in Base64 (UTF-8 text; object or array serialised as JSON)
 tobase64(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": tobase64($.t) }
+```
+
+```json
+{ "t": "bonjour" }
+```
+
+```json
+{ "r": "Ym9uam91cg==" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

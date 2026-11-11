@@ -10,6 +10,20 @@ JSON Schema (draft-04) déduit d'un fragment JSON d'exemple
 schema(fragment)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": schema($.o) }
+```
+
+```json
+{ "o": { "nom": "Ana" } }
+```
+
+```json
+{ "r": { "$schema": "http://json-schema.org/draft-04/schema#", "type": "object", "properties": { "nom": { "type": "string" } } } }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `fragment` | optionnel |  |

@@ -10,6 +10,20 @@ Ramène un nombre dans l'intervalle [lower, upper]
 clamp(token, lower, upper)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": clamp($.n, 0, 100) }
+```
+
+```json
+{ "n": 142 }
+```
+
+```json
+{ "r": 100 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

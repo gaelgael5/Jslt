@@ -10,6 +10,20 @@ Apparie deux tableaux élément par élément, en s'arrêtant au plus court
 zip(left, right)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": zip($.a, $.b) }
+```
+
+```json
+{ "a": [1, 2], "b": ["x", "y"] }
+```
+
+```json
+{ "r": [[1, "x"], [2, "y"]] }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `left` | optionnel |  |

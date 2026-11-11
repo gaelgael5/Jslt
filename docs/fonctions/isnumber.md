@@ -10,6 +10,20 @@ Vrai si la valeur est un nombre (un booléen n'en est pas un)
 isnumber(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "nombre": isnumber($.n), "booleen": isnumber($.b) }
+```
+
+```json
+{ "n": 3, "b": true }
+```
+
+```json
+{ "nombre": true, "booleen": false }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

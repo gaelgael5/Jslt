@@ -43,8 +43,10 @@ DOCS = find_docs()
 #: environnement incomplet pour un guide sans exemples.
 NO_DOCS = "docs/ absent (exécution hors dépôt, p.ex. depuis une sdist)"
 # Tous les documents du guide, pas seulement `guide*.md` : les thèmes (dates,
-# texte, collections…) portent désormais l'essentiel des exemples.
-GUIDES = sorted(DOCS.glob("*.md")) if DOCS is not None else []
+# texte, collections…) portent l'essentiel des exemples, et `fonctions/` un
+# exemple par fonction — d'où le parcours **récursif**, sans quoi 182 exemples
+# entreraient dans la documentation sans que rien ne les exécute.
+GUIDES = sorted(DOCS.rglob("*.md")) if DOCS is not None else []
 
 # Capture (langage, contenu) de chaque bloc ``` ... ``` du document.
 _BLOCK_RE = re.compile(r"```(\w+)[^\n]*\n(.*?)```", re.DOTALL)
@@ -65,7 +67,9 @@ def doc_triples() -> list:
     cases = []
     for guide in GUIDES:
         for idx, (tpl, src, out) in enumerate(extract_triples(guide.read_text(encoding="utf-8"))):
-            cases.append(pytest.param(tpl, src, out, id=f"{guide.name}-{idx}"))
+            # Chemin relatif et non nom de fichier : `fonctions/` porte des noms
+            # qui pourraient un jour croiser ceux des chapitres.
+            cases.append(pytest.param(tpl, src, out, id=f"{guide.relative_to(DOCS)}-{idx}"))
     return cases
 
 

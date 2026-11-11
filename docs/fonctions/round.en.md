@@ -10,6 +10,20 @@ Rounds to the nearest integer, halves to even (2.5 -> 2.0, 3.5 -> 4.0), returned
 round(token, digits)
 ```
 
+**Example**
+
+```jslt
+{ "pair": round($.a), "deux_decimales": round($.b, 2) }
+```
+
+```json
+{ "a": 2.5, "b": 1.2345 }
+```
+
+```json
+{ "pair": 2.0, "deux_decimales": 1.23 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

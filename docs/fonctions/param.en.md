@@ -10,6 +10,20 @@ Value of an external parameter passed to transform, or the fallback value
 param(name, default)
 ```
 
+**Example**
+
+```jslt
+{ "r": param("lot", "defaut") }
+```
+
+```json
+{}
+```
+
+```json
+{ "r": "defaut" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `name` | optional |  |

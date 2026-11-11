@@ -10,6 +10,20 @@ Cuts a text on the matches of a regex pattern
 splitregex(token, pattern, limit)
 ```
 
+**Example**
+
+```jslt
+{ "r": splitregex($.t, "\\s*;\\s*") }
+```
+
+```json
+{ "t": "a ; b;c" }
+```
+
+```json
+{ "r": ["a", "b", "c"] }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

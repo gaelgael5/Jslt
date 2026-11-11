@@ -10,6 +10,20 @@ Decodes a value coming from a URL (%20, %C3%A9…)
 urldecode(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": urldecode($.t) }
+```
+
+```json
+{ "t": "caf%C3%A9%20noir" }
+```
+
+```json
+{ "r": "café noir" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

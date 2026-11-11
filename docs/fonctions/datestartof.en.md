@@ -10,6 +10,20 @@ First instant of the period holding the date: year, quarter, month, week (Monday
 datestartof(token, period)
 ```
 
+**Example**
+
+```jslt
+{ "r": datestartof($.d, "week") }
+```
+
+```json
+{ "d": "2026-11-11T09:30:00" }
+```
+
+```json
+{ "r": "2026-11-09T00:00:00" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

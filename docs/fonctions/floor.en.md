@@ -10,6 +10,20 @@ Rounds down, to the integer (2.7 -> 2.0) or to digits decimals
 floor(token, digits)
 ```
 
+**Example**
+
+```jslt
+{ "entier": floor($.n), "deux_decimales": floor($.n, 2) }
+```
+
+```json
+{ "n": 2.349 }
+```
+
+```json
+{ "entier": 2.0, "deux_decimales": 2.34 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

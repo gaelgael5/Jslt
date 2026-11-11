@@ -10,6 +10,20 @@ Valeurs d'un objet, dans l'ordre du document (null si ce n'est pas un objet)
 values(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": values($.o) }
+```
+
+```json
+{ "o": { "a": 1, "b": 2 } }
+```
+
+```json
+{ "r": [1, 2] }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

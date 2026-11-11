@@ -10,6 +10,20 @@ Mean of the numbers in an array (null for an empty array)
 avg(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": avg($.n) }
+```
+
+```json
+{ "n": [1, 2, 6] }
+```
+
+```json
+{ "r": 3.0 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

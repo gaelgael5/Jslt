@@ -10,6 +10,20 @@ Elements of the left array absent from the right one, deduplicated
 difference(left, right)
 ```
 
+**Example**
+
+```jslt
+{ "r": difference($.a, $.b) }
+```
+
+```json
+{ "a": [1, 2, 3], "b": [2] }
+```
+
+```json
+{ "r": [1, 3] }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `left` | optional |  |

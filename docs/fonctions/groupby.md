@@ -10,6 +10,32 @@ Regroupe un tableau en un objet { clef: éléments }, clef calculée par éléme
 groupby(source, key, nested)
 ```
 
+**Exemples**
+
+```jslt
+{ "plat": groupby($.l, $.ville) }
+```
+
+```json
+{ "l": [{ "id": 1, "ville": "Lyon" }, { "id": 2, "ville": "Brest" }] }
+```
+
+```json
+{ "plat": { "Lyon": [{ "id": 1, "ville": "Lyon" }], "Brest": [{ "id": 2, "ville": "Brest" }] } }
+```
+
+```jslt
+{ "imbrique": groupby($.l, [$.pays, $.ville], true) }
+```
+
+```json
+{ "l": [{ "id": 1, "pays": "FR", "ville": "Lyon" }] }
+```
+
+```json
+{ "imbrique": { "FR": { "Lyon": [{ "id": 1, "pays": "FR", "ville": "Lyon" }] } } }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |

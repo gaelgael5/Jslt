@@ -10,6 +10,20 @@ True when the value is a JSON array
 isarray(token)
 ```
 
+**Example**
+
+```jslt
+{ "tableau": isarray($.l), "objet": isarray($.o) }
+```
+
+```json
+{ "l": [], "o": {} }
+```
+
+```json
+{ "tableau": true, "objet": false }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

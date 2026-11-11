@@ -10,6 +10,20 @@ Product of the numbers in an array (1 for an empty array)
 product(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": product($.n) }
+```
+
+```json
+{ "n": [2, 3, 4] }
+```
+
+```json
+{ "r": 24 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

@@ -10,6 +10,20 @@ Ajoute une durée à une date ISO 8601 : unité second, minute, hour, day, week,
 dateadd(token, unit, amount)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": dateadd($.d, "month", 2) }
+```
+
+```json
+{ "d": "2026-01-31T00:00:00" }
+```
+
+```json
+{ "r": "2026-03-31T00:00:00" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

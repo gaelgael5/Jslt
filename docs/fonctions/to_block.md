@@ -10,6 +10,27 @@ Sortie : une ligne JSON compacte par élément du tableau résultat (JSON Lines)
 to_block()
 ```
 
+**Exemple**
+
+```jslt
+{ "$directives": { "output": { "filter": $.lignes, "mode": to_block() } }, "lignes": $.l[*] }
+```
+
+```json
+{ "l": [{ "id": 1 }, { "id": 2 }] }
+```
+
+```json
+{ "lignes": [{ "id": 1 }, { "id": 2 }] }
+```
+
+`render()` produit :
+
+```text
+{"id":1}
+{"id":2}
+```
+
 Cette fonction ne prend aucun argument.
 
 Fonction de **sortie** : elle ne s'appelle pas dans le corps du template, mais se déclare dans `"$directives": {"output": {"mode": …}}`.

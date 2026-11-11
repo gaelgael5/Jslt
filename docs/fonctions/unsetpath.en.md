@@ -10,6 +10,20 @@ Copy of the object without the dotted path (no error when it is absent)
 unsetpath(token, path, separator)
 ```
 
+**Example**
+
+```jslt
+{ "r": unsetpath($.o, "client.secret") }
+```
+
+```json
+{ "o": { "client": { "nom": "Ana", "secret": "x" } } }
+```
+
+```json
+{ "r": { "client": { "nom": "Ana" } } }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

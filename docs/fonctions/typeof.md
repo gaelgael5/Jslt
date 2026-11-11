@@ -10,6 +10,20 @@ Type JSON d'une valeur : null, boolean, number, string, array ou object
 typeof(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "texte": typeof($.t), "tableau": typeof($.l), "absent": typeof($.z) }
+```
+
+```json
+{ "t": "a", "l": [] }
+```
+
+```json
+{ "texte": "string", "tableau": "array", "absent": "null" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

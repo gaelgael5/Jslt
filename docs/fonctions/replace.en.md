@@ -10,6 +10,20 @@ Replaces every occurrence of search with replacement
 replace(token, search, replacement)
 ```
 
+**Example**
+
+```jslt
+{ "r": replace($.t, "-", "/") }
+```
+
+```json
+{ "t": "2026-11-11" }
+```
+
+```json
+{ "r": "2026/11/11" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

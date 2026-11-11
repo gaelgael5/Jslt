@@ -10,6 +10,27 @@ Sortie : le résultat en YAML, en style bloc ou en style JSON si json_style vaut
 to_yaml(json_style)
 ```
 
+**Exemple**
+
+```jslt
+{ "$directives": { "output": { "filter": $.client, "mode": to_yaml() } }, "client": { "id": $.id, "ville": $.v } }
+```
+
+```json
+{ "id": 1, "v": "Lyon" }
+```
+
+```json
+{ "client": { "id": 1, "ville": "Lyon" } }
+```
+
+`render()` produit :
+
+```text
+id: 1
+ville: Lyon
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `json_style` | optionnel |  |

@@ -10,6 +10,20 @@ Returns the value unchanged and records it in the journal, readable through trac
 trace(value, label)
 ```
 
+**Example**
+
+```jslt
+{ "r": trace($.n, "montant") }
+```
+
+```json
+{ "n": 42 }
+```
+
+```json
+{ "r": 42 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `value` | optional |  |

@@ -10,6 +10,32 @@ Trie un tableau : sur les éléments, ou sur une clef calculée par élément, d
 sort(source, key, descending)
 ```
 
+**Exemples**
+
+```jslt
+{ "par_prix": selectmany(sort($.l, $.prix), $.*.id) }
+```
+
+```json
+{ "l": [{ "id": 1, "prix": 30 }, { "id": 2, "prix": 10 }] }
+```
+
+```json
+{ "par_prix": [2, 1] }
+```
+
+```jslt
+{ "ville_puis_prix_decroissant": selectmany(sort($.l, [$.ville, $.prix], [false, true]), $.*.id) }
+```
+
+```json
+{ "l": [{ "id": 1, "ville": "Lyon", "prix": 10 }, { "id": 2, "ville": "Lyon", "prix": 30 }, { "id": 3, "ville": "Brest", "prix": 5 }] }
+```
+
+```json
+{ "ville_puis_prix_decroissant": [3, 2, 1] }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |

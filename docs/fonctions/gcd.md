@@ -10,6 +10,20 @@ Plus grand commun diviseur de deux entiers
 gcd(left, right)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": gcd($.a, $.b) }
+```
+
+```json
+{ "a": 84, "b": 36 }
+```
+
+```json
+{ "r": 12 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `left` | optionnel |  |

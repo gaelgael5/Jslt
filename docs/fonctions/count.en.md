@@ -10,6 +10,20 @@ Number of items: elements of an array, keys of an object, characters of a text, 
 count(token)
 ```
 
+**Example**
+
+```jslt
+{ "tableau": count($.l), "objet": count($.o), "texte": count($.t) }
+```
+
+```json
+{ "l": [1, 2], "o": { "a": 1 }, "t": "abc" }
+```
+
+```json
+{ "tableau": 2, "objet": 1, "texte": 3 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

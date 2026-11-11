@@ -10,6 +10,20 @@ Toutes les valeurs sélectionnées par un chemin JSONPath dans la source
 selectmany(source, path)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": selectmany($.l, $.*.id) }
+```
+
+```json
+{ "l": [{ "id": 1 }, { "id": 2 }] }
+```
+
+```json
+{ "r": [1, 2] }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |

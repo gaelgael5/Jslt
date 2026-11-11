@@ -72,7 +72,10 @@ Four categories filled (162 → 182) and one output defect fixed.
   have aged at the first widened signature, and a test refuses a page that no
   longer follows the registry. It is the stable URL the editor can derive from
   the function's name alone, where an anchor in a chapter breaks silently at the
-  first renamed heading. The examples and the prose stay in the chapters.
+  first renamed heading. **Every page carries an executed example**: the
+  signature alone says neither what goes in nor what comes out. The 185 examples
+  are replayed by the guide suite, hence by both engines; the chapters keep the
+  prose and the *usage* examples, which mix several functions.
 - **Every description is translated** (`description_en`): the English page has no
   other source, and the intellisense now speaks the reader's language.
 - **Sorting and grouping, the finishing touches**: `unzip` (the converse of

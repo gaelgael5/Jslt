@@ -10,6 +10,20 @@ Pairs of an object as an array of { key, value }, in document order
 entries(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": entries($.o) }
+```
+
+```json
+{ "o": { "a": 1, "b": 2 } }
+```
+
+```json
+{ "r": [{ "key": "a", "value": 1 }, { "key": "b", "value": 2 }] }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

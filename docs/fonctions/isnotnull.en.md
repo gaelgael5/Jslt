@@ -10,6 +10,20 @@ True when the value is neither null nor absent
 isnotnull(token)
 ```
 
+**Example**
+
+```jslt
+{ "presente": isnotnull($.a), "absente": isnotnull($.z) }
+```
+
+```json
+{ "a": 0 }
+```
+
+```json
+{ "presente": true, "absente": false }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

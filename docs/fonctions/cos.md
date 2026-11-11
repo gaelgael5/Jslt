@@ -10,6 +10,20 @@ Cosinus d'un angle en radians
 cos(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": cos($.n) }
+```
+
+```json
+{ "n": 0 }
+```
+
+```json
+{ "r": 1.0 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

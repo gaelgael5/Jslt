@@ -10,6 +10,20 @@
 htmlescape(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": htmlescape($.t) }
+```
+
+```json
+{ "t": "<b>ok</b>" }
+```
+
+```json
+{ "r": "&lt;b&gt;ok&lt;/b&gt;" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

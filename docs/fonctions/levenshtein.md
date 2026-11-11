@@ -10,6 +10,20 @@ Nombre de caractères à insérer, supprimer ou remplacer pour passer d'un texte
 levenshtein(left, right)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": levenshtein($.a, $.b) }
+```
+
+```json
+{ "a": "chat", "b": "chats" }
+```
+
+```json
+{ "r": 1 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `left` | optionnel |  |

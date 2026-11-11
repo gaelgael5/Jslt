@@ -10,6 +10,20 @@ Vrai si le texte se termine par txt
 endswith(token, txt)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": endswith($.t, ".json") }
+```
+
+```json
+{ "t": "contrat.json" }
+```
+
+```json
+{ "r": true }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

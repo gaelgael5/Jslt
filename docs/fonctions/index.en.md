@@ -10,6 +10,20 @@ Element of an index (built by createindex) for a key, or null
 index(index, key)
 ```
 
+**Example**
+
+```jslt
+{ "i:": createindex($.p, "", "$.nom"), "ana": index(i:, "Ana") }
+```
+
+```json
+{ "p": [{ "nom": "Ana", "ville": "Lyon" }] }
+```
+
+```json
+{ "ana": { "nom": "Ana", "ville": "Lyon" } }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `index` | optional |  |

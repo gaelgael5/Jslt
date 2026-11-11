@@ -10,6 +10,20 @@ Sum per computed key, as an object { key: sum } (the value defaults to the eleme
 sumby(source, key, value)
 ```
 
+**Example**
+
+```jslt
+{ "r": sumby($.l, $.ville, $.m) }
+```
+
+```json
+{ "l": [{ "ville": "Lyon", "m": 10 }, { "ville": "Lyon", "m": 5 }, { "ville": "Brest", "m": 7 }] }
+```
+
+```json
+{ "r": { "Lyon": 15, "Brest": 7 } }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

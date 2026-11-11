@@ -10,6 +10,20 @@ Reads a date from text and returns it in ISO 8601: detection by culture, or an e
 parsedate(token, culture, mask, timezone)
 ```
 
+**Example**
+
+```jslt
+{ "culture": parsedate($.a, "fr-FR"), "masque": parsedate($.b, "", "dd/MM/yyyy") }
+```
+
+```json
+{ "a": "11/11/2026", "b": "11/11/2026" }
+```
+
+```json
+{ "culture": "2026-11-11T00:00:00", "masque": "2026-11-11T00:00:00" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

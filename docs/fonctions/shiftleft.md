@@ -10,6 +10,20 @@ Décale les bits d'un entier vers la gauche (multiplie par 2^bits)
 shiftleft(token, bits)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": shiftleft($.n, 3) }
+```
+
+```json
+{ "n": 1 }
+```
+
+```json
+{ "r": 8 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

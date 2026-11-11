@@ -10,6 +10,20 @@ Retire récursivement les null d'une structure, et le vide avec l'option empty
 prune(token, options)
 ```
 
+**Exemple**
+
+```jslt
+{ "nulls": prune($.o), "vides_aussi": prune($.o, "empty") }
+```
+
+```json
+{ "o": { "a": 1, "b": null, "c": "" } }
+```
+
+```json
+{ "nulls": { "a": 1, "c": "" }, "vides_aussi": { "a": 1 } }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

@@ -10,6 +10,20 @@ Cuts an array into consecutive slices of size elements
 chunk(source, size)
 ```
 
+**Example**
+
+```jslt
+{ "r": chunk($.l, 2) }
+```
+
+```json
+{ "l": [1, 2, 3, 4, 5] }
+```
+
+```json
+{ "r": [[1, 2], [3, 4], [5]] }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

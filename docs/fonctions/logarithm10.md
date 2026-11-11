@@ -10,6 +10,20 @@ Logarithme décimal (base 10) d'un nombre
 logarithm10(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": logarithm10($.n) }
+```
+
+```json
+{ "n": 1000 }
+```
+
+```json
+{ "r": 3.0 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

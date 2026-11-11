@@ -10,6 +10,20 @@
 tohex(token, width)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": tohex($.n), "sur_quatre": tohex($.n, 4) }
+```
+
+```json
+{ "n": 255 }
+```
+
+```json
+{ "r": "ff", "sur_quatre": "00ff" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

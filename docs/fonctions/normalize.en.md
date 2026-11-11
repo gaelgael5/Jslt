@@ -10,6 +10,20 @@ Normalizes a Unicode string: form C (default), D, KC or KD
 normalize(token, form)
 ```
 
+**Example**
+
+```jslt
+{ "r": stringlenght(normalize($.t, "C")) }
+```
+
+```json
+{ "t": "é" }
+```
+
+```json
+{ "r": 1 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

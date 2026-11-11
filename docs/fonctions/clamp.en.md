@@ -10,6 +10,20 @@ Brings a number back into the [lower, upper] range
 clamp(token, lower, upper)
 ```
 
+**Example**
+
+```jslt
+{ "r": clamp($.n, 0, 100) }
+```
+
+```json
+{ "n": 142 }
+```
+
+```json
+{ "r": 100 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

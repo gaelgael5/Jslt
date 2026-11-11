@@ -10,6 +10,20 @@ Sub-object limited to the requested keys (one key or an array of keys)
 pick(token, keys)
 ```
 
+**Example**
+
+```jslt
+{ "r": pick($.o, ["nom", "ville"]) }
+```
+
+```json
+{ "o": { "nom": "Ana", "ville": "Lyon", "secret": "x" } }
+```
+
+```json
+{ "r": { "nom": "Ana", "ville": "Lyon" } }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

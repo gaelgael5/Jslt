@@ -10,6 +10,20 @@ Première valeur sélectionnée par un chemin JSONPath dans la source, ou null
 select(source, path)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": select($.d, $.client.nom) }
+```
+
+```json
+{ "d": { "client": { "nom": "Ana" } } }
+```
+
+```json
+{ "r": "Ana" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |

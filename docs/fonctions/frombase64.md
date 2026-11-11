@@ -10,6 +10,20 @@ Décode un texte Base64 en texte UTF-8
 frombase64(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": frombase64($.t) }
+```
+
+```json
+{ "t": "Ym9uam91cg==" }
+```
+
+```json
+{ "r": "bonjour" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

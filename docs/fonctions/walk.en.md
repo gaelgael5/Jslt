@@ -10,6 +10,20 @@ Applies an expression to every node of a structure, from the leaves to the root
 walk(token, expression)
 ```
 
+**Example**
+
+```jslt
+{ "r": walk($.o, when(isstring($)) { "True": upper($), "default": $ }) }
+```
+
+```json
+{ "o": { "a": "x", "b": { "c": "y" } } }
+```
+
+```json
+{ "r": { "a": "X", "b": { "c": "Y" } } }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

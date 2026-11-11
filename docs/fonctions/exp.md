@@ -10,6 +10,20 @@ Exponentielle : e élevé à la puissance du nombre
 exp(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": round(exp($.n), 3) }
+```
+
+```json
+{ "n": 1 }
+```
+
+```json
+{ "r": 2.718 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

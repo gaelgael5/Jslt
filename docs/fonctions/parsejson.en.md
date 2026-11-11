@@ -10,6 +10,20 @@ Reads JSON text and returns the matching value (object, array or scalar)
 parsejson(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": select(parsejson($.t), $.ville) }
+```
+
+```json
+{ "t": "{\"ville\": \"Lyon\"}" }
+```
+
+```json
+{ "r": "Lyon" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

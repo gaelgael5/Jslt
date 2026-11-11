@@ -10,6 +10,20 @@ Nouvel identifiant unique aléatoire (UUID v4) à chaque appel
 uuid()
 ```
 
+**Exemple**
+
+```jslt
+{ "r": stringlenght(uuid()) }
+```
+
+```json
+{}
+```
+
+```json
+{ "r": 36 }
+```
+
 Cette fonction ne prend aucun argument.
 
 **Chapitre** : [Expressions et opérateurs](../expressions.md) · **Index** : [toutes les fonctions](sommaire.md)

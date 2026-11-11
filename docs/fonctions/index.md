@@ -10,6 +10,20 @@
 index(index, key)
 ```
 
+**Exemple**
+
+```jslt
+{ "i:": createindex($.p, "", "$.nom"), "ana": index(i:, "Ana") }
+```
+
+```json
+{ "p": [{ "nom": "Ana", "ville": "Lyon" }] }
+```
+
+```json
+{ "ana": { "nom": "Ana", "ville": "Lyon" } }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `index` | optionnel |  |

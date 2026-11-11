@@ -10,6 +10,20 @@
 tobase(token, base, width)
 ```
 
+**Exemple**
+
+```jslt
+{ "binaire": tobase($.n, 2), "sur_huit": tobase($.n, 2, 8) }
+```
+
+```json
+{ "n": 11 }
+```
+
+```json
+{ "binaire": "1011", "sur_huit": "00001011" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

@@ -10,6 +10,20 @@ Larger of two numbers, or of the given array (decimal for two numbers)
 max(left, right)
 ```
 
+**Example**
+
+```jslt
+{ "deux": max($.a, $.b), "du_tableau": max($.l) }
+```
+
+```json
+{ "a": 2, "b": 9, "l": [3, 11, 7] }
+```
+
+```json
+{ "deux": 9.0, "du_tableau": 11 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `left` | optional |  |

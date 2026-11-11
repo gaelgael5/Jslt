@@ -10,6 +10,20 @@ Renomme les clés d'un objet selon un mapping { ancien: nouveau }
 renamekeys(token, mapping)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": renamekeys($.o, { "nom": "name" }) }
+```
+
+```json
+{ "o": { "nom": "Ana", "ville": "Lyon" } }
+```
+
+```json
+{ "r": { "name": "Ana", "ville": "Lyon" } }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

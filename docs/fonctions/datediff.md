@@ -10,6 +10,20 @@ Compte les unités entières écoulées entre deux dates ISO 8601 : second, minu
 datediff(start, end, unit)
 ```
 
+**Exemple**
+
+```jslt
+{ "jours": datediff($.a, $.b, "day") }
+```
+
+```json
+{ "a": "2026-11-01T00:00:00", "b": "2026-11-11T00:00:00" }
+```
+
+```json
+{ "jours": 10 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `start` | optionnel |  |

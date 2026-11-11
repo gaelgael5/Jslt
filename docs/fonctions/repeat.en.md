@@ -10,6 +10,20 @@ Repeats the text count times (0 or negative: empty string)
 repeat(token, count)
 ```
 
+**Example**
+
+```jslt
+{ "r": repeat($.t, 3) }
+```
+
+```json
+{ "t": "ab" }
+```
+
+```json
+{ "r": "ababab" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

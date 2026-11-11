@@ -10,6 +10,20 @@ Square root of a number
 sqrt(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": sqrt($.n) }
+```
+
+```json
+{ "n": 9 }
+```
+
+```json
+{ "r": 3.0 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

@@ -10,6 +10,20 @@ True when the value is a boolean (true or false)
 isboolean(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": isboolean($.b), "nombre": isboolean($.n) }
+```
+
+```json
+{ "b": false, "n": 0 }
+```
+
+```json
+{ "r": true, "nombre": false }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

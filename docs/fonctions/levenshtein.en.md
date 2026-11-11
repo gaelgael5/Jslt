@@ -10,6 +10,20 @@ Number of characters to insert, delete or replace to go from one text to the oth
 levenshtein(left, right)
 ```
 
+**Example**
+
+```jslt
+{ "r": levenshtein($.a, $.b) }
+```
+
+```json
+{ "a": "chat", "b": "chats" }
+```
+
+```json
+{ "r": 1 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `left` | optional |  |

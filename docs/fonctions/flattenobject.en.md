@@ -10,6 +10,20 @@ Flattens an object into dotted keys (a.b.c), arrays indexed by their position
 flattenobject(token, separator)
 ```
 
+**Example**
+
+```jslt
+{ "r": flattenobject($.o) }
+```
+
+```json
+{ "o": { "client": { "nom": "Ana" } } }
+```
+
+```json
+{ "r": { "client.nom": "Ana" } }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

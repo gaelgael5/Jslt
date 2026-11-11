@@ -10,6 +10,20 @@ MD5 digest of a value, in hexadecimal (identity, not signature)
 md5(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": md5($.t) }
+```
+
+```json
+{ "t": "abc" }
+```
+
+```json
+{ "r": "900150983cd24fb0d6963f7d28e17f72" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

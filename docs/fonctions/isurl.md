@@ -10,6 +10,20 @@ Vrai si le texte a la forme d'une URL avec son schéma
 isurl(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": isurl($.t) }
+```
+
+```json
+{ "t": "https://exemple.fr/a" }
+```
+
+```json
+{ "r": true }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

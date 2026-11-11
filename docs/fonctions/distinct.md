@@ -10,6 +10,20 @@ Valeurs uniques sélectionnées par un chemin JSONPath dans un tableau, dans l'o
 distinct(source, path)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": distinct($.l, $.*) }
+```
+
+```json
+{ "l": [1, 2, 2, 3] }
+```
+
+```json
+{ "r": [1, 2, 3] }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |

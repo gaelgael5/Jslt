@@ -10,6 +10,20 @@ Découpe un texte en tableau sur le premier caractère de charset
 split(token, charset)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": split($.t, ";") }
+```
+
+```json
+{ "t": "a;b;c" }
+```
+
+```json
+{ "r": ["a", "b", "c"] }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

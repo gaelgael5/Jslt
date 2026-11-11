@@ -10,6 +10,20 @@ Closeness of two texts between 0 (all differs) and 1 (identical)
 similarity(left, right)
 ```
 
+**Example**
+
+```jslt
+{ "r": round(similarity($.a, $.b), 2) }
+```
+
+```json
+{ "a": "Durand", "b": "Durrand" }
+```
+
+```json
+{ "r": 0.86 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `left` | optional |  |

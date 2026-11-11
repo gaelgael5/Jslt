@@ -10,6 +10,20 @@ Vrai si la valeur est un booléen (true ou false)
 isboolean(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": isboolean($.b), "nombre": isboolean($.n) }
+```
+
+```json
+{ "b": false, "n": 0 }
+```
+
+```json
+{ "r": true, "nombre": false }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

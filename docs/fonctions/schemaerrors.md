@@ -10,6 +10,20 @@ Liste des erreurs de validation d'un document contre un JSON Schema (vide si con
 schemaerrors(fragment, schema_document)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": schemaerrors($.o, $.s) }
+```
+
+```json
+{ "o": { "age": "vieux" }, "s": { "type": "object", "properties": { "age": { "type": "integer" } } } }
+```
+
+```json
+{ "r": ["$.age : attendu un entier, reçu une chaîne"] }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `fragment` | optionnel |  |

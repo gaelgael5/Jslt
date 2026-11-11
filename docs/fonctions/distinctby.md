@@ -10,6 +10,20 @@ Déduplique un tableau sur une clef calculée par élément, en gardant le premi
 distinctby(source, key)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": distinctby($.l, $.ville) }
+```
+
+```json
+{ "l": [{ "id": 1, "ville": "Lyon" }, { "id": 2, "ville": "Lyon" }, { "id": 3, "ville": "Brest" }] }
+```
+
+```json
+{ "r": [{ "id": 1, "ville": "Lyon" }, { "id": 3, "ville": "Brest" }] }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |

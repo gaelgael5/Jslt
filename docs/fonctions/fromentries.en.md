@@ -10,6 +10,20 @@ Rebuilds an object from an array of { key, value } or of [key, value] pairs
 fromentries(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": fromentries($.l) }
+```
+
+```json
+{ "l": [{ "key": "a", "value": 1 }] }
+```
+
+```json
+{ "r": { "a": 1 } }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

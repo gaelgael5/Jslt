@@ -10,6 +10,20 @@ Builds an index {key: element} from a source, a splitting path and a key path
 createindex(source, object_path, key)
 ```
 
+**Example**
+
+```jslt
+{ "i:": createindex($.p, "", "$.nom"), "ana": index(i:, "Ana") }
+```
+
+```json
+{ "p": [{ "nom": "Ana", "ville": "Lyon" }] }
+```
+
+```json
+{ "ana": { "nom": "Ana", "ville": "Lyon" } }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

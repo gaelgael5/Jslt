@@ -10,6 +10,20 @@ Journal des valeurs observées par trace() dans cette exécution
 traces()
 ```
 
+**Exemple**
+
+```jslt
+{ "r": trace($.n, "montant"), "journal": traces() }
+```
+
+```json
+{ "n": 42 }
+```
+
+```json
+{ "r": 42, "journal": [{ "label": "montant", "value": 42 }] }
+```
+
 Cette fonction ne prend aucun argument.
 
 **Chapitre** : [Qualité : refuser, observer, valider](../qualite.md) · **Index** : [toutes les fonctions](sommaire.md)

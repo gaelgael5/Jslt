@@ -10,6 +10,20 @@ Lit un entier écrit dans une base de 2 à 36
 frombase(token, base)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": frombase($.t, 2) }
+```
+
+```json
+{ "t": "1011" }
+```
+
+```json
+{ "r": 11 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

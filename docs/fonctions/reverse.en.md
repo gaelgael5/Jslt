@@ -10,6 +10,20 @@ Reverses the order of an array or of a text, without modifying the source
 reverse(source)
 ```
 
+**Example**
+
+```jslt
+{ "tableau": reverse($.l), "texte": reverse($.t) }
+```
+
+```json
+{ "l": [1, 2, 3], "t": "abc" }
+```
+
+```json
+{ "tableau": [3, 2, 1], "texte": "cba" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

@@ -10,6 +10,20 @@ Position (from 0) of the first occurrence in a text or an array, -1 when absent
 indexof(token, txt)
 ```
 
+**Example**
+
+```jslt
+{ "texte": indexof($.t, "o"), "tableau": indexof($.l, "b") }
+```
+
+```json
+{ "t": "bonjour", "l": ["a", "b", "c"] }
+```
+
+```json
+{ "texte": 1, "tableau": 1 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

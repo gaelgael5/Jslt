@@ -10,6 +10,20 @@ Arc cosinus hyperbolique
 acosh(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": acosh($.n) }
+```
+
+```json
+{ "n": 1 }
+```
+
+```json
+{ "r": 0.0 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

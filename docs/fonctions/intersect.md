@@ -10,6 +10,20 @@
 intersect(left, right)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": intersect($.a, $.b) }
+```
+
+```json
+{ "a": [1, 2, 3], "b": [3, 1] }
+```
+
+```json
+{ "r": [1, 3] }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `left` | optionnel |  |

@@ -10,6 +10,20 @@ Tangente hyperbolique
 tanh(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": tanh($.n) }
+```
+
+```json
+{ "n": 0 }
+```
+
+```json
+{ "r": 0.0 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

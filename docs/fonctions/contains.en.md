@@ -10,6 +10,20 @@ True when the array holds an element equal to the value
 contains(source, to_match)
 ```
 
+**Example**
+
+```jslt
+{ "r": contains($.l, "b") }
+```
+
+```json
+{ "l": ["a", "b"] }
+```
+
+```json
+{ "r": true }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

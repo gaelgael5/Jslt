@@ -10,6 +10,20 @@ Renames the keys of an object according to a { old: new } mapping
 renamekeys(token, mapping)
 ```
 
+**Example**
+
+```jslt
+{ "r": renamekeys($.o, { "nom": "name" }) }
+```
+
+```json
+{ "o": { "nom": "Ana", "ville": "Lyon" } }
+```
+
+```json
+{ "r": { "name": "Ana", "ville": "Lyon" } }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

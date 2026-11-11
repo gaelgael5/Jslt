@@ -10,6 +10,20 @@ Objet privé des clés demandées (une clé ou un tableau de clés)
 omit(token, keys)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": omit($.o, ["secret"]) }
+```
+
+```json
+{ "o": { "nom": "Ana", "secret": "x" } }
+```
+
+```json
+{ "r": { "nom": "Ana" } }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

@@ -10,6 +10,20 @@ Last element of an array, or null when it is empty
 last(source)
 ```
 
+**Example**
+
+```jslt
+{ "r": last($.l) }
+```
+
+```json
+{ "l": [3, 1] }
+```
+
+```json
+{ "r": 1 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

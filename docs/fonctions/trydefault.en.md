@@ -10,6 +10,20 @@ Value of the expression, or that of the fallback when the expression raises an e
 trydefault(expression, fallback)
 ```
 
+**Example**
+
+```jslt
+{ "r": trydefault($.a / $.b, "division impossible") }
+```
+
+```json
+{ "a": 1, "b": 0 }
+```
+
+```json
+{ "r": "division impossible" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `expression` | optional | **unevaluated** expression, computed by the function |

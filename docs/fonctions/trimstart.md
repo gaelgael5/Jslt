@@ -10,6 +10,20 @@ Retire les espaces en début, ou les caractères de txt
 trimstart(token, txt)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": trimstart($.t) }
+```
+
+```json
+{ "t": "   ok" }
+```
+
+```json
+{ "r": "ok" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

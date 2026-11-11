@@ -10,6 +10,20 @@ Moyenne par clef calculée, en un objet { clef: moyenne } (la valeur par défaut
 avgby(source, key, value)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": avgby($.l, $.ville, $.m) }
+```
+
+```json
+{ "l": [{ "ville": "Lyon", "m": 10 }, { "ville": "Lyon", "m": 20 }, { "ville": "Brest", "m": 7 }] }
+```
+
+```json
+{ "r": { "Lyon": 15.0, "Brest": 7.0 } }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |

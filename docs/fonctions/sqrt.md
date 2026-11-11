@@ -10,6 +10,20 @@ Racine carrée d'un nombre
 sqrt(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": sqrt($.n) }
+```
+
+```json
+{ "n": 9 }
+```
+
+```json
+{ "r": 3.0 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

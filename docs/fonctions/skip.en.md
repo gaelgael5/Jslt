@@ -10,6 +10,20 @@ Drops the first n elements of an array (the complement of limit)
 skip(source, count)
 ```
 
+**Example**
+
+```jslt
+{ "r": skip($.l, 2) }
+```
+
+```json
+{ "l": [1, 2, 3, 4] }
+```
+
+```json
+{ "r": [3, 4] }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

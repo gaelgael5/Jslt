@@ -10,6 +10,20 @@ Logarithm of a number in the given base
 log(token, base)
 ```
 
+**Example**
+
+```jslt
+{ "r": log($.n, 10) }
+```
+
+```json
+{ "n": 1000 }
+```
+
+```json
+{ "r": 3.0 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

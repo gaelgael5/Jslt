@@ -10,6 +10,20 @@ Groups an array by successive JSONPath paths into nested {Label, Items}
 group(source, group_paths)
 ```
 
+**Example**
+
+```jslt
+{ "r": group($.p, ["$.ville"]) }
+```
+
+```json
+{ "p": [{ "nom": "Ana", "ville": "Lyon" }] }
+```
+
+```json
+{ "r": [{ "Label": "Lyon", "Items": [{ "nom": "Ana", "ville": "Lyon" }] }] }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

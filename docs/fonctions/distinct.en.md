@@ -10,6 +10,20 @@ Unique values selected by a JSONPath path in an array, in order of appearance
 distinct(source, path)
 ```
 
+**Example**
+
+```jslt
+{ "r": distinct($.l, $.*) }
+```
+
+```json
+{ "l": [1, 2, 2, 3] }
+```
+
+```json
+{ "r": [1, 2, 3] }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

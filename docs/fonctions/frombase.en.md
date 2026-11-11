@@ -10,6 +10,20 @@ Reads an integer written in a base from 2 to 36
 frombase(token, base)
 ```
 
+**Example**
+
+```jslt
+{ "r": frombase($.t, 2) }
+```
+
+```json
+{ "t": "1011" }
+```
+
+```json
+{ "r": 11 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

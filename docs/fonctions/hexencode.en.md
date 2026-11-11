@@ -10,6 +10,20 @@ Writes the UTF-8 bytes of a value in hexadecimal
 hexencode(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": hexencode($.t) }
+```
+
+```json
+{ "t": "abc" }
+```
+
+```json
+{ "r": "616263" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

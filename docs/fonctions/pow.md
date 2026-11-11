@@ -10,6 +10,20 @@ Puissance : base élevée à l'exposant, rendue en décimal
 pow(base, exponent)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": pow($.b, $.e) }
+```
+
+```json
+{ "b": 2, "e": 10 }
+```
+
+```json
+{ "r": 1024.0 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `base` | optionnel |  |

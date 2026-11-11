@@ -542,7 +542,14 @@ python -m twine check dist/*           # valide les distributions (métadonnées
   `.en.md` (plus `sommaire.md`), **engendrées** depuis le registre par
   `packages/urban-json/scripts/generate_function_docs.py` ; `tests/test_function_docs.py`
   refuse une page qui ne suit plus le registre, une fonction sans page, sans
-  traduction ou sans chapitre. Écrites parce que l'éditeur lie son infobulle à la
+  traduction, sans chapitre ou **sans exemple**. Les exemples vivent dans
+  `scripts/function_examples.py` (un par fonction, au plus court, le même code
+  servant les deux langues puisque les clés sont neutres) ; `tests/_docs.py`
+  balaie `docs/` **récursivement**, donc chaque exemple de page est rejoué par
+  les deux moteurs comme ceux des chapitres. Un exemple de chapitre enseigne un
+  *usage* et mêle souvent trois fonctions ; une page de référence en montre
+  **une**. Les cinq fonctions de sortie montrent en plus le texte de `render()`,
+  vérifié par un test dédié (ce n'est pas un triplet). Écrites parce que l'éditeur lie son infobulle à la
   documentation : il lui faut une URL **dérivable du seul nom**, là où une ancre
   dans un chapitre se casse en silence au premier titre renommé. Les exemples et
   la prose restent dans les chapitres, vers lesquels chaque page renvoie ; la

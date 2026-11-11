@@ -10,6 +10,20 @@ Reconstruit un objet imbriqué depuis des clés pointées (arrays à true pour l
 unflatten(token, separator, arrays)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": unflatten($.o) }
+```
+
+```json
+{ "o": { "client.nom": "Ana" } }
+```
+
+```json
+{ "r": { "client": { "nom": "Ana" } } }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

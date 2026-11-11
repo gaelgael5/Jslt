@@ -10,6 +10,20 @@ Cuts a text on a whole separator (several characters), at most limit times
 splitstring(token, separator, limit)
 ```
 
+**Example**
+
+```jslt
+{ "r": splitstring($.t, " - ") }
+```
+
+```json
+{ "t": "a - b - c" }
+```
+
+```json
+{ "r": ["a", "b", "c"] }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

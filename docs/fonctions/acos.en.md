@@ -10,6 +10,20 @@ Arc cosine, in radians
 acos(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": acos($.n) }
+```
+
+```json
+{ "n": 1 }
+```
+
+```json
+{ "r": 0.0 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

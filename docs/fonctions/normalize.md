@@ -10,6 +10,20 @@ Normalise une chaîne Unicode : forme C (défaut), D, KC ou KD
 normalize(token, form)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": stringlenght(normalize($.t, "C")) }
+```
+
+```json
+{ "t": "é" }
+```
+
+```json
+{ "r": 1 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

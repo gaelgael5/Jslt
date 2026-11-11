@@ -10,6 +10,20 @@ Shortens a text to length characters at most, suffix included (… by default)
 shorten(token, length, suffix)
 ```
 
+**Example**
+
+```jslt
+{ "r": shorten($.t, 12) }
+```
+
+```json
+{ "t": "Facture annuelle 2026" }
+```
+
+```json
+{ "r": "Facture…" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

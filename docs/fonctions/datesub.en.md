@@ -10,6 +10,20 @@ Subtracts a duration from an ISO 8601 date: unit second, minute, hour, day, week
 datesub(token, unit, amount)
 ```
 
+**Example**
+
+```jslt
+{ "r": datesub($.d, "day", 1) }
+```
+
+```json
+{ "d": "2026-03-01T00:00:00" }
+```
+
+```json
+{ "r": "2026-02-28T00:00:00" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

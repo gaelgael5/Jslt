@@ -10,6 +10,20 @@ Angle in radians of the point (x = right, y = left): atan2(y, x)
 atan2(left, right)
 ```
 
+**Example**
+
+```jslt
+{ "r": atan2($.y, $.x) }
+```
+
+```json
+{ "y": 0, "x": 1 }
+```
+
+```json
+{ "r": 0.0 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `left` | optional |  |

@@ -10,6 +10,27 @@ Output: the result as XML under the given root element (@key = attribute, #text 
 to_xml(root)
 ```
 
+**Example**
+
+```jslt
+{ "$directives": { "output": { "filter": $.client, "mode": to_xml("client") } }, "client": { "@id": $.id, "ville": $.v } }
+```
+
+```json
+{ "id": 1, "v": "Lyon" }
+```
+
+```json
+{ "client": { "@id": 1, "ville": "Lyon" } }
+```
+
+`render()` produces:
+
+```text
+<?xml version="1.0" encoding="utf-8"?>
+<client id="1"><ville>Lyon</ville></client>
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `root` | optional |  |

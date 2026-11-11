@@ -10,6 +10,20 @@ Produit des nombres d'un tableau (1 pour un tableau vide)
 product(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": product($.n) }
+```
+
+```json
+{ "n": [2, 3, 4] }
+```
+
+```json
+{ "r": 24 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

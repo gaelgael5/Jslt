@@ -10,6 +10,20 @@ Raccourcit un texte à length caractères au plus, suffixe compris (… par déf
 shorten(token, length, suffix)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": shorten($.t, 12) }
+```
+
+```json
+{ "t": "Facture annuelle 2026" }
+```
+
+```json
+{ "r": "Facture…" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

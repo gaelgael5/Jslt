@@ -10,6 +10,20 @@ CRC32 checksum of a value (unsigned integer)
 crc32(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": crc32($.t) }
+```
+
+```json
+{ "t": "abc" }
+```
+
+```json
+{ "r": 891568578 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

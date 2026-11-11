@@ -10,6 +10,20 @@ Regroupe un tableau par chemins JSONPath successifs en {Label, Items} imbriqués
 group(source, group_paths)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": group($.p, ["$.ville"]) }
+```
+
+```json
+{ "p": [{ "nom": "Ana", "ville": "Lyon" }] }
+```
+
+```json
+{ "r": [{ "Label": "Lyon", "Items": [{ "nom": "Ana", "ville": "Lyon" }] }] }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |
