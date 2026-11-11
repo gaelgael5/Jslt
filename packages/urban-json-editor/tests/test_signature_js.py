@@ -7,6 +7,7 @@ vérifié ici sur la source du composant, faute de navigateur dans la boucle.
 
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -82,3 +83,33 @@ def test_signature_suite_passes() -> None:
         check=False,
     )
     assert proc.returncode == 0, proc.stdout + proc.stderr
+
+
+def test_a_box_that_sets_display_can_still_be_hidden() -> None:
+    """`display: flex` sur la boîte l'emportait sur le `[hidden]` du navigateur.
+
+    Spécificité : `jslt-editor .jslt-sig` (0,1,1) bat le `[hidden] {display:none}`
+    de la feuille de l'agent, donc une fois affichée, l'aide ne se refermait
+    **jamais** — le JS la masquait pourtant, et c'est ce qui rend le défaut
+    difficile à voir depuis le code. Toute boîte qui pose `display` doit donc
+    poser aussi sa règle `[hidden]`.
+    """
+    css = (urban_json_editor.assets_dir() / "jslt-editor.css").read_text(encoding="utf-8")
+    rules = re.findall(r"([^{}]+)\{([^{}]*)\}", css)
+    boxes = {".jslt-ac", ".jslt-sig", ".jslt-hint"}
+    sets_display = {
+        box
+        for selector, body in rules
+        for box in boxes
+        if selector.strip().endswith(box) and "display:" in body
+    }
+    hidden = {
+        box
+        for selector, body in rules
+        for box in boxes
+        if f"{box}[hidden]" in selector and "display: none" in body
+    }
+    assert sets_display <= hidden, (
+        "boîtes qui posent `display` sans règle `[hidden]`, donc impossibles à "
+        f"masquer : {sorted(sets_display - hidden)}"
+    )

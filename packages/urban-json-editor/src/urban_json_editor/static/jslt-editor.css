@@ -149,6 +149,16 @@ jslt-editor .jslt-sig {
   flex-direction: column;
   gap: 2px;
 }
+/* `hidden` doit l'emporter sur le `display` ci-dessus : la règle de la feuille
+   de l'agent (`[hidden] { display: none }`) est moins spécifique, donc la boîte
+   restait affichée pour toujours une fois ouverte — le JS la masquait pourtant.
+   Posée pour les trois boîtes, et pas seulement pour celle qui a eu le défaut. */
+jslt-editor .jslt-ac[hidden],
+jslt-editor .jslt-sig[hidden],
+jslt-editor .jslt-hint[hidden] {
+  display: none;
+}
+
 jslt-editor .jslt-sig-call {
   color: var(--jslt-ed-fg);
   text-decoration: none;
