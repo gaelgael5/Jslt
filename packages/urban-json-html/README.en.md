@@ -10,7 +10,7 @@ dependency: the standard library's `html.parser`.
 pip install urban-json-html
 ```
 
-Shape produced (the .NET one, HtmlAgilityPack):
+Shape produced:
 
 ```json
 { "#id": "#document", "content": { "#id": "p", "class": "x", "content": "#text: Hello" } }

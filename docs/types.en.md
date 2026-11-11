@@ -137,7 +137,7 @@ The loop closes: what `schema` infers validates the very example it came from.
 ## Schema: `schema`
 
 `schema(sample)` infers a JSON Schema (draft-04) from a JSON fragment, like
-NJsonSchema on the .NET side: nested objects become referenced `definitions`.
+nested objects become referenced `definitions`.
 
 ```jslt
 { "s": schema($.exemple) }

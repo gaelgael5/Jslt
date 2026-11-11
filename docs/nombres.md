@@ -8,9 +8,10 @@ suite de tests** (`tests/test_guide_examples.py`), sous la forme de triplets
 
 ---
 
-Quirks .NET conservés : `floor`/`round`/`min`/`max` renvoient un **flottant**,
-`round` fait un **arrondi bancaire** (0.5 → 0, 1.5 → 2), et `min`/`max` sont
-**binaires** (deux arguments).
+Trois conventions à connaître avant de lire la suite : `floor`/`round`/`min`/`max`
+renvoient un **flottant**, `round` fait un **arrondi bancaire** (0.5 → 0,
+1.5 → 2), et `min`/`max` gardent leur forme **binaire** (deux arguments) en plus
+d'accepter un tableau.
 
 ```jslt
 { "min": min($.a, $.b), "max": max($.a, $.b), "abs": abs($.n), "floor": floor($.d) }

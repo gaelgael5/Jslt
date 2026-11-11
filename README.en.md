@@ -88,8 +88,7 @@ with an explicit message (never a wrong result).
 ## Extensibility (functions & plugins)
 
 Add a function usable in templates, isolate a set of functions, introspect the
-registry, or consume third-party plugins — the idiomatic Python equivalent of
-.NET's service mechanism:
+registry, or consume third-party plugins — the engine's extension mechanism:
 
 ```python
 from urban_json import jslt_function, JsltTemplate, default_registry
@@ -177,9 +176,9 @@ guide, and the changes in the [CHANGELOG](CHANGELOG.en.md).
 
 Outside the core **by design**, in the `urban-json-*` packages listed above:
 input/output (files, network, database) and random generation. Not ported: a few
-set-membership filter operators (`nin`/`subsetof`/`size`…, also absent from .NET)
-and writing (`write`/`to_file`, `to_sqlserver`). The function list and the
-assumed deviations from .NET are documented in [`CLAUDE.md`](CLAUDE.md) (in
+set-membership filter operators (`nin`/`subsetof`/`size`…) and writing
+(`write`/`to_file`, `to_sqlserver`). The function list and the porting choices
+are documented in [`CLAUDE.md`](CLAUDE.md) (in
 French).
 
 ## License

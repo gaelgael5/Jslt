@@ -79,6 +79,18 @@ Quatre catégories comblées (162 → 182) et un défaut de sortie corrigé.
   exemples sont rejoués par la suite du guide, donc par les deux moteurs ; les
   chapitres gardent la prose et les exemples d'*usage*, qui mêlent plusieurs
   fonctions.
+- **Le guide ne s'explique plus par le .NET.** « masque .NET », « comme en .NET »,
+  « quirk .NET conservé » : une trentaine de renvois remplaçaient l'explication
+  par une référence à un moteur que le lecteur de la bibliothèque Python n'a pas
+  et ne peut pas consulter. Chacun est remplacé par **ce qu'il désignait** — au
+  premier rang le vocabulaire complet des masques de `format` (nombres : `N`,
+  `F`, `C`, `P`, `D`, `X`, `E`, `G` et les masques personnalisés `0 # . , %` ;
+  dates : les standards d'une lettre, les jetons étant communs avec `parsedate` ;
+  les sept cultures et ce qu'elles fixent), qui tenait jusque-là dans
+  « reprend les masques .NET ». Un test refuse désormais toute mention dans
+  `docs/`. La provenance du portage reste dans `CLAUDE.md` et ce journal, et les
+  README des paquets gardent leur ligne d'attribution : citer l'origine n'est pas
+  expliquer par elle.
 - **Toutes les descriptions sont traduites** (`description_en`) : la page
   anglaise n'a pas d'autre source, et l'intellisense parle désormais la langue
   du lecteur.

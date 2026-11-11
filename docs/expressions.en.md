@@ -91,7 +91,7 @@ is decimal, division is real.
 
 ### Bitwise `&` `|` and XOR `^`
 
-Note: faithfully to .NET, `&`/`|` are the **integer bitwise** operators (not
+Note: `&`/`|` are the **integer bitwise** operators (not
 boolean — those are `&&`/`||`), and `^` is **integer XOR**.
 
 ```jslt

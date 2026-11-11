@@ -62,7 +62,7 @@ raises `JsltError` (the engine's family, catchable by `trydefault`).
 
 ### Value typing
 
-Cells are coerced as in .NET: `true`/`false` → boolean, integers and decimals →
+Cells are **typed** on reading: `true`/`false` → boolean, integers and decimals →
 numbers, anything else → string (headers are sanitised: accents → ASCII, spaces
 → `_`).
 
@@ -96,8 +96,8 @@ JsltTemplate.parse(
   object (file name, encoding, `#key` metadata from the file).
 - Lines `#DEF;<schema>:<NAME>;col…` (columns), `#key;…` (metadata), `#END` (end).
 
-Assumed deviations from .NET: `utf-8` reading; column mapping by position
-tolerant to a trailing `;` (.NET requires it); type names compared in upper case.
+Reading choices: `utf-8` encoding; column mapping **by position**, tolerant to
+one trailing `;` too many; type names compared in upper case.
 
 ## License
 

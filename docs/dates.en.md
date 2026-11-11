@@ -36,8 +36,10 @@ shifting is what a local time calls for: `2026-07-10T08:30:00` in
 { "auto": "2026-10-22T00:00:00", "mask": "2026-10-22T14:05:00", "ny": "2026-07-04T12:00:00-04:00" }
 ```
 
-**Date masks.** The mask reuses the .NET vocabulary of `format`: what is written
-can be read back.
+## Date masks
+
+The reading mask and the writing one (`format`) share **one** vocabulary: what is
+written can be read back.
 
 | Token | Reads | Example |
 |---|---|---|
@@ -59,8 +61,9 @@ can be read back.
 | `'…'` `"…"` `\x` | literal, shielded from interpretation | `'T'` |
 | `/` | the **culture's** date separator (`.` in `de-DE`) | `/` |
 
-Widths are **strict**, like .NET `ParseExact`: `dd` requires two digits, `d`
-accepts one or two. A **single-letter** mask is one of `format`'s standard masks
+Widths are **strict**: `dd` requires two digits, `d` accepts one or two. A
+tolerant width would let `1/2/26` pass for a date under the `dd/MM/yyyy` mask,
+and that is rarely what one wants when imposing a mask. A **single-letter** mask is one of `format`'s standard masks
 (`d D t T f F g G s u o`), resolved per culture: `parsedate($.x, "fr-FR", "d")`
 reads `22/10/2026`. A component the mask does not carry takes its value from the
 Unix epoch (`1970-01-01`, `00:00:00`) — not from "today", so that the same
@@ -96,7 +99,7 @@ Comparing a date with a timezone to one without raises, rather than assuming one
 
 **Extraction — `datepart(date, part)`.** Parts: `year`, `month`, `day`,
 `dayofweek`, `hour`, `minute`, `second`, always returned as a number.
-`dayofweek` follows the .NET `DayOfWeek` convention: **Sunday = 0**, Saturday = 6.
+`dayofweek` numbers the week from **Sunday = 0** (Saturday = 6).
 
 ```jslt
 { "in3months": dateadd($.d, "month", 3), "dayBefore": datesub($.d, "day", 1), "year": datepart($.d, "year"), "weekday": datepart($.d, "dayofweek") }
@@ -128,7 +131,7 @@ Day clamping, and chaining with `format` for display:
 `dayofweek`, `hour`, `minute`, `second` and `millisecond`. `week` is the **ISO**
 week: 1 January sometimes belongs to week 52 or 53 of the previous year, and that
 is the definition expected in Europe. `dayofweek`, on the other hand, keeps
-.NET's `DayOfWeek` convention (Sunday = 0).
+numbers from Sunday = 0.
 
 `datestartof(date, period)` and `dateendof(date, period)` bound a period: `year`,
 `quarter`, `month`, `week`, `day`, `hour`, `minute`. The end is **inclusive**, to
@@ -136,7 +139,7 @@ the microsecond (`23:59:59.999999`), because that is what a `<=` filter expects.
 The input's UTC offset is preserved.
 
 The week starts on **Monday** (ISO). Yes, that coexists with a `dayofweek` where
-Sunday is 0: the number follows .NET so a ported template gives the same result,
+Sunday is 0: the two conventions coexist,
 the bound follows European usage. Both choices are deliberate.
 
 ```jslt

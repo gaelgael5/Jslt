@@ -200,6 +200,6 @@ JsltTemplate.parse('{ "r": $.a[?(@.x contains 1)] }')   # -> NotImplementedError
 | Tri | `sort($.l, $.k, true)` | [Collections](collections.md#trier-et-ordonner-sort-reverse-first-last) |
 | Total par groupe | `sumby($.l, $.k, $.v)` | [Collections](collections.md#agréger-par-groupe-groupby-countby-sumby-avgby) |
 
-Pour l'architecture interne, les patterns de portage et les écarts volontaires
-vis-à-vis du .NET, voir [`CLAUDE.md`](../CLAUDE.md).
+Pour l'architecture interne et les choix de portage, voir
+[`CLAUDE.md`](../CLAUDE.md).
 

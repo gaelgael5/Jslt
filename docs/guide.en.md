@@ -199,6 +199,6 @@ JsltTemplate.parse('{ "r": $.a[?(@.x contains 1)] }')   # -> NotImplementedError
 | Sorting | `sort($.l, $.k, true)` | [Collections](collections.en.md#sorting-and-ordering-sort-reverse-first-last) |
 | Total per group | `sumby($.l, $.k, $.v)` | [Collections](collections.en.md#aggregating-per-group-groupby-countby-sumby-avgby) |
 
-For the internal architecture, the porting patterns and the deliberate deviations
-from .NET, see [`CLAUDE.md`](../CLAUDE.md) (in French).
+For the internal architecture and the porting choices, see
+[`CLAUDE.md`](../CLAUDE.md) (in French).
 

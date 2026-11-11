@@ -10,7 +10,7 @@ dépendance : `html.parser` de la bibliothèque standard.
 pip install urban-json-html
 ```
 
-Forme produite (celle du .NET, HtmlAgilityPack) :
+Forme produite :
 
 ```json
 { "#id": "#document", "content": { "#id": "p", "class": "x", "content": "#text: Bonjour" } }

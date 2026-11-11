@@ -12,7 +12,7 @@ suite de tests** (`tests/test_guide_examples.py`), sous la forme de triplets
 
 On peut **ajouter** ses propres fonctions, les **isoler**, les **découvrir**, et
 consommer des **plugins tiers** installés — l'équivalent idiomatique Python du
-mécanisme de services du .NET.
+mécanisme d'extension du moteur.
 
 ### Ajouter une fonction
 
@@ -105,7 +105,7 @@ CSV, bases de données, Elasticsearch…).
 `JsltTemplate.debug(source)` évalue le template en collectant une **trace
 pas-à-pas** : une étape par nœud évalué, avec sa localisation, la source courante et
 la valeur produite. (Le moteur étant un interpréteur, le débogage se fait au niveau
-du template — il n'y a pas de code généré comme en .NET.)
+du template : le moteur interprète l'AST, il n'engendre pas de code.)
 
 ```python
 from urban_json import JsltTemplate
@@ -136,7 +136,7 @@ playground (`apps/playground`) en offre un pas-à-pas visuel.
 ## Re-sérialisation `to_source()`
 
 `JsltTemplate.to_source()` reconstruit un template **valide et ré-analysable** à
-partir de l'AST (analogue du `ToString` .NET). Le résultat est équivalent en
+partir de l'AST. Le résultat est équivalent en
 **comportement** (pas forcément identique au caractère près) ; un cast `#type` y
 réapparaît sous sa forme `convert(x, "type")`.
 

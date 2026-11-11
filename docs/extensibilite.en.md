@@ -11,7 +11,7 @@ suite** (`tests/test_guide_examples.py`) as *template → input → output* trip
 
 You can **add** your own functions, **isolate** them, **discover** them, and
 consume installed **third-party plugins** — the idiomatic Python equivalent of
-.NET's service mechanism.
+the engine's extension mechanism.
 
 ### Adding a function
 
@@ -103,7 +103,7 @@ Elasticsearch…).
 `JsltTemplate.debug(source)` evaluates the template while collecting a
 **step-by-step trace**: one step per evaluated node, with its location, the current
 source and the produced value. (The engine is an interpreter, so debugging happens
-at the template level — there is no generated code as in .NET.)
+at the template level: the engine interprets the AST, it generates no code.)
 
 ```python
 from urban_json import JsltTemplate
@@ -133,8 +133,8 @@ playground (`apps/playground`) offers a visual step-through.
 
 ## Re-serialization `to_source()`
 
-`JsltTemplate.to_source()` rebuilds a **valid, re-parseable** template from the AST
-(analogous to .NET's `ToString`). The result is equivalent in **behavior** (not
+`JsltTemplate.to_source()` rebuilds a **valid, re-parseable** template from the
+AST. The result is equivalent in **behavior** (not
 necessarily identical character-for-character); a `#type` cast reappears in its
 `convert(x, "type")` form.
 

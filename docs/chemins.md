@@ -57,7 +57,8 @@ de parcours du document (un nœud est inspecté avant ses enfants) :
 ## Sémantique 0 / 1 / N
 
 Un chemin (ou un filtre) peut sélectionner **0, 1 ou N** valeurs. Le résultat
-suit la règle du moteur .NET (`GetContentByJPath`) :
+suit alors une règle unique, qu'il faut connaître parce qu'elle décide de la
+forme de la sortie :
 
 | Correspondances | Résultat |
 |---|---|

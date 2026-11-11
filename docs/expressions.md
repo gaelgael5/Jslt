@@ -92,7 +92,7 @@ opérande est décimale, la division est réelle.
 
 ### Bit-à-bit `&` `|` et XOR `^`
 
-Attention : fidèlement au .NET, `&`/`|` sont les opérateurs **bit-à-bit entiers**
+Attention : `&`/`|` sont les opérateurs **bit-à-bit entiers**
 (et non booléens — ceux-ci sont `&&`/`||`), et `^` est le **XOR entier**.
 
 ```jslt

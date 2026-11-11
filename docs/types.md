@@ -137,8 +137,8 @@ La boucle se ferme : ce que `schema` déduit valide l'exemple dont il est tiré.
 
 ## Schéma : `schema`
 
-`schema(exemple)` déduit un JSON Schema (draft-04) d'un fragment JSON, comme
-NJsonSchema côté .NET : objets imbriqués en `definitions` référencées.
+`schema(exemple)` déduit un JSON Schema (draft-04) d'un fragment JSON : les
+objets imbriqués deviennent des `definitions` référencées.
 
 ```jslt
 { "s": schema($.exemple) }

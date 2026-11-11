@@ -33,7 +33,7 @@ tpl.transform({})
 `loadxml` returns an object; you navigate it with `select`/`selectmany` (core
 functions) before feeding a `$source` loop, a `?(...)` filter, and so on.
 
-## Conversion conventions (Newtonsoft)
+## XML ↔ JSON conversion conventions
 
 | XML | JSON |
 |---|---|
@@ -44,7 +44,7 @@ functions) before feeding a `$source` loop, a `?(...)` filter, and so on.
 
 - Attributes → properties prefixed with `@`.
 - Text of a mixed element → `#text` key.
-- Values stay **strings** (like Newtonsoft: no coercion).
+- Values stay **strings**: no type coercion.
 
 ## Signature
 

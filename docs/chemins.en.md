@@ -55,8 +55,8 @@ is inspected before its children):
 
 ## 0 / 1 / N semantics
 
-A path (or a filter) may select **0, 1 or N** values. The result follows the .NET
-engine rule (`GetContentByJPath`):
+A path (or a filter) may select **0, 1 or N** values. The result then follows a
+single rule, worth knowing because it decides the shape of the output:
 
 | Matches | Result |
 |---|---|

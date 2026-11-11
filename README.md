@@ -89,8 +89,8 @@ Les constructions reconnues par la grammaire mais non encore portées lèvent
 ## Extensibilité (fonctions & plugins)
 
 Ajouter une fonction utilisable dans les templates, isoler un jeu de fonctions,
-introspecter le registre, ou consommer des plugins tiers — équivalent idiomatique
-Python du mécanisme de services du .NET :
+introspecter le registre, ou consommer des plugins tiers — le mécanisme
+d'extension du moteur :
 
 ```python
 from urban_json import jslt_function, JsltTemplate, default_registry
@@ -178,10 +178,9 @@ externes (`param`) et les fonctions de sortie texte. La liste qui fait foi est
 
 Hors du cœur **par décision**, dans les paquets `urban-json-*` ci-dessus : les
 entrées-sorties (fichiers, réseau, base) et la génération aléatoire. Non portés :
-quelques opérateurs ensemblistes de filtre (`nin`/`subsetof`/`size`…, absents du
-.NET également) et l'écriture (`write`/`to_file`, `to_sqlserver`). Le détail des
-fonctions et des écarts assumés vis-à-vis du .NET figure dans
-[`CLAUDE.md`](CLAUDE.md).
+quelques opérateurs ensemblistes de filtre (`nin`/`subsetof`/`size`…) et
+l'écriture (`write`/`to_file`, `to_sqlserver`). Le détail des fonctions et des
+choix de portage figure dans [`CLAUDE.md`](CLAUDE.md).
 
 ## Licence
 
