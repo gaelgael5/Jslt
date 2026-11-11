@@ -35,14 +35,39 @@ JsltTemplate.parse(TEMPLATE).transform(ENTREE)   # == SORTIE
 **Les fonctions intégrées** — comment on les appelle :
 [Fonctions intégrées](#fonctions-intégrées)
 
-- [Données et collections](collections.md) — `sum`, `concat`, `distinct`, `limit`,
-  `union`, `select`, `selectmany`, `any`, `contains`, `group`, `join`, `index`, `schema`
-- [Nombres et maths](nombres.md) — `min`, `max`, `abs`, `floor`, `round`, `sqrt`…
+- [Données et collections](collections.md) — `sum`, `distinct`, `limit`, `skip`,
+  `union`, `flatten`, `select`, `selectmany`, `zip`, `unzip`, `chunk`, `window`,
+  `partition`, `distinctby`, `intersect`, `difference`, `group`, `groupby`,
+  `countby`, `sumby`, `avgby`, `join`, `index`, `sort`, `reverse`, `first`,
+  `last`, `count`, `avg`, `median`, `product`, `variance`, `stddev`,
+  `percentile`, `mode`
+- [Objets et structures profondes](objets.md) — `keys`, `values`, `entries`,
+  `fromentries`, `merge`, `pick`, `omit`, `has`, `renamekeys`,
+  `flattenobject`, `unflatten`, `walk`, `prune`, `setpath`, `unsetpath`
+- [Types, repli sur erreur et validation](types.md) — `typeof`, `isarray`,
+  `isobject`, `isstring`, `isnumber`, `isboolean`, `trydefault`, `parsejson`,
+  `schema`, `schemaerrors`, `schemaisvalid`
+- [Nombres et maths](nombres.md) — `min`, `max`, `abs`, `floor`, `ceil`, `round`,
+  `sqrt`, `log`, `parsenumber`, `sign`, `clamp`, `gcd`, `tobase`, `isfinite`…
 - [Texte, expressions régulières et formatage](texte.md) — `upper`, `split`,
-  `startswith`, `regexismatch`, `regexmatches`, `normalize`, `format`
+  `splitstring`, `splitregex`, `substring`, `replace`, `regexreplace`, `shorten`,
+  `slugify`, `levenshtein`, `similarity`, `foldtext`, `deaccent`, `normalize`,
+  `format`
+- [Encodage, empreintes et échappement](encodage.md) — `tobase64`, `sha256`,
+  `hmacsha256`, `urlencode`, `htmlescape`, `hexencode`…
 - [Dates et heures](dates.md) — `parsedate` (culture, masque, fuseau), `dateadd`,
   `datesub`, `datediff`, `datepart`
-- [Sortie texte](sortie.md) — `to_json`, `to_block`, `$directives.output`
+- [Sortie texte](sortie.md) — `to_json`, `to_block`, `to_csv`, `to_xml`,
+  `to_yaml`, `$directives.output`
+- [Qualité : refuser, observer, valider](qualite.md) — `require`, `requirethat`,
+  `trace`, `traces`, `isemail`, `isurl`, `isuuid`, `isiban`
+
+**Référence**
+
+- [Toutes les fonctions, une page chacune](fonctions/sommaire.md) — signature,
+  arguments et description, engendrées depuis le registre. C'est là que mène
+  l'infobulle de l'éditeur ; les exemples, eux, restent dans les chapitres
+  ci-dessus.
 
 **Autour du langage**
 
@@ -109,9 +134,19 @@ Objets et tableaux s'imbriquent librement :
 Les fonctions s'appellent par nom : `fonction(arg1, arg2, ...)`. Chaque argument
 est une expression évaluée.
 
-> D'autres fonctions sont portées (trigonométrie, encodage base64 / hash,
-> `isnull`, `uuid`, `now`…). Voir la liste complète dans [`CLAUDE.md`](../CLAUDE.md).
-> `uuid()` et `now()` sont non déterministes et donc non illustrées ici.
+Un argument peut être **paresseux** : la fonction l'évalue elle-même, quand elle
+veut et contre la source qu'elle choisit. C'est ce qui permet à `sort` de
+calculer une clef **par élément** et à `trydefault` de n'évaluer son repli que si
+le premier calcul échoue. Cela ne change rien à l'écriture d'un appel.
+
+> Toutes les fonctions ne sont pas illustrées ici : la trigonométrie
+> (`sin`, `cos`…) suit les mêmes conventions que les autres fonctions
+> numériques, et `uuid()`, `now()`, `today()` sont non déterministes. La liste
+> complète fait foi dans `default_registry.names()` ; l'éditeur et le playground
+> la lisent directement.
+
+Pour appeler le moteur depuis du code — y compris ses pièces internes — voir
+[Intégrer le moteur](integration.md).
 
 ---
 
@@ -158,6 +193,12 @@ JsltTemplate.parse('{ "r": $.a[?(@.x contains 1)] }')   # -> NotImplementedError
 | Boucle | `[ { "$source": $.l, "$where": c, ... } ]` | [Boucles](conditions-et-boucles.md#boucles-source--where) |
 | Filtre | `$.l[?(@.x > 1 & @.y in [..])]` | [Chemins](chemins.md#filtres-jsonpath-) |
 | Fonction de chemin | `$.x.length()`, `$.x.value()` | [Chemins](chemins.md#fonctions-de-chemin-length--value) |
+| Paramètre externe | `param("lot", "defaut")` | [Expressions](expressions.md#paramètres-externes-param-params) |
+| Repli sur erreur | `trydefault(expr, repli)` | [Types](types.md#repli-sur-erreur--trydefault) |
+| Refus explicite | `require($.x, "message")` | [Qualité](qualite.md#refuser--require-requirethat) |
+| Observation | `trace($.x, "étiquette")` | [Qualité](qualite.md#observer--trace-traces) |
+| Tri | `sort($.l, $.k, true)` | [Collections](collections.md#trier-et-ordonner-sort-reverse-first-last) |
+| Total par groupe | `sumby($.l, $.k, $.v)` | [Collections](collections.md#agréger-par-groupe-groupby-countby-sumby-avgby) |
 
 Pour l'architecture interne, les patterns de portage et les écarts volontaires
 vis-à-vis du .NET, voir [`CLAUDE.md`](../CLAUDE.md).

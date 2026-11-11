@@ -15,6 +15,9 @@ source**), livré pour être intégré dans n'importe quel projet web Python.
 - **Intellisense des fonctions** alimentée par le catalogue de `urban-json`
   (`registry.catalog()`), donc toujours à jour — y compris les fonctions de
   plugins installés.
+- **Aide à la signature** dès la parenthèse ouvrante : le paramètre en cours de
+  saisie est **en gras** et suit les virgules, et la signature est un lien vers
+  la page de référence de la fonction, dans la langue du lecteur.
 - **Intellisense des chemins** alimentée soit par le **document source**
   (propriété `source` : les clés réellement présentes, avec leur type et un
   aperçu de leur valeur), soit par la **liste de chemins calculée par
@@ -138,6 +141,36 @@ un geste, il ne commente pas la frappe). Il disparaît à la frappe suivante et 
 `Échap`, ne capture aucune touche, et n'interdit rien : l'éditeur informe, il ne
 valide pas le template — dire si un template compile reste le travail du moteur.
 
+## Aide à la signature
+
+Dès la parenthèse ouvrante, l'appel qui entoure le caret est rappelé avec le
+**paramètre en cours de saisie en gras** ; il suit les virgules, et les virgules
+d'un tableau ou d'un objet **ne comptent pas** (`sort($.l, [$.a, $.b], …)` reste
+au 2ᵉ paramètre pendant qu'on écrit les clefs). L'aide répond à la **position du
+caret**, pas à la frappe : cliquer dans les parenthèses d'un appel déjà écrit la
+rouvre, ce qui est le geste de qui revient corriger un argument.
+
+La signature est un **lien** vers la page de référence de la fonction, ouverte
+dans un nouvel onglet :
+
+```html
+<jslt-editor lang="fr" docs-base="https://github.com/gaelgael5/Jslt/blob/main/docs/"></jslt-editor>
+```
+
+| Attribut | Rôle |
+|---|---|
+| `lang` | langue de l'infobulle **et** de la page visée ; à défaut, celle du document (`<html lang>`), puis celle du navigateur |
+| `docs-base` | racine des pages de référence ; à défaut, le dépôt public |
+
+L'URL vient du champ `doc` du catalogue (`fonctions/<nom>`), auquel la langue
+ajoute `.md` ou `.en.md` — elle n'est **pas** fabriquée depuis le nom : une
+fonction de plugin n'a pas sa page dans ce dépôt, et un lien fabriqué serait
+mort. Une entrée sans `doc` s'affiche sans lien ; un plugin qui héberge sa
+documentation passe son URL complète (`registry.register(..., doc="https://…")`).
+La description suit la même langue (`description_en` du catalogue), et se replie
+sur le français quand la traduction manque — une infobulle vide n'apprendrait
+rien.
+
 ## API Python
 
 | Fonction | Rôle |
@@ -146,8 +179,9 @@ valide pas le template — dire si un template compile reste le travail du moteu
 | `catalog(registry=None)` | catalogue de fonctions (intellisense) depuis un registre urban-json |
 | `mount(app, url_path="/jslt-editor")` | monte les assets sur une app FastAPI/Starlette |
 
-Les assets sont `jslt-editor.js`, `jslt-paths.js` (importé par le premier) et
-`jslt-editor.css` : à servir côte à côte (`ASSET_FILES`).
+Les assets sont `jslt-editor.js`, `jslt-paths.js` et `jslt-signature.js`
+(importés par le premier) et `jslt-editor.css` : à servir côte à côte
+(`ASSET_FILES`).
 
 ## API du composant
 
@@ -163,6 +197,8 @@ Les assets sont `jslt-editor.js`, `jslt-paths.js` (importé par le premier) et
 - `setMessages(dict)` — textes des messages par code de cause, fusionnés avec
   les défauts (`DEFAULT_HINT_MESSAGES`, exporté par `jslt-paths.js`).
 - Attribut `catalog-url` — URL d'où charger le catalogue (`{functions:[...]}`).
+- Attributs `lang` et `docs-base` — langue du lecteur et racine des pages de
+  référence liées depuis l'aide à la signature.
 - Événement `input` — émis à chaque modification.
 - Clavier : tant que la liste de propositions est ouverte, l'éditeur **capture**
   `Tab`, `Enter`, `Escape` et ↑/↓ (`preventDefault`) ; un hôte qui câble `Enter`

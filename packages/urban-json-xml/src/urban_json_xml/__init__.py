@@ -23,11 +23,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from defusedxml.ElementTree import fromstring as _fromstring
 from defusedxml.ElementTree import parse as _parse
+from urban_json.errors import JsltError
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
-__all__ = ["execute_loadxml", "register"]
+__all__ = ["execute_loadxml", "execute_parsexml", "register"]
 
 # Clés spéciales, fidèles au XmlNodeConverter (.NET/Newtonsoft).
 _TEXT_KEY = "#text"
@@ -98,13 +100,41 @@ def execute_loadxml(
     if not source_path:
         raise ValueError("loadxml: source_path est requis")
 
-    tree = _parse(source_path)
-    root = tree.getroot()
+    return _document(_parse(source_path).getroot(), attribute_prefix, text_key, strip_namespaces)
+
+
+def _document(root: Any, attribute_prefix: str, text_key: str, strip_namespaces: bool) -> dict:
     return {
         _local_name(root.tag, strip_namespaces): _element_to_obj(
             root, attribute_prefix, text_key, strip_namespaces
         )
     }
+
+
+def execute_parsexml(
+    ctx: Any,
+    token: Any = None,
+    attribute_prefix: str = _ATTR_PREFIX,
+    text_key: str = _TEXT_KEY,
+    strip_namespaces: bool = True,
+) -> Any:
+    """Convertit un **texte** XML en JSON, mêmes conventions que ``loadxml``.
+
+    ``loadxml`` n'ouvre qu'un fichier : un XML déjà en main (colonne d'une base,
+    charge utile d'un message, réponse HTTP) n'était pas traitable sans l'écrire
+    sur disque d'abord. Lève ``JsltError`` — la famille d'erreurs du moteur, donc
+    rattrapable par ``trydefault`` — là où ``loadxml`` garde historiquement
+    ``ValueError``.
+    """
+    if token is None:
+        return None
+    if not isinstance(token, str):
+        raise JsltError(f"parsexml attend un texte XML, reçu : {token!r}")
+    try:
+        root = _fromstring(token)
+    except Exception as exc:
+        raise JsltError(f"XML invalide : {exc}") from exc
+    return _document(root, attribute_prefix, text_key, strip_namespaces)
 
 
 def register(registry: Any) -> None:
@@ -113,4 +143,9 @@ def register(registry: Any) -> None:
         "loadxml",
         execute_loadxml,
         description="Lit un fichier XML et le convertit en JSON (conventions Newtonsoft).",
+    )
+    registry.register(
+        "parsexml",
+        execute_parsexml,
+        description="Convertit un texte XML en JSON (mêmes conventions que loadxml).",
     )

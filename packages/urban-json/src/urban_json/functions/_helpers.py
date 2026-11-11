@@ -5,22 +5,37 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from urban_json.errors import JsltError
+
 
 def to_text(value: Any) -> str:
-    """Représentation chaîne façon .NET (``True``/``False`` capitalisés)."""
+    """Représentation chaîne façon .NET (``True``/``False`` capitalisés).
+
+    Un tableau ou un objet passe par son **JSON compact**, comme
+    ``token.ToString()`` côté Newtonsoft. ``str()`` rendait la représentation
+    *Python* — guillemets simples compris — et elle ressortait telle quelle dans
+    le JSON produit (``concat`` d'un tableau imbriqué, clef composite de
+    ``groupby``). Deux chemins de mise en texte coexistaient, l'un correct et
+    l'autre non ; il n'en reste qu'un.
+    """
     if value is None:
         return ""
     if value is True:
         return "True"
     if value is False:
         return "False"
+    if isinstance(value, (dict, list)):
+        return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
     return str(value)
 
 
 def stringify(value: Any) -> str:
-    """Équivalent de ``token.ToString()`` : scalaires en texte, objets/tableaux en JSON."""
-    if isinstance(value, (dict, list)):
-        return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+    """Équivalent de ``token.ToString()`` : scalaires en texte, objets/tableaux en JSON.
+
+    Conservée comme nom explicite du contrat (c'est ce que lisent les fonctions
+    d'encodage), mais elle n'a plus de comportement propre : ``to_text`` fait
+    désormais la même chose pour les conteneurs.
+    """
     return to_text(value)
 
 
@@ -40,8 +55,15 @@ def coerce_number(value: Any) -> int | float:
         try:
             return int(value)
         except ValueError:
+            pass
+        try:
             return float(value)
-    raise ValueError(f"conversion numérique impossible : {value!r}")
+        except ValueError as exc:
+            # `JsltError` et non `ValueError` : une erreur de données doit être
+            # rattrapable par un template (`trydefault`) et lisible dans un
+            # message, pas une exception Python brute remontée à l'appelant.
+            raise JsltError(f"conversion numérique impossible : {value!r}") from exc
+    raise JsltError(f"conversion numérique impossible : {value!r}")
 
 
 def coerce_bool(value: Any) -> bool:

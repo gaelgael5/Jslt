@@ -91,7 +91,20 @@ class FunctionInfo:
     name: str
     function: JsltFunction = field(repr=False)
     path_args: tuple[int, ...] = ()
+    #: Positions reçues **non évaluées**, sous forme de callable sans argument,
+    #: que la fonction appelle quand (et autant de fois qu') elle veut : `sort`
+    #: calcule ainsi une clef par élément, `trydefault` n'évalue son repli que
+    #: si la première expression lève.
+    lazy_args: tuple[int, ...] = ()
     description: str = ""
+    #: Même description en anglais, pour un éditeur et une page de référence
+    #: dans la langue du lecteur. Vide tant qu'elle n'est pas traduite : c'est
+    #: alors la description française qui s'affiche, plutôt que rien.
+    description_en: str = ""
+    #: Page de référence, relative à ``docs/`` et sans extension
+    #: (``"fonctions/sort"``), ou URL absolue pour un plugin qui héberge la
+    #: sienne. ``None`` = aucune page connue, donc aucun lien proposé.
+    doc: str | None = None
     parameters: tuple[ParameterInfo, ...] = ()
     returns: str | None = None
     #: Famille (``FunctionKindEnum`` .NET) : ``"function"`` (appelable dans le corps du
@@ -112,10 +125,13 @@ class FunctionInfo:
         return {
             "name": self.name,
             "description": self.description,
+            "description_en": self.description_en,
+            "doc": self.doc,
             "parameters": [p.to_dict() for p in self.parameters],
             "returns": self.returns,
             "signature": self.signature(),
             "path_args": list(self.path_args),
+            "lazy_args": list(self.lazy_args),
             "kind": self.kind,
         }
 
@@ -185,6 +201,20 @@ def _introspectable(function: JsltFunction) -> bool:
     return True
 
 
+def _default_doc(name: str, function: JsltFunction) -> str | None:
+    """Page de référence déduite : ``docs/fonctions/<nom>.md`` pour le cœur.
+
+    Déduite du **module** et non du nom : une fonction de plugin n'a pas sa page
+    dans ce dépôt, et un lien fabriqué depuis son nom serait mort — pire qu'un
+    lien absent, puisqu'on clique dessus. Un plugin qui héberge sa documentation
+    passe ``doc=`` à l'enregistrement.
+    """
+    module = getattr(function, "__module__", "") or ""
+    if module == "urban_json.functions" or module.startswith("urban_json.functions."):
+        return f"fonctions/{name.lower()}"
+    return None
+
+
 #: Familles de fonctions reconnues (sous-ensemble de ``FunctionKindEnum`` .NET).
 KINDS = ("function", "output")
 
@@ -207,11 +237,16 @@ class FunctionRegistry:
         path_args: tuple[int, ...] = (),
         description: str = "",
         kind: str = "function",
+        lazy_args: tuple[int, ...] = (),
+        description_en: str = "",
+        doc: str | None = None,
     ) -> None:
         """Enregistre (ou remplace) une fonction sous ``name`` (casse ignorée).
 
         ``kind`` : ``"function"`` (défaut, appelable dans le template) ou
         ``"output"`` (fonction de sortie, cf. :mod:`urban_json.output`).
+        ``doc`` : page de référence (cf. :attr:`FunctionInfo.doc`) ; déduite pour
+        les fonctions du cœur, à fournir pour un plugin qui héberge la sienne.
         """
         if kind not in KINDS:
             raise ValueError(f"kind inconnu {kind!r} (attendu : {', '.join(KINDS)})")
@@ -221,11 +256,28 @@ class FunctionRegistry:
             name=name,
             function=function,
             path_args=path_args,
+            lazy_args=lazy_args,
             description=description or (inspect.getdoc(function) or "").split("\n", 1)[0],
+            description_en=description_en,
+            doc=doc if doc is not None else _default_doc(name, function),
             parameters=parameters,
             returns=returns,
             kind=kind,
         )
+
+    def remove(self, name: str) -> bool:
+        """Retire une fonction du registre (casse ignorée) ; dit si elle y était.
+
+        Le pendant de ``register``, pour **dériver un registre restreint** :
+        ``default_registry.copy()`` puis retirer ce qu'on refuse. Sans cette
+        méthode, restreindre imposait de reconstruire un registre à partir de
+        rien, donc de connaître les callables à ré-enregistrer — une liste qui
+        aurait vieilli à chaque fonction ajoutée au cœur, et c'est exactement la
+        liste qu'un bac à sable ne doit pas oublier de mettre à jour.
+        """
+        key = name.lower()
+        self._guarded.pop(key, None)
+        return self._functions.pop(key, None) is not None
 
     # -- résolution (exécution) --------------------------------------------
     def get(self, name: str) -> JsltFunction | None:
@@ -260,6 +312,11 @@ class FunctionRegistry:
         if guarded is None:
             guarded = self._guarded[key] = _arity_guard(info)
         return guarded
+
+    def lazy_args_of(self, name: str) -> tuple[int, ...]:
+        """Positions des arguments reçus non évalués (cf. ``FunctionInfo.lazy_args``)."""
+        info = self.describe(name)
+        return info.lazy_args if info is not None else ()
 
     def path_args_of(self, name: str) -> tuple[int, ...]:
         """Indices des arguments passés comme chemin JSONPath brut (non évalué)."""
@@ -316,17 +373,29 @@ default_registry = FunctionRegistry()
 
 
 def jslt_function(
-    name: str, path_args: tuple[int, ...] = (), description: str = "", kind: str = "function"
+    name: str,
+    path_args: tuple[int, ...] = (),
+    description: str = "",
+    kind: str = "function",
+    lazy_args: tuple[int, ...] = (),
+    description_en: str = "",
+    doc: str | None = None,
 ) -> Callable[[JsltFunction], JsltFunction]:
     """Décorateur enregistrant une fonction dans le registre par défaut.
 
     ``path_args`` liste les indices d'arguments (0 = premier argument du template)
     reçus comme chemin JSONPath compilé plutôt que comme valeur évaluée.
-    ``description`` documente la fonction (sinon la 1re ligne du docstring sert).
+    ``lazy_args`` liste ceux reçus comme **callable sans argument** : la fonction
+    décide quand les évaluer, et contre quelle source courante.
+    ``description`` documente la fonction (sinon la 1re ligne du docstring sert),
+    ``description_en`` la traduit pour un lecteur anglophone (éditeur et page de
+    référence), et ``doc`` désigne la page de référence si elle ne se déduit pas.
     """
 
     def decorator(function: JsltFunction) -> JsltFunction:
-        default_registry.register(name, function, path_args, description, kind)
+        default_registry.register(
+            name, function, path_args, description, kind, lazy_args, description_en, doc
+        )
         return function
 
     return decorator

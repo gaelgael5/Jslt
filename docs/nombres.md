@@ -36,4 +36,135 @@ Arrondi bancaire :
 
 ---
 
+## Lire un nombre écrit en texte : `parsenumber`
+
+Le pendant de `parsedate` : le moteur savait **écrire** un nombre selon une
+culture (`format($.v, "N2", "fr-FR")`) sans savoir le relire. Un flux dont les
+montants arrivent en texte localisé n'était donc pas traitable.
+
+`parsenumber(texte, culture)` utilise les **mêmes** données de culture que
+`format`, donc l'aller-retour est fermé par construction. Les symboles autour du
+nombre (`€`, `%`, espaces insécables des milliers) sont ignorés ; un entier reste
+un entier. Un texte illisible **lève** : rendre `null` transformerait un montant
+corrompu en « pas de montant », et le total calculé ensuite serait faux sans que
+rien ne le signale.
+
+```jslt
+{
+  "fr": parsenumber($.a, "fr-FR"),
+  "de": parsenumber($.b, "de-DE"),
+  "us": parsenumber($.c, "en-US"),
+  "retour": parsenumber(format($.d, "N2", "fr-FR"), "fr-FR")
+}
+```
+
+```json
+{ "a": "1 234,56 €", "b": "1.234,56", "c": "1,234.56", "d": 1234.5 }
+```
+
+```json
+{ "fr": 1234.56, "de": 1234.56, "us": 1234.56, "retour": 1234.5 }
+```
+
+## Précision, bornes et bits
+
+| Fonction | Rôle |
+|---|---|
+| `round(v, décimales)` | arrondi **bancaire**, à l'entier sans le 2e argument |
+| `sign(v)` | `-1`, `0` ou `1` |
+| `clamp(v, bas, haut)` | ramène dans l'intervalle ; bornes inversées = erreur |
+| `gcd(a, b)` | plus grand commun diviseur |
+| `shiftleft(v, bits)` / `shiftright(v, bits)` | décalages de bits |
+| `tohex(v, largeur)` / `fromhex(t)` | hexadécimal (`0x` toléré en lecture) |
+
+`round` gardait son arrondi bancaire à l'entier, ce qui obligeait à multiplier
+par 100, arrondir, rediviser — avec l'erreur de représentation que ça traîne. Le
+second argument fait le travail, **en gardant l'arrondi bancaire** : `round(0.25,
+1)` donne `0.2`, pas `0.3`.
+
+Les décalages de bits sont des **fonctions** et non des opérateurs : ajouter
+`<<` et `>>` à la grammaire imposerait de régénérer le parser ANTLR, alors que
+`&`, `|` et `^` existent déjà comme opérateurs. `gcd` et les décalages exigent
+des **entiers** et lèvent sur un décimal, plutôt que de tronquer en silence.
+
+`tohex` écrit le signe devant les chiffres (`-ff`) : un entier JSON n'a pas de
+largeur, donc pas de représentation signée naturelle en complément à deux.
+
+```jslt
+{
+  "arrondi": round($.v, 2),
+  "borne": clamp($.v, 0, 10),
+  "signe": sign($.v),
+  "hex": tohex($.n, 4),
+  "lu": fromhex($.h)
+}
+```
+
+```json
+{ "v": 12.345, "n": 255, "h": "0x1F" }
+```
+
+```json
+{ "arrondi": 12.35, "borne": 10, "signe": 1, "hex": "00ff", "lu": 31 }
+```
+
+---
+
+## Arrondis dirigés et précision
+
+`floor` existait **sans** `ceil` : l'asymétrie la plus visible du portage, qui
+obligeait à écrire `0 - floor(0 - x)`. `ceil` est là, et les trois arrondis
+dirigés acceptent une précision.
+
+| Appel | Résultat |
+|---|---|
+| `ceil(2.1)` | `3.0` |
+| `ceil(1.2345, 2)` | `1.24` |
+| `floor(1.2345, 2)` | `1.23` |
+| `truncate(-1.2345, 2)` | `-1.23` (vers zéro) |
+| `floor(-1.2345, 2)` | `-1.24` (vers le bas) |
+
+`truncate` coupe vers zéro, `floor` descend : sur un négatif, les deux
+diffèrent, et c'est tout l'intérêt d'avoir les deux. `round` reste l'arrondi
+**bancaire** (cf. ci-dessus).
+
+## Logarithme, bases et valeurs non finies
+
+| Fonction | Rôle |
+|---|---|
+| `log(v, base)` | logarithme dans une base libre (`logarithm` est fixé à e, ses variantes à 10 et 2) |
+| `tobase(v, base, largeur)` / `frombase(t, base)` | écriture dans une base de 2 à 36 |
+| `isfinite(v)` / `isnan(v)` | la valeur est-elle un nombre exploitable ? |
+
+`log(1000, 10)` rend exactement `3.0` : les bases 10 et 2 passent par leur
+fonction dédiée, parce que diviser deux logarithmes rendrait
+`2.9999999999999996` — et ce nombre ressortirait tel quel dans le JSON produit.
+
+`isfinite` sert là où JSON est muet : un calcul **peut** produire l'infini (le
+débordement d'un produit) alors que la notation JSON ne sait pas l'écrire. Sans
+test, la valeur se propage et ressort en `Infinity`, que la plupart des lecteurs
+refusent.
+
+`tohex` / `fromhex` restent : ce sont les cas particuliers qu'on écrit le plus
+souvent, et ils concordent avec `tobase(v, 16)`.
+
+```jslt
+{
+  "haut": ceil($.v, 2),
+  "bits": tobase($.n, 2, 8),
+  "lu": frombase($.t, 36),
+  "exploitable": isfinite($.v * $.v)
+}
+```
+
+```json
+{ "v": 1.2345, "n": 5, "t": "73" }
+```
+
+```json
+{ "haut": 1.24, "bits": "00000101", "lu": 255, "exploitable": true }
+```
+
+---
+
 [← Guide jslt](guide.md)

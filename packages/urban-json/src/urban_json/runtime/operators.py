@@ -23,6 +23,7 @@ from __future__ import annotations
 from typing import Any
 
 from urban_json.ast import OperationEnum
+from urban_json.errors import JsltError
 
 
 def _to_str(value: Any) -> str:
@@ -46,8 +47,15 @@ def _to_number(value: Any) -> Any:
         try:
             return int(value)
         except ValueError:
+            pass
+        try:
             return float(value)
-    raise TypeError(f"valeur non convertible en nombre : {value!r}")
+        except ValueError as exc:
+            # Message en français comme le reste des erreurs utilisateur : sans
+            # cela, « could not convert string to float » remonte tel quel dans
+            # le message de l'opération.
+            raise JsltError(f"conversion numérique impossible : {value!r}") from exc
+    raise JsltError(f"valeur non convertible en nombre : {value!r}")
 
 
 def _to_bool(value: Any) -> bool:
@@ -170,6 +178,38 @@ _BINARY_DISPATCH: dict[OperationEnum, Any] = {
 }
 
 
+def _reported(operator: OperationEnum, operation: Any) -> Any:
+    """Enveloppe un opérateur pour qu'un échec sorte en ``JsltError``.
+
+    L'enveloppe est posée **ici**, dans la table, et non dans ``apply_binary`` :
+    le compilateur pré-résout l'opérateur via ``binary_op`` et appelle la
+    callable directement, donc une enveloppe posée côté interpréteur seul ferait
+    diverger les deux chemins — une division par zéro restait une
+    ``ZeroDivisionError`` brute en compilé, incatchable par ``trydefault``.
+    """
+
+    def reported(left: Any, right: Any) -> Any:
+        try:
+            return operation(left, right)
+        except JsltError:
+            raise
+        except ZeroDivisionError as exc:
+            raise JsltError(f"division par zéro : {left!r} {operator.name} {right!r}") from exc
+        except (TypeError, ValueError) as exc:
+            # Une opération impossible remontait en exception Python brute : ni
+            # lisible dans un message, ni rattrapable par `trydefault`.
+            raise JsltError(
+                f"opération impossible : {left!r} {operator.name} {right!r} ({exc})"
+            ) from exc
+
+    return reported
+
+
+_BINARY_REPORTED = {
+    operator: _reported(operator, operation) for operator, operation in _BINARY_DISPATCH.items()
+}
+
+
 def binary_op(operator: OperationEnum) -> Any:
     """Renvoie la callable ``(left, right) -> valeur`` d'un opérateur binaire.
 
@@ -177,7 +217,7 @@ def binary_op(operator: OperationEnum) -> Any:
     que de ré-aiguiller à chaque évaluation. ``None`` pour ``COALESCE`` / ``CHAIN``
     (gérés par l'évaluateur/compilateur, pas ici).
     """
-    return _BINARY_DISPATCH.get(operator)
+    return _BINARY_REPORTED.get(operator)
 
 
 def apply_binary(left: Any, operator: OperationEnum, right: Any) -> Any:
@@ -185,7 +225,7 @@ def apply_binary(left: Any, operator: OperationEnum, right: Any) -> Any:
 
     ``COALESCE`` et ``CHAIN`` ne passent pas par ici (gérés par l'évaluateur).
     """
-    operation = _BINARY_DISPATCH.get(operator)
+    operation = _BINARY_REPORTED.get(operator)
     if operation is None:
         return None
     return operation(left, right)

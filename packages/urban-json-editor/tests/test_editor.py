@@ -43,6 +43,17 @@ def test_catalog_default_registry() -> None:
     # Chaque entrée porte de quoi alimenter l'intellisense.
     sample = next(e for e in cat if e["name"] == "distinct")
     assert "signature" in sample and "parameters" in sample
+    # …et de quoi lier l'infobulle à la documentation, dans les deux langues.
+    assert sample["doc"] == "fonctions/distinct"
+    assert sample["description_en"]
+
+
+def test_catalog_has_no_dead_doc_link_for_a_foreign_function() -> None:
+    """Une fonction hors cœur n'a pas de page ici : le composant n'affiche alors
+    aucun lien, plutôt qu'un lien fabriqué depuis le nom — donc mort."""
+    reg = FunctionRegistry()
+    reg.register("double", lambda ctx, x=None: x * 2, description="Double")
+    assert urban_json_editor.catalog(reg)[0]["doc"] is None
 
 
 def test_catalog_custom_registry() -> None:

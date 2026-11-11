@@ -107,6 +107,113 @@ Patterns repris du .NET :
   `z` sur une date sans décalage écrit zéro, là où le .NET prendrait celui de la
   machine — la sortie ne doit pas dépendre du serveur. Un spécificateur seul
   (`"z"`, `"K"`) reste refusé, comme en .NET (masque d'une lettre = masque standard).
+- **Une seule mise en texte** : `to_text` rend le **JSON compact** d'un tableau
+  ou d'un objet (comme `token.ToString()` côté Newtonsoft). Jusqu'en 0.6.0 elle
+  rendait `str(valeur)`, donc du `repr` Python avec guillemets simples, qui
+  ressortait dans le JSON produit (`concat` d'un tableau imbriqué, clef composite
+  de `groupby`) alors que le cast `#string` passait déjà par le JSON. `stringify`
+  reste comme nom explicite du contrat, sans comportement propre.
+- **Refus et observation depuis le template** : `require` / `requirethat` lèvent
+  une `JsltError` porteuse d'un message métier (donc rattrapable par
+  `trydefault`) ; `trace` / `traces` écrivent dans `RuntimeContext.traces`, pas
+  dans un état global — deux exécutions concurrentes ne se mélangent pas, et un
+  intégrateur lit le journal après coup. `require` ne refuse que l'**absence**
+  (`0`, `false`, `""` sont des valeurs) ; `requirethat` exige `true` **strict**,
+  parce qu'une condition qui vaut `0` est presque toujours une expression qu'on
+  croyait booléenne.
+- **Écriture CSV / XML / YAML** (`_writers.py`, sans dépendance) : colonnes = union
+  des clés rencontrées (se limiter au premier objet perdrait des données sur un
+  flux hétérogène), valeurs imbriquées aplaties par `flattenobject`, conventions
+  XML de `parsexml` (`@attribut`, `#text`, tableau = élément répété), YAML en
+  sous-ensemble assumé (ni ancres, ni tags, ni littéral multi-ligne) qui **cite**
+  tout scalaire relisible comme un autre type.
+- **Un sens de tri par clef** : `sort($.l, [$.a, $.b], [true, false])` acceptait
+  un booléen et un seul, donc le même sens pour toutes les clefs — un `reverse`
+  inverse l'ordre complet. La forme en tableau compare **composante par
+  composante** (`cmp_to_key`), ce qui coûte une comparaison Python par couple au
+  lieu d'un tri sur clefs : seule cette forme le paie. Un sens manquant vaut
+  croissant (comme l'argument omis), un sens **en trop lève** — c'est la faute
+  d'écriture la plus probable et elle laisserait un tri d'apparence juste.
+- **`groupby` imbriqué** (3e argument) : une clef composite rendait une clef
+  **textuelle** (`["FR","Lyon"]`, en JSON compact depuis la correction de
+  `to_text`) qu'il fallait re-analyser pour s'en servir ; imbriqué, le résultat
+  se relit par chemin. Deux éléments dont les clefs n'ont pas la même longueur
+  **lèvent** : la même clef porterait à la fois des éléments et un sous-groupe, et
+  l'un des deux disparaîtrait. La forme plate reste le défaut (elle est
+  réductible par `entries`).
+- **`sumby` / `avgby`** : le total par groupe demandait quatre fonctions
+  imbriquées (`fromentries` + `entries` + `groupby` + `sum(selectmany(…))`) pour
+  l'usage le plus fréquent du regroupement. La valeur agrégée est un argument
+  **paresseux**, omis il vaut l'élément (convention de `sort`/`distinctby`), et
+  une valeur non numérique **lève** comme pour `sum`.
+- **`unzip`** : réciproque de `zip`, qui n'en avait pas. Il s'arrête à la rangée
+  la plus courte, pour la même raison que `zip` tronque au plus court ; mais une
+  rangée qui n'est pas un tableau **lève**, écart assumé à la convention de la
+  famille (non-tableau → `null`) : ici la source *est* un tableau, donc le chemin
+  était bon, et un `null` global ferait chercher l'erreur au mauvais endroit.
+- **Ordre total du tri** (`ordering.order_key`) : `null` < booléens < nombres <
+  chaînes < tableaux < objets ; dans un rang, les nombres numériquement, les
+  chaînes par points de code, les tableaux **élément par élément** et les objets
+  par clés triées puis valeurs. Les tableaux étaient comparés par leur JSON
+  compact jusqu'en 0.5.0 : un tri **multi-clefs** (`sort($.l, [$.a, $.b])`, usage
+  naturel puisque la clef est une expression) ordonnait alors `[10]` avant `[2]`.
+  Comparer récursivement coûte un peu plus et c'est le prix de la justesse.
+- **Familles de fonctions ajoutées au-delà du .NET** (sujets 1 à 11 comblés en
+  0.4.0, catégories collections / statistiques / texte / nombres en 0.5.0, cf.
+  `CHANGELOG.md`). Décisions de 0.5.0 : `split` garde son 1er caractère (fidélité
+  .NET) d'où `splitstring` ; `indexof` sur tableau compare la **structure** là où
+  `contains` garde l'égalité `==` du langage ; `intersect`/`difference`
+  dédupliquent et gardent l'ordre de gauche ; `variance`/`stddev` sont de
+  **population** par défaut (les données d'un template sont l'ensemble, pas un
+  tirage) ; `mode` accepte toutes les valeurs ; `groupby` rend un objet (donc
+  réductible par `entries`) là où `group` garde la forme .NET ; `shorten` ne
+  s'appelle pas `truncate` (déjà pris par la troncature numérique) et remonte au
+  dernier espace ; `reverse` d'une chaîne travaille par **graphème** ;
+  `log(x, 10)` passe par `log10` sinon il rendrait 2.9999999999999996. Décisions qui se lisent mal dans le code seul :
+  `substring` **ne lève pas** sur des bornes trop larges (un template transforme
+  des données qu'il ne choisit pas ; une longueur négative lève, elle) ;
+  `regexreplace` suit la convention des regex (scalaire converti en texte) et non
+  celle des chaînes (`false`) ; `sort` définit un **ordre total** (null <
+  booléens < nombres < chaînes < tableaux < objets, chaînes par points de code)
+  pour ne jamais lever sur des données mélangées, et sa clef s'évalue **par
+  élément** — convention différente de `distinct`, dont le chemin s'applique au
+  tableau entier ; les agrégats **lèvent** sur un élément non numérique comme
+  `sum` ; `avg`/`median`/`min`/`max` d'un tableau vide valent `null` (0 serait une
+  réponse fausse), `product` vaut 1 (élément neutre) ; `count` compte aussi les
+  clés d'un objet et les caractères d'un texte, et vaut 1 pour un scalaire ;
+  `has` existe parce qu'`isnull` ne distingue pas clé absente et valeur nulle ;
+  `merge` est **plat** par défaut et ne mute pas ses sources ; `renamekeys` laisse
+  le dernier écrit gagner une collision (lever casserait une migration en cours) ;
+  la validation de schéma **ignore** les mots-clés non gérés (lever la rendrait
+  inutilisable sur les schémas réels — validation utile, pas complète) ;
+  `weekday` ne connaît **aucun** calendrier de jours fériés (il dépend du pays et
+  de l'année) ; `datestartof(…, "week")` commence **lundi** (ISO) alors que
+  `datepart(…, "dayofweek")` suit le .NET (dimanche = 0) — les deux choix sont
+  délibérés ; `md5`/`sha1` sont là pour l'**identité**, jamais la signature, d'où
+  `hmacsha256` (concaténer secret + message avant un `sha256` expose à
+  l'extension de longueur) ; `tohex` écrit le signe devant les chiffres (un entier
+  JSON n'a pas de largeur, donc pas de complément à deux) ; `parsejson`,
+  `parsenumber` et `parsexml`/`parsecsv` **lèvent** sur une entrée illisible.
+- **Arguments paresseux** (`lazy_args` sur `@jslt_function`) : une position peut
+  être reçue **non évaluée**, sous forme de callable, que la fonction appelle
+  quand elle veut et contre la source qu'elle empile. C'est ce qui permet la clef
+  de tri par élément (`sort`) et le repli non évalué (`trydefault`). Le
+  mécanisme est posé aux **deux** points d'appel (interpréteur et compilateur),
+  sinon les deux chemins divergeraient.
+- **Erreurs de calcul unifiées en `JsltError`** : une division par zéro sortait en
+  `ZeroDivisionError`, un `+` sur du texte en `ValueError`. L'enveloppe est posée
+  dans la **table des opérateurs** (`_BINARY_REPORTED`), que le compilateur
+  pré-résout : la poser côté interpréteur seul faisait diverger les deux chemins
+  (bug trouvé par le test d'équivalence sur `trydefault`). Les plugins plus
+  anciens (`http`, `db`, `elastic`) gardent leurs `ValueError` d'argument :
+  unifier serait une rupture, remise à une majeure.
+- **Paramètres externes** : `transform/render/debug(..., parameters={...})` et
+  `param("nom")` / `params()`. Portés par `RuntimeContext` (3e argument), **pas**
+  visibles dans les chemins JSONPath : un réglage n'est pas une donnée du
+  document. `param` utilise `.get` pour qu'un paramètre passé explicitement à
+  `null` ne soit pas écrasé par son repli.
+- `FunctionRegistry.remove(nom)` : pendant de `register`, pour dériver un registre
+  restreint (bac à sable) sans le reconstruire de zéro.
 - `group` multi-chemins : sous-groupes imbriqués (le .NET les perdait) ; `join` ne
   modifie pas la source (le .NET mutait la gauche) ; `createindex` rend un objet
   `{clé: élément}` (le .NET : `JDictionaryValue` opaque).
@@ -135,8 +242,13 @@ Patterns repris du .NET :
   paramètres typés (`ParameterInfo` : nom, type, requis/défaut, `is_path`,
   variadic), type de retour, `path_args`, description, `signature()`.
 - **Pour un éditeur (intellisense)** : `registry.catalog()` renvoie une liste de
-  dicts **sérialisables JSON** (nom, description, paramètres nom+type, retour,
-  signature) — analogue du paquet `Intellisense` du .NET. Les types proviennent
+  dicts **sérialisables JSON** (nom, description, `description_en`, `doc`,
+  paramètres nom+type, retour, signature) — analogue du paquet `Intellisense` du
+  .NET. `description_en` est la même description en anglais (l'infobulle et la
+  page de référence parlent la langue du lecteur) ; `doc` est la page de
+  référence, déduite du **module** (`fonctions/<nom>` pour le cœur) et `None`
+  ailleurs — un plugin qui héberge sa documentation passe son URL à
+  `register(..., doc="https://…")`. Les types proviennent
   des annotations ; chaque fonction portée/plugin gagne à être annotée + docstring.
 - **Plugins tiers** : `load_plugins(registry=default_registry)` découvre les paquets
   déclarant le groupe d'entry points **`urban_json.functions`** (vrai équivalent du
@@ -153,10 +265,10 @@ Patterns repris du .NET :
 C'est le mécanisme sur lequel s'appuient les **paquets additionnels** (E-S), hors
 cœur, chacun comme **distribution séparée** dans un **monorepo** :
 
-- `packages/urban-json-csv/` — fonctions `loadcsv` (port de `ServiceCsv`) et `loadmcsv`
+- `packages/urban-json-csv/` — fonctions `loadcsv` / `parsecsv` (port de `ServiceCsv`) et `loadmcsv`
   (CSV multi-enregistrements hiérarchique, port de `ServicesMultiCsv` + `Bb.MultiCsv` ;
   module `urban_json_csv.mcsv`). Distribution `urban-json-csv`, dépend de `urban-json`.
-- `packages/urban-json-xml/` — fonction `loadxml` (conventions XML↔JSON Newtonsoft du
+- `packages/urban-json-xml/` — fonctions `loadxml` / `parsexml` (conventions XML↔JSON Newtonsoft du
   `XmlNodeConverter` .NET ; parsing sécurisé via `defusedxml`). Distribution
   `urban-json-xml`, dépend de `urban-json` + `defusedxml`.
 - `packages/urban-json-db/` — fonctions `connectsql` / `readsql` (port de `ServicesSql`).
@@ -194,8 +306,17 @@ cœur, chacun comme **distribution séparée** dans un **monorepo** :
   `static/jslt-paths.js` (hors DOM, éprouvée sous node : `tests/paths.test.mjs`, rattachée
   à pytest). Les propositions respectent le moteur : pas de projection implicite sur les
   tableaux (`$.items.name` est proposé `$.items[*].name`), portée de l'élément dans un
-  filtre `[?(@…)]` et dans une boucle `{"$source": …}`. Distribution `urban-json-editor`,
-  dépend de `urban-json`.
+  filtre `[?(@…)]` et dans une boucle `{"$source": …}`. **Aide à la signature**
+  (`static/jslt-signature.js`, pure, `tests/signature.test.mjs`) : dès la
+  parenthèse ouvrante, l'appel entourant le caret est rappelé avec le paramètre
+  en cours **en gras**, en suivant les virgules — celles d'un tableau ou d'un
+  objet appartiennent à leur propre cadre, donc n'avancent pas le paramètre. Elle
+  répond à la **position du caret** (clic, flèches) et non à la frappe, sinon
+  revenir corriger un argument la laisserait fermée. La signature est un **lien**
+  vers `docs/fonctions/<nom>` dans la langue du lecteur (attributs `lang` et
+  `docs-base`), construit depuis le champ `doc` du catalogue et **jamais depuis
+  le nom** : une fonction de plugin n'a pas de page ici, et un lien fabriqué
+  serait mort. Distribution `urban-json-editor`, dépend de `urban-json`.
 
 ### Applications (non publiées) — `apps/`
 
@@ -271,26 +392,68 @@ Fonctions portées (modules dans `packages/urban-json/src/urban_json/functions/`
 - maths : `abs`, `floor`, `round`, `truncate`, `min`, `max`, `sqrt`, `pow`, `exp`,
   `logarithm`/`logarithm10`/`logarithm2`, trig (`sin`/`cos`/`tan`/`asin`/`acos`/
   `atan`/`sinh`/`cosh`/`tanh`/`asinh`/`acosh`/`atanh`/`atan2`), `pi`, `e`.
-- texte : `upper`, `lower`, `trim`, `split`, `startswith`, `endswith`,
-  `stringcontains`, `indexof`, `lastindexof`, `padleft`, `padright`, `stringlenght`.
-- encodage : `tobase64`, `frombase64`, `crc32`, `sha256`, `sha512`.
-- collections : `limit`, `union`, `select`, `selectmany`, `any`, `contains`,
-  `selectany` (`select`/`selectmany`/`selectany` prennent un argument-chemin).
+- maths (`maths.py`) : `abs`, `floor`, `ceil`, `round`, `truncate` (les trois
+  arrondis dirigés acceptent une précision), `min`, `max`, `sqrt`, `pow`, `exp`,
+  `logarithm`/`10`/`2`, trigonométrie, `pi`, `e`.
+- nombres (`numbers.py`) : `parsenumber` (cultures de `format`), `sign`, `clamp`,
+  `gcd`, `log` (base libre), `shiftleft`/`shiftright`, `tohex`/`fromhex`,
+  `tobase`/`frombase` (2 à 36), `isfinite`, `isnan`.
+- texte (`text.py`) : `upper`, `lower`, `trim`, `trimstart`, `trimend`, `split`
+  (1er caractère seulement, fidélité .NET), `splitstring` (séparateur entier),
+  `startswith`, `endswith`, `stringcontains`, `indexof`, `lastindexof` (texte
+  **ou tableau**), `padleft`, `padright`, `stringlenght`, `substring`, `replace`,
+  `repeat`, `titlecase`, `shorten`.
+- pliage Unicode (`folding.py`, extrait de `text.py`) : `normalize` (formes
+  C/D/KC/KD), `deaccent`, `foldtext`, `slugify`.
+- proximité (`similarity.py`) : `levenshtein`, `similarity`.
+- expressions régulières (`regexes.py`, extrait de `text.py`) : `regexismatch`,
+  `regexmatches`, `regexreplace` (substitution .NET `$1`/`${nom}`/`$&` traduite),
+  `splitregex`.
+- encodage (`encoding.py`) : `tobase64`, `frombase64`, `hexencode`, `hexdecode`,
+  `urlencode`, `urldecode`, `htmlescape`, `htmlunescape`, `crc32`, `sha256`,
+  `sha512`, `md5`, `sha1`, `hmacsha256`.
+- collections (`collection.py`) : `limit`, `skip`, `union`, `flatten`, `select`,
+  `selectmany`, `any`, `contains`, `selectany` (`select`/`selectmany`/`selectany`
+  prennent un argument-chemin), `zip`, `unzip`, `chunk`, `window`, `partition`,
+  `distinctby`, `intersect`, `difference`.
+- tri et ordre (`ordering.py`) : `sort` (clef **paresseuse** évaluée par élément,
+  ordre total documenté, tri stable, **un sens par clef** possible),
+  `reverse`, `first`, `last`.
+- agrégats et statistiques (`aggregate.py`) : `count`, `avg`, `median`,
+  `product`, `variance`, `stddev` (population par défaut), `percentile`
+  (interpolation linéaire), `mode` (toutes valeurs, pas seulement des nombres)
+  (+ `min`/`max` sur tableau, dans `maths.py`).
+- agrégation par clef calculée (`bykey.py`, extrait d'`aggregate.py`) : `groupby`
+  (plat, ou **imbriqué** d'un niveau par clef), `countby`, `sumby`, `avgby`.
+- objets (`objects.py`) : `keys`, `values`, `entries`, `fromentries`, `merge`
+  (4e argument : concaténer les tableaux), `pick`, `omit`, `has`, `renamekeys`.
+- structures profondes (`deep.py`) : `flattenobject`, `unflatten`, `walk`,
+  `prune`, `setpath`, `unsetpath`.
+- qualité et diagnostic (`quality.py`) : `require`, `requirethat`, `trace`,
+  `traces`, `isemail`, `isurl`, `isuuid`, `isiban`.
+- types et repli (`types.py`) : `typeof`, `isarray`, `isobject`, `isstring`,
+  `isnumber`, `isboolean`, `trydefault` (**arguments paresseux**), `parsejson`.
 - regroupement et jointure : `group`, `join`, `index`, `createindex`.
-- expressions régulières : `regexismatch`, `regexmatches`.
 - dates : `parsedate` (culture, masque, fuseau), `dateadd`, `datesub`, `datediff`,
-  `datepart` (fonctions et calcul dans `dates.py`, lecture du texte — détection,
-  masque, fuseau — dans `_dateread.py`).
-- formatage, Unicode : `format`, `normalize`.
-- schéma : `schema` (JSON Schema déduit d'un exemple).
-- divers : `uuid`, `now`, `isnull`, `isnotnull`.
-- sortie (`kind="output"`, dans `$directives.output.mode`) : `to_json`, `to_block`.
+  `datepart`, `datestartof`, `dateendof`, `datezone`, `today`, `dateduration`
+  (enregistrement dans `dates.py`, calcul dans `_datecalc.py`, lecture du texte —
+  détection, masque, fuseau — dans `_dateread.py`).
+- formatage : `format`.
+- schéma (`schema.py`) : `schema` (JSON Schema déduit d'un exemple),
+  `schemaerrors`, `schemaisvalid` (validation dans `_schemacheck.py`).
+- divers : `uuid`, `now`, `isnull`, `isnotnull`, `param`, `params`.
+- sortie (`kind="output"`, dans `$directives.output.mode`) : `to_json`,
+  `to_block`, `to_csv`, `to_xml`, `to_yaml` (émetteurs sans dépendance dans
+  `_writers.py`).
 
-Soit **75 fonctions** dans le registre par défaut (`default_registry.names()` fait
-foi ; cette liste est un index, pas la source de vérité).
+Soit **182 fonctions** dans le registre par défaut (`default_registry.names()` fait
+foi ; cette liste est un index, pas la source de vérité). Le `CHANGELOG.md`
+détaille ce qui est entré à quelle version.
 
 Quirks .NET conservés : `floor`/`round`/`truncate`/`min`/`max`/`pow`/trig
-renvoient un flottant, `round` = arrondi bancaire, `min`/`max` sont binaires.
+renvoient un flottant, `round` = arrondi bancaire. `min`/`max` gardent leur forme
+binaire .NET (résultat décimal) **et** acceptent un tableau (type conservé) ;
+tableau + second argument lève, plutôt que d'ignorer le second.
 Hors du cœur : `getrandom_*` et les E-S, qui sont dans les paquets `urban-json-*`.
 Non portées nulle part : `write`/`to_file` et `to_sqlserver` (décision utilisateur).
 
@@ -353,8 +516,9 @@ python -m twine check dist/*           # valide les distributions (métadonnées
 
 - **Documentation bilingue** : toute documentation destinée aux utilisateurs
   existe en **français** (canonique) et en **anglais**, côte à côte —
-  `README.md` / `README.en.md`, `docs/guide.md` / `docs/guide.en.md`, et de même
-  pour chaque paquet et chaque application. Les deux portent un bandeau de
+  `README.md` / `README.en.md`, `docs/guide.md` / `docs/guide.en.md`,
+  `CHANGELOG.md` / `CHANGELOG.en.md`, et de même pour chaque paquet et chaque
+  application. Les deux portent un bandeau de
   langue sous le titre ; celui des paquets publiés est en **URL absolue**
   (`https://github.com/gaelgael5/Jslt/blob/main/...`), un lien relatif ne
   résolvant pas sur PyPI. Une modification d'un côté n'est pas finie tant que
@@ -363,8 +527,8 @@ python -m twine check dist/*           # valide les distributions (métadonnées
 - **Guide découpé par thème** : `docs/guide.md` est le **hub** (modèle mental,
   constantes, appel des fonctions, erreurs, aide-mémoire, sommaire) ; chaque
   thème a son document, doublé en anglais — `chemins`, `expressions`,
-  `conditions-et-boucles`, `collections`, `nombres`, `texte`, `dates`, `sortie`,
-  `extensibilite`. Le **nom de fichier reste français** des deux côtés
+  `conditions-et-boucles`, `collections`, `objets`, `types`, `nombres`, `texte`,
+  `encodage`, `dates`, `sortie`, `extensibilite`, `integration`. Le **nom de fichier reste français** des deux côtés
   (`dates.md` / `dates.en.md`), comme `README.en.md` : le radical identifie le
   document, `.en` la langue. Ajouter un document, c'est l'ajouter dans les deux
   langues, le lier depuis le sommaire du hub et depuis les deux README.
@@ -374,6 +538,28 @@ python -m twine check dist/*           # valide les distributions (métadonnées
   du nombre d'exemples entre les deux langues. Les exemples sont extraits par
   `tests/_docs.py` (partagé avec `test_compiler.py`, qui rejoue tout le guide par
   le chemin compilé) : la liste des fichiers balayés n'existe qu'à cet endroit.
+- **Une page de référence par fonction** : `docs/fonctions/<nom>.md` et
+  `.en.md` (plus `sommaire.md`), **engendrées** depuis le registre par
+  `packages/urban-json/scripts/generate_function_docs.py` ; `tests/test_function_docs.py`
+  refuse une page qui ne suit plus le registre, une fonction sans page, sans
+  traduction ou sans chapitre. Écrites parce que l'éditeur lie son infobulle à la
+  documentation : il lui faut une URL **dérivable du seul nom**, là où une ancre
+  dans un chapitre se casse en silence au premier titre renommé. Les exemples et
+  la prose restent dans les chapitres, vers lesquels chaque page renvoie ; la
+  description, elle, vit dans le registre — c'est là qu'on la corrige. Le
+  générateur ne documente que le **cœur** (au module), pour qu'un plugin installé
+  dans l'environnement ne peuple pas `docs/fonctions/` de pages que le dépôt ne
+  porte pas.
+- **Surface d'intégration** : `docs/integration.md` définit trois niveaux de
+  garantie — API publique (`urban_json.__all__`, stable), internes **documentés**
+  (`parsing`, `runtime`, `ast`, `jsonpath` : non figés mais tout mouvement est
+  annoncé au `CHANGELOG`), et le reste (aucune garantie). Écrit parce qu'une
+  intégration s'y branchait et devait comparer les sources de deux versions octet
+  par octet pour valider une montée. `tests/test_integration_surface.py` épingle
+  cette surface : si un nom documenté disparaît, la suite rougit là.
+- **Journal des modifications** : `CHANGELOG.md` / `.en.md`, par version, pour le
+  cœur **et** les plugins, avec les mouvements des internes documentés. Il
+  n'existait pas ; une montée de version se validait en lisant les sources.
 - snake_case côté code maison ; les overrides du visiteur ANTLR restent en
   camelCase (API imposée par le générateur).
 - Toute fonctionnalité portée s'accompagne de tests, dont, quand c'est possible,

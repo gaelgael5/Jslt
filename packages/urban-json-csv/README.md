@@ -49,6 +49,17 @@ loadcsv(source_path, has_header=true, separator=";", quote="\"", escape="\\",
 | `excluded_columns` | noms de colonnes à exclure, séparés par `separator` |
 | `exclude_null_and_empty` | omet les cellules nulles/vides |
 
+### Depuis une chaîne : `parsecsv`
+
+```
+parsecsv(texte, has_header=true, separator=";", quote="\"", escape="\\",
+         excluded_columns=null, exclude_null_and_empty=false)
+```
+
+Mêmes options et même typage des cellules, mais sur un CSV **déjà en main** :
+message, archive, colonne de base. `null` reste `null` ; un argument non textuel
+lève `JsltError` (famille du moteur, rattrapable par `trydefault`).
+
 ### Typage des valeurs
 
 Les cellules sont coercées comme en .NET : `true`/`false` → booléen,

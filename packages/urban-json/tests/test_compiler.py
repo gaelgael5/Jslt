@@ -11,8 +11,13 @@ import json
 
 import pytest
 
-from _docs import doc_triples
+from _docs import DOCS, NO_DOCS, doc_triples
 from urban_json import FunctionRegistry, JsltTemplate
+
+# Sans `docs/`, ces tests n'ont pas de matière : on le dit au lieu de les faire
+# échouer (cf. `_docs.find_docs`).
+pytestmark = pytest.mark.skipif(DOCS is None, reason=NO_DOCS)
+
 
 # --- cas ciblés : un par construction --------------------------------------
 
@@ -25,6 +30,13 @@ EQUIV_CASES = [
     pytest.param('{ "v": $.x ?? "def" }', {}, id="coalesce"),
     pytest.param('{ "n": !$.b }', {"b": True}, id="operateur-unaire"),
     pytest.param('{ "t": sum($.n) }', {"n": [1, 2, 3]}, id="fonction"),
+    # Arguments paresseux (`lazy_args`) : la fonction évalue elle-même
+    # l'expression, une fois par élément pour `sort`, jamais pour le repli
+    # inutile de `trydefault`. Les deux chemins doivent le faire pareil.
+    pytest.param('{ "t": sort($.items, $.k) }', {"items": [{"k": 2}, {"k": 1}]}, id="lazy-sort"),
+    pytest.param('{ "t": sort($.n, foldtext($), true) }', {"n": ["b", "A"]}, id="lazy-sort-calcule"),
+    pytest.param('{ "t": trydefault($.a / $.b, "ko") }', {"a": 1, "b": 0}, id="lazy-trydefault"),
+    pytest.param('{ "t": trydefault($.a, sum($.bad)) }', {"a": 1, "bad": ["x"]}, id="lazy-non-evalue"),
     pytest.param('{ "i": $.s #integer }', {"s": "42"}, id="cast"),
     pytest.param(
         '{ "r": when($.x) { "a": 1, "default": 0 } }', {"x": "a"}, id="when-match"

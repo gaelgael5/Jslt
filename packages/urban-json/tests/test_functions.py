@@ -56,3 +56,41 @@ def test_custom_function_via_registry() -> None:
     template = JsltTemplate.parse('{ "d": double($.n) }')
     context = RuntimeContext(Sources({"n": 21}), functions=registry)
     assert template.ast.accept(JsltEvaluationVisitor(context)) == {"d": 42}
+
+
+# --- mise en texte des conteneurs ---------------------------------------------
+# Régression : `to_text` rendait `str(valeur)`, donc la représentation **Python**
+# d'un tableau ou d'un objet — guillemets simples compris. Elle ressortait dans
+# le JSON produit par `concat` et par les clefs de `groupby` / `countby`.
+
+
+def test_concat_d_un_tableau_imbrique_rend_du_json() -> None:
+    template = '{ "r": concat($.l, ",") }'
+    source = {"l": [[1, "x"], 2]}
+    assert JsltTemplate.parse(template).transform(source) == {"r": '[1,"x"],2'}
+
+
+def test_concat_d_un_objet_rend_du_json() -> None:
+    template = '{ "r": concat($.l) }'
+    assert JsltTemplate.parse(template).transform({"l": [{"a": 1}]}) == {"r": '{"a":1}'}
+
+
+def test_clef_de_groupe_composite_est_du_json() -> None:
+    template = '{ "r": groupby($.l, [$.a, $.t]) }'
+    source = {"l": [{"a": 1, "t": "x"}]}
+    assert JsltTemplate.parse(template).transform(source) == {
+        "r": {'[1,"x"]': [{"a": 1, "t": "x"}]}
+    }
+
+
+def test_countby_composite_est_du_json() -> None:
+    template = '{ "r": countby($.l, [$.a, $.t]) }'
+    source = {"l": [{"a": 1, "t": "x"}]}
+    assert JsltTemplate.parse(template).transform(source) == {"r": {'[1,"x"]': 1}}
+
+
+def test_les_deux_chemins_de_mise_en_texte_concordent() -> None:
+    # Le cast `#string` passait déjà par le JSON : les deux doivent dire pareil.
+    template = '{ "cast": $.o #string, "texte": concat([$.o]) }'
+    result = JsltTemplate.parse(template).transform({"o": {"a": [1, "x"]}})
+    assert result["cast"] == result["texte"] == '{"a":[1,"x"]}'

@@ -124,6 +124,107 @@ Le bornage du jour, et le chaînage avec `format` pour l'affichage :
 
 ---
 
+## Parties supplémentaires et bornes de période
+
+`datepart` connaît désormais `year`, `quarter`, `month`, `week`, `day`,
+`dayofyear`, `dayofweek`, `hour`, `minute`, `second` et `millisecond`. `week` est
+la semaine **ISO** : le 1er janvier appartient parfois à la semaine 52 ou 53 de
+l'année précédente, et c'est la définition attendue en Europe. `dayofweek`, lui,
+garde la convention `DayOfWeek` du .NET (dimanche = 0).
+
+`datestartof(date, période)` et `dateendof(date, période)` bornent une période :
+`year`, `quarter`, `month`, `week`, `day`, `hour`, `minute`. La fin est
+**inclusive**, à la microseconde près (`23:59:59.999999`), parce que c'est ce
+qu'attend un filtre `<=`. Le décalage horaire de l'entrée est conservé.
+
+La semaine commence **lundi** (ISO). Oui, cela coexiste avec un `dayofweek` où
+dimanche vaut 0 : le numéro suit le .NET pour qu'un template porté donne le même
+résultat, la borne suit l'usage européen. Les deux choix sont délibérés.
+
+```jslt
+{
+  "trimestre": datepart($.d, "quarter"),
+  "semaine": datepart($.d, "week"),
+  "jour_an": datepart($.d, "dayofyear"),
+  "debut_mois": datestartof($.d, "month"),
+  "fin_trimestre": dateendof($.d, "quarter")
+}
+```
+
+```json
+{ "d": "2026-11-15T08:30:05.123456" }
+```
+
+```json
+{
+  "trimestre": 4,
+  "semaine": 46,
+  "jour_an": 319,
+  "debut_mois": "2026-11-01T00:00:00",
+  "fin_trimestre": "2026-12-31T23:59:59.999999"
+}
+```
+
+## Jours ouvrés (`weekday`)
+
+`dateadd`, `datesub` et `datediff` acceptent l'unité `weekday` : les samedis et
+dimanches sont sautés. Du vendredi, `dateadd(d, "weekday", 1)` atterrit le lundi.
+
+**Aucun calendrier de jours fériés n'est appliqué.** Il dépend du pays, de
+l'année et parfois de l'entreprise : en embarquer un donnerait des résultats
+faux et silencieux hors de son périmètre. Pour les fériés, retranchez-les
+explicitement dans le template.
+
+```jslt
+{
+  "livraison": dateadd($.commande, "weekday", 3),
+  "ouvres": datediff($.commande, $.echeance, "weekday")
+}
+```
+
+```json
+{ "commande": "2026-11-13T09:00:00", "echeance": "2026-11-20T09:00:00" }
+```
+
+```json
+{ "livraison": "2026-11-18T09:00:00", "ouvres": 5 }
+```
+
+## Fuseau explicite, jour courant et durée
+
+`datezone(date, fuseau)` fait ce que faisait le détour
+`parsedate(date, "", "", "Europe/Paris")` : il **attribue** le fuseau à une date
+naïve et **convertit** une date qui porte déjà un décalage. Une date déjà lue n'a
+plus à repasser par une fonction de lecture pour changer de fuseau.
+
+`today()` rend le jour courant à **minuit** (`today(true)` en UTC) : `now()`
+porte l'heure, ce qui empêche de comparer deux journées sans tronquer à la main.
+
+`dateduration(début, fin)` décompose l'intervalle en années, mois, jours, heures,
+minutes et secondes, avec un drapeau `negative`. Un objet et non une phrase
+« il y a 3 jours » : la mise en forme dépend de la langue et du contexte, le
+template sait la faire, le moteur n'embarque pas de catalogue de phrases.
+
+```jslt
+{
+  "paris": datezone($.utc, "Europe/Paris"),
+  "duree": dateduration($.debut, $.fin)
+}
+```
+
+```json
+{ "utc": "2026-11-15T08:30:00+00:00", "debut": "2026-01-31T08:00:00", "fin": "2027-03-02T09:30:10" }
+```
+
+```json
+{
+  "paris": "2026-11-15T09:30:00+01:00",
+  "duree": { "negative": false, "years": 1, "months": 1, "days": 2, "hours": 1, "minutes": 30, "seconds": 10 }
+}
+```
+
+---
+
 **Voir aussi** : [écrire une date](texte.md#formatage--format) avec `format`,
 et `now()` dans [l'aide-mémoire](guide.md#aide-mémoire).
 

@@ -21,23 +21,30 @@ from pathlib import Path
 import pytest
 
 
-def find_docs() -> Path:
-    """Localise le dossier ``docs/`` du projet (à la racine du dépôt).
+def find_docs() -> Path | None:
+    """Localise le dossier ``docs/`` du projet, ou ``None`` s'il est absent.
 
     Robuste à l'emplacement du paquet dans le monorepo : remonte les parents
-    jusqu'à trouver un ``docs/guide.md``.
+    jusqu'à trouver un ``docs/guide.md``. Rend ``None`` plutôt que de lever,
+    parce que le guide vit à la **racine du dépôt** et n'entre donc pas dans la
+    distribution : exécutée depuis une sdist, la suite doit se passer de ces
+    tests, pas échouer à la collecte.
     """
     for parent in Path(__file__).resolve().parents:
         candidate = parent / "docs"
         if (candidate / "guide.md").is_file():
             return candidate
-    raise FileNotFoundError("dossier docs/ introuvable (docs/guide.md attendu)")
+    return None
 
 
 DOCS = find_docs()
+
+#: Message de saut, partagé : dire *pourquoi* on saute évite de prendre un
+#: environnement incomplet pour un guide sans exemples.
+NO_DOCS = "docs/ absent (exécution hors dépôt, p.ex. depuis une sdist)"
 # Tous les documents du guide, pas seulement `guide*.md` : les thèmes (dates,
 # texte, collections…) portent désormais l'essentiel des exemples.
-GUIDES = sorted(DOCS.glob("*.md"))
+GUIDES = sorted(DOCS.glob("*.md")) if DOCS is not None else []
 
 # Capture (langage, contenu) de chaque bloc ``` ... ``` du document.
 _BLOCK_RE = re.compile(r"```(\w+)[^\n]*\n(.*?)```", re.DOTALL)

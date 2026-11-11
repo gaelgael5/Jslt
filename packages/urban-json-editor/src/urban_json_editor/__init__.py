@@ -38,13 +38,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = ["ASSET_FILES", "assets_dir", "catalog", "mount"]
 
 #: Fichiers d'assets livrés par le composant (``jslt-editor.js`` importe
-#: ``jslt-paths.js`` : les deux doivent être servis côte à côte).
-ASSET_FILES = ("jslt-editor.js", "jslt-paths.js", "jslt-editor.css")
+#: ``jslt-paths.js`` et ``jslt-signature.js`` : tous doivent être servis côte à
+#: côte).
+ASSET_FILES = ("jslt-editor.js", "jslt-paths.js", "jslt-signature.js", "jslt-editor.css")
 
 
 def assets_dir() -> Path:

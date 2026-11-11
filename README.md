@@ -56,12 +56,18 @@ découpé par thème — on va droit à celui qu'on cherche :
 | [Chemins JSONPath](docs/chemins.md) | accès, sémantique 0 / 1 / N, filtres `?(...)`, `length()` / `value()` |
 | [Expressions](docs/expressions.md) | variables, opérateurs, coalescence `??`, casts `#type`, chaînage `->` |
 | [Conditions et boucles](docs/conditions-et-boucles.md) | `when` / `switch`, `$source` / `$where` |
-| [Données et collections](docs/collections.md) | `sum`, `distinct`, `select`, `group`, `join`, `schema` |
+| [Données et collections](docs/collections.md) | `sum`, `distinct`, `select`, `skip`, `flatten`, `partition`, `group`, `groupby`, `sumby`, `sort`, `unzip`, agrégats et statistiques |
 | [Nombres et maths](docs/nombres.md) | `min`, `max`, `round`, `sqrt`… |
 | [Texte, regex et formatage](docs/texte.md) | `upper`, `split`, `regexmatches`, `normalize`, `format` |
-| [Dates et heures](docs/dates.md) | `parsedate` (culture, masque, fuseau), `dateadd`, `datesub`, `datediff`, `datepart` |
-| [Sortie texte](docs/sortie.md) | `to_json`, `to_block`, `$directives.output` |
+| [Dates et heures](docs/dates.md) | `parsedate` (culture, masque, fuseau), `dateadd`, `datesub`, `datediff`, `datepart`, bornes de période, jours ouvrés |
+| [Objets et structures profondes](docs/objets.md) | `keys`, `entries`, `merge`, `pick`, `omit`, `has`, `flattenobject`, `unflatten`, `walk`, `prune`, `setpath` |
+| [Types et validation](docs/types.md) | `typeof`, `isarray`, `trydefault`, `parsejson`, `schema`, `schemaisvalid` |
+| [Encodage et empreintes](docs/encodage.md) | `tobase64`, `sha256`, `hmacsha256`, `urlencode`, `htmlescape`, `hexencode` |
+| [Intégrer le moteur](docs/integration.md) | API publique, internes documentés, pipeline, bac à sable |
+| [Sortie texte](docs/sortie.md) | `to_json`, `to_block`, `to_csv`, `to_xml`, `to_yaml` |
+| [Qualité et diagnostic](docs/qualite.md) | `require`, `requirethat`, `trace`, `traces`, `isemail`, `isiban` |
 | [Extensibilité et débogage](docs/extensibilite.md) | registre, plugins, pas à pas, `to_source()` |
+| [Référence des fonctions](docs/fonctions/sommaire.md) | une page par fonction : signature, arguments, description |
 
 ## API publique
 
@@ -159,12 +165,16 @@ sont la source de vérité du langage, reprise du dépôt .NET.
 
 ## Périmètre
 
-Le cœur porte **75 fonctions** : maths, texte, encodage et hachage, collections,
-regroupement et jointure (`group`, `join`, `index`, `createindex`), expressions
-régulières, dates (`parsedate` avec masque et fuseau, `dateadd`, `datesub`,
-`datediff`, `datepart`, `now`) et formatage (`format`, `normalize`), schéma, et
-les fonctions de sortie texte. La liste qui fait foi est
-`default_registry.names()`.
+Le cœur porte **182 fonctions** : maths et nombres (dont `parsenumber`,
+`clamp`, `round` à précision), texte (découpe, remplacement, regex, pliage
+Unicode), encodage et empreintes (base64, hexadécimal, URL, HTML, `sha256`,
+`hmacsha256`), collections (tri, agrégats, regroupement et jointure), objets
+(`keys`, `entries`, `merge`, `pick`…), types et validation (`typeof`,
+`schemaisvalid`, `trydefault`), dates (`parsedate` avec masque et fuseau,
+calcul, écart, bornes de période, jours ouvrés), formatage, schéma, paramètres
+externes (`param`) et les fonctions de sortie texte. La liste qui fait foi est
+`default_registry.names()` ; le détail par thème est dans le guide, et les
+évolutions dans le [CHANGELOG](CHANGELOG.md).
 
 Hors du cœur **par décision**, dans les paquets `urban-json-*` ci-dessus : les
 entrées-sorties (fichiers, réseau, base) et la génération aléatoire. Non portés :

@@ -1,0 +1,6 @@
+# La règle par défaut de setuptools ne prend que `test*.py` : un fichier d'appui
+# partagé entre deux suites (`tests/_docs.py`, qui localise les documents du
+# guide et en extrait les exemples) restait dehors, et la sdist ne pouvait pas
+# exécuter ses propres tests. Le job `dist` de la CI construit l'archive mais
+# n'y lance pas pytest, donc rien ne l'aurait signalé.
+recursive-include tests *.py

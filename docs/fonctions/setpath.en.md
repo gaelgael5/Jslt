@@ -1,0 +1,24 @@
+<!-- Page engendrée par packages/urban-json/scripts/generate_function_docs.py. Modifier la description dans le registre, pas ici. -->
+
+# `setpath`
+
+*[Français](setpath.md) · English*
+
+Copy of the object with a value placed at the end of a dotted path (levels created as needed)
+
+```
+setpath(token, path, value, separator)
+```
+
+| Parameter | Expected | Note |
+|---|---|---|
+| `token` | optional |  |
+| `path` | optional |  |
+| `value` | optional |  |
+| `separator` | optional |  |
+
+**Chapter**: [Objects and deep structures](../objets.en.md) · **Index**: [all functions](sommaire.en.md)
+
+---
+
+[← jslt guide](../guide.en.md)

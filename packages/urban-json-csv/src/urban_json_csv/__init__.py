@@ -21,14 +21,17 @@ explicitement : ``from urban_json_csv import register; register(mon_registre)``.
 from __future__ import annotations
 
 import csv as _csv
+import io
 import unicodedata
 from typing import Any
 
+from urban_json.errors import JsltError
+
 from .mcsv import execute_loadmcsv
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
-__all__ = ["execute_loadcsv", "execute_loadmcsv", "register"]
+__all__ = ["execute_loadcsv", "execute_loadmcsv", "execute_parsecsv", "register"]
 
 
 def _sanitize_header(name: str) -> str:
@@ -153,6 +156,51 @@ def execute_loadcsv(
         )
         rows = list(reader)
 
+    return _rows_to_objects(rows, has_header, excluded, exclude_null_and_empty)
+
+
+def execute_parsecsv(
+    ctx: Any,
+    token: Any = None,
+    has_header: bool = True,
+    separator: str = ";",
+    quote: str = '"',
+    escape: str = "\\",
+    excluded_columns: str | None = None,
+    exclude_null_and_empty: bool = False,
+) -> Any:
+    """Convertit un **texte** CSV en tableau d'objets, comme ``loadcsv``.
+
+    Mêmes options, même typage des cellules : seule la provenance change. Un CSV
+    reçu dans un message ou extrait d'une archive n'a plus à passer par un
+    fichier temporaire. Lève ``JsltError`` (famille du moteur, rattrapable par
+    ``trydefault``), là où ``loadcsv`` garde historiquement ``ValueError``.
+    """
+    if token is None:
+        return None
+    if not isinstance(token, str):
+        raise JsltError(f"parsecsv attend un texte CSV, reçu : {token!r}")
+    delimiter = separator[0] if separator else ";"
+    excluded = (
+        {c for c in excluded_columns.split(delimiter) if c} if excluded_columns else set()
+    )
+    reader = _csv.reader(
+        io.StringIO(token, newline=""),
+        delimiter=delimiter,
+        quotechar=quote[0] if quote else '"',
+        escapechar=escape[0] if escape else None,
+    )
+    return _rows_to_objects(list(reader), has_header, excluded, exclude_null_and_empty)
+
+
+def _rows_to_objects(
+    rows: list, has_header: bool, excluded: set[str], exclude_null_and_empty: bool
+) -> list:
+    """Lignes brutes -> objets typés, partagé par ``loadcsv`` et ``parsecsv``.
+
+    Extrait pour que les deux fonctions ne puissent pas divergir sur le typage
+    des cellules ou l'assainissement des en-têtes.
+    """
     if not rows:
         return []
 
@@ -194,6 +242,11 @@ def register(registry: Any) -> None:
         "loadcsv",
         execute_loadcsv,
         description="Lit un fichier CSV et renvoie un tableau d'objets.",
+    )
+    registry.register(
+        "parsecsv",
+        execute_parsecsv,
+        description="Convertit un texte CSV en tableau d'objets (mêmes options que loadcsv).",
     )
     registry.register(
         "loadmcsv",

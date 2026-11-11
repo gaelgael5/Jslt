@@ -171,6 +171,47 @@ A `#type` suffix converts the value. Fully supported types: `#integer`,
 { "total": 6 }
 ```
 
+---
+
+## External parameters (`param`, `params`)
+
+`transform(source)` only took the document: a template could receive "the
+reference date" or "the batch id" only by injecting them into the source, which
+mixes the **data** being transformed with the **settings** of the run.
+
+```python
+template.transform(document, parameters={"batch": "A-12", "threshold": 100})
+```
+
+`param("name")` reads a parameter, `param("name", fallback)` provides a backup
+value, `params()` returns the whole object (handy to trace the batch in the
+output). A parameter **supplied as `null`** stays `null`: the fallback only
+applies to a *missing* parameter, otherwise you could not explicitly pass "no
+value".
+
+Parameters are **not** visible to JSONPath: `$.batch` does not reach them. That
+is deliberate — a setting is not part of the document, and mixing them would make
+a template depend on how it is called.
+
+```jslt
+{ "batch": param("batch", "none"), "settings": params() }
+```
+
+```json
+{ "x": 1 }
+```
+
+```json
+{ "batch": "none", "settings": {} }
+```
+
+(With no parameters the fallback applies and `params()` is empty — which is what
+the example above, run without `parameters=`, shows.)
+
+What does **not** exist: defining a function inside the template (no lambda, no
+macro, no recursion) and including another template. Both require new syntax,
+hence a change to the ANTLR grammar and its regeneration; they cannot be worked
+around with a function.
 
 ---
 

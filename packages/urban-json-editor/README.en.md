@@ -15,6 +15,9 @@ source document**), shipped to be dropped into any Python web project.
 - **Function intellisense** fed by the `urban-json` catalogue
   (`registry.catalog()`), hence always up to date — including the functions of
   installed plugins.
+- **Signature help** from the opening parenthesis on: the parameter being typed
+  is shown **in bold** and follows the commas, and the signature is a link to the
+  function's reference page, in the reader's language.
 - **Path intellisense** fed either by the **source document** (the `source`
   property: the keys actually present, with their type and a preview of their
   value), or by the **list of paths computed by the host application**
@@ -138,6 +141,36 @@ not comment on typing). It disappears on the next keystroke and on `Escape`,
 captures no key, and forbids nothing: the editor informs, it does not validate
 the template — saying whether a template compiles remains the engine's job.
 
+## Signature help
+
+From the opening parenthesis on, the call surrounding the caret is recalled with
+the **parameter being typed in bold**; it follows the commas, and the commas of
+an array or an object **do not count** (`sort($.l, [$.a, $.b], …)` stays on the
+2nd parameter while the keys are being written). The help answers the **caret's
+position**, not the typing: clicking inside the parentheses of a call already
+written reopens it, which is the gesture of someone coming back to fix an
+argument.
+
+The signature is a **link** to the function's reference page, opened in a new
+tab:
+
+```html
+<jslt-editor lang="en" docs-base="https://github.com/gaelgael5/Jslt/blob/main/docs/"></jslt-editor>
+```
+
+| Attribute | Purpose |
+|---|---|
+| `lang` | language of the tooltip **and** of the page it points at; failing that, the document's (`<html lang>`), then the browser's |
+| `docs-base` | root of the reference pages; failing that, the public repository |
+
+The URL comes from the catalogue's `doc` field (`fonctions/<name>`), to which the
+language appends `.md` or `.en.md` — it is **not** built from the name: a plugin
+function has no page in this repository, and a built link would be dead. An entry
+without `doc` is shown without a link; a plugin hosting its own documentation
+passes the full URL (`registry.register(..., doc="https://…")`). The description
+follows the same language (the catalogue's `description_en`), and falls back to
+French when the translation is missing — an empty tooltip would teach nothing.
+
 ## Python API
 
 | Function | Role |
@@ -146,8 +179,9 @@ the template — saying whether a template compiles remains the engine's job.
 | `catalog(registry=None)` | function catalogue (intellisense) from an urban-json registry |
 | `mount(app, url_path="/jslt-editor")` | mounts the assets on a FastAPI/Starlette app |
 
-The assets are `jslt-editor.js`, `jslt-paths.js` (imported by the first one) and
-`jslt-editor.css`: serve them side by side (`ASSET_FILES`).
+The assets are `jslt-editor.js`, `jslt-paths.js` and `jslt-signature.js`
+(imported by the first one) and `jslt-editor.css`: serve them side by side
+(`ASSET_FILES`).
 
 ## Component API
 
@@ -163,6 +197,8 @@ The assets are `jslt-editor.js`, `jslt-paths.js` (imported by the first one) and
 - `setMessages(dict)` — texts of the messages by cause code, merged with the
   defaults (`DEFAULT_HINT_MESSAGES`, exported by `jslt-paths.js`).
 - Attribute `catalog-url` — URL to load the catalogue from (`{functions:[...]}`).
+- Attributes `lang` and `docs-base` — the reader's language and the root of the
+  reference pages linked from the signature help.
 - Event `input` — emitted on every change.
 - Keyboard: while the suggestion list is open, the editor **captures** `Tab`,
   `Enter`, `Escape` and ↑/↓ (`preventDefault`); a host wiring `Enter` or `Tab`

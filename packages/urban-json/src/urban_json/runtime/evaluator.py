@@ -182,11 +182,17 @@ class JsltEvaluationVisitor(JsltJsonVisitor):
         if function is None:
             raise JsltError(f"fonction inconnue : {node.name}")
         path_args = self.context.functions.path_args_of(node.name)
+        lazy_args = self.context.functions.lazy_args_of(node.name)
         arguments = []
         for index, argument in enumerate(node.arguments):
             if index in path_args and isinstance(argument, JsltPath):
                 # Argument « chemin » : passé compilé (non évalué), cf. distinct.
                 arguments.append(argument.compiled)
+            elif index in lazy_args:
+                # Argument « paresseux » : la fonction l'évalue elle-même, autant
+                # de fois qu'elle veut et contre la source qu'elle a empilée —
+                # c'est ce qui permet une clef de tri calculée par élément.
+                arguments.append(lambda expression=argument: expression.accept(self))
             else:
                 arguments.append(argument.accept(self))
         return function(self.context, *arguments)
