@@ -36,10 +36,20 @@ JsltTemplate.parse(TEMPLATE).transform(INPUT)   # == OUTPUT
 [Built-in functions](#built-in-functions)
 
 - [Data and collections](collections.en.md) — `sum`, `concat`, `distinct`, `limit`,
-  `union`, `select`, `selectmany`, `any`, `contains`, `group`, `join`, `index`, `schema`
-- [Numbers and math](nombres.en.md) — `min`, `max`, `abs`, `floor`, `round`, `sqrt`…
+  `union`, `select`, `selectmany`, `any`, `contains`, `group`, `join`, `index`,
+  `sort`, `reverse`, `first`, `last`, `count`, `avg`, `median`, `product`
+- [Objects](objets.en.md) — `keys`, `values`, `entries`, `fromentries`, `merge`,
+  `pick`, `omit`, `has`, `renamekeys`
+- [Types, error fallback and validation](types.en.md) — `typeof`, `isarray`,
+  `isobject`, `isstring`, `isnumber`, `isboolean`, `trydefault`, `parsejson`,
+  `schema`, `schemaerrors`, `schemaisvalid`
+- [Numbers and math](nombres.en.md) — `min`, `max`, `abs`, `floor`, `round`, `sqrt`,
+  `parsenumber`, `sign`, `clamp`, `gcd`, `tohex`…
 - [Text, regular expressions and formatting](texte.en.md) — `upper`, `split`,
-  `startswith`, `regexismatch`, `regexmatches`, `normalize`, `format`
+  `substring`, `replace`, `regexreplace`, `foldtext`, `deaccent`, `normalize`,
+  `format`
+- [Encoding, digests and escaping](encodage.en.md) — `tobase64`, `sha256`,
+  `hmacsha256`, `urlencode`, `htmlescape`, `hexencode`…
 - [Dates and times](dates.en.md) — `parsedate` (culture, mask, timezone), `dateadd`,
   `datesub`, `datediff`, `datepart`
 - [Text output](sortie.en.md) — `to_json`, `to_block`, `$directives.output`
@@ -109,9 +119,18 @@ Objects and arrays nest freely:
 Functions are called by name: `function(arg1, arg2, ...)`. Each argument is an
 evaluated expression.
 
-> Other functions are ported (trigonometry, base64 encoding / hashing, `isnull`,
-> `uuid`, `now`…). See the full list in [`CLAUDE.md`](../CLAUDE.md) (in French).
-> `uuid()` and `now()` are non-deterministic and therefore not illustrated here.
+An argument can be **lazy**: the function evaluates it itself, when it wants and
+against the source it chooses. That is what lets `sort` compute a key **per
+element** and `trydefault` evaluate its fallback only if the first computation
+fails. It changes nothing about how a call is written.
+
+> Not every function is illustrated here: trigonometry (`sin`, `cos`…) follows
+> the same conventions as the other numeric functions, and `uuid()`, `now()`,
+> `today()` are non-deterministic. The authoritative list is
+> `default_registry.names()`; the editor and the playground read it directly.
+
+To call the engine from code — including its internal pieces — see
+[Embedding the engine](integration.en.md).
 
 ---
 
@@ -158,6 +177,9 @@ JsltTemplate.parse('{ "r": $.a[?(@.x contains 1)] }')   # -> NotImplementedError
 | Loop | `[ { "$source": $.l, "$where": c, ... } ]` | [Loops](conditions-et-boucles.en.md#loops-source--where) |
 | Filter | `$.l[?(@.x > 1 & @.y in [..])]` | [Paths](chemins.en.md#jsonpath-filters-) |
 | Path function | `$.x.length()`, `$.x.value()` | [Paths](chemins.en.md#path-functions-length--value) |
+| External parameter | `param("batch", "default")` | [Expressions](expressions.en.md#external-parameters-param-params) |
+| Error fallback | `trydefault(expr, fallback)` | [Types](types.en.md#error-fallback-trydefault) |
+| Sorting | `sort($.l, $.k, true)` | [Collections](collections.en.md#sorting-and-ordering-sort-reverse-first-last) |
 
 For the internal architecture, the porting patterns and the deliberate deviations
 from .NET, see [`CLAUDE.md`](../CLAUDE.md) (in French).

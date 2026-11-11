@@ -59,6 +59,18 @@ loadxml(source_path, attribute_prefix="@", text_key="#text", strip_namespaces=tr
 | `text_key` | clé portant le texte d'un élément mixte (défaut `#text`) |
 | `strip_namespaces` | réduit `{uri}local` au nom local (défaut `true`) |
 
+### Depuis une chaîne : `parsexml`
+
+```
+parsexml(texte, attribute_prefix="@", text_key="#text", strip_namespaces=true)
+```
+
+Même conversion, mais sur un XML **déjà en main** : colonne d'une base, charge
+utile d'un message, réponse HTTP. `loadxml` n'ouvre qu'un fichier, ce qui
+obligeait à écrire sur disque pour traiter un XML reçu. `null` reste `null`, et
+un XML invalide lève `JsltError` — la famille d'erreurs du moteur, donc
+rattrapable par `trydefault` dans le template.
+
 ## Sécurité
 
 Le XML est analysé avec [`defusedxml`](https://pypi.org/project/defusedxml/) :

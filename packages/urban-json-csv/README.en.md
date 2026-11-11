@@ -49,6 +49,17 @@ loadcsv(source_path, has_header=true, separator=";", quote="\"", escape="\\",
 | `excluded_columns` | names of columns to drop, separated by `separator` |
 | `exclude_null_and_empty` | omits null and empty cells |
 
+### From a string: `parsecsv`
+
+```
+parsecsv(text, has_header=true, separator=";", quote="\"", escape="\\",
+         excluded_columns=null, exclude_null_and_empty=false)
+```
+
+The same options and the same cell typing, but on CSV **already in hand**: a
+message, an archive, a database column. `null` stays `null`; a non-text argument
+raises `JsltError` (the engine's family, catchable by `trydefault`).
+
 ### Value typing
 
 Cells are coerced as in .NET: `true`/`false` → boolean, integers and decimals →

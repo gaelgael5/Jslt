@@ -172,6 +172,48 @@ Un suffixe `#type` convertit la valeur. Types pris en charge pleinement :
 { "total": 6 }
 ```
 
+---
+
+## Paramètres externes (`param`, `params`)
+
+`transform(source)` ne prenait que le document : un template ne pouvait recevoir
+« la date de référence » ou « l'identifiant du lot » qu'en les injectant dans la
+source, ce qui mélange les **données** à transformer et les **réglages** de
+l'exécution.
+
+```python
+template.transform(document, parameters={"lot": "A-12", "seuil": 100})
+```
+
+`param("nom")` lit un paramètre, `param("nom", repli)` fournit une valeur de
+secours, `params()` rend l'objet complet (pratique pour tracer le lot dans la
+sortie). Un paramètre **fourni à `null`** reste `null` : le repli ne s'applique
+qu'à un paramètre *absent*, sinon on ne pourrait pas passer explicitement « pas
+de valeur ».
+
+Les paramètres ne sont **pas** visibles dans les chemins JSONPath : `$.lot` ne
+les atteint pas. C'est voulu — un réglage n'est pas une donnée du document, et
+les mêler rendrait un template dépendant de la façon dont on l'appelle.
+
+```jslt
+{ "lot": param("lot", "aucun"), "reglages": params() }
+```
+
+```json
+{ "x": 1 }
+```
+
+```json
+{ "lot": "aucun", "reglages": {} }
+```
+
+(Sans paramètres, le repli s'applique et `params()` est vide — c'est ce que
+montre l'exemple ci-dessus, exécuté sans `parameters=`.)
+
+Ce qui **n'existe pas** : définir une fonction dans le template (ni lambda, ni
+macro, ni récursion) et inclure un autre template. Les deux demandent une
+nouvelle syntaxe, donc une modification de la grammaire ANTLR et sa
+régénération ; elles ne sont pas contournables par une fonction.
 
 ---
 

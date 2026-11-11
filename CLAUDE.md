@@ -107,6 +107,52 @@ Patterns repris du .NET :
   `z` sur une date sans décalage écrit zéro, là où le .NET prendrait celui de la
   machine — la sortie ne doit pas dépendre du serveur. Un spécificateur seul
   (`"z"`, `"K"`) reste refusé, comme en .NET (masque d'une lettre = masque standard).
+- **Familles de fonctions ajoutées au-delà du .NET** (sujets 1 à 11 comblés en
+  0.4.0, cf. `CHANGELOG.md`). Décisions qui se lisent mal dans le code seul :
+  `substring` **ne lève pas** sur des bornes trop larges (un template transforme
+  des données qu'il ne choisit pas ; une longueur négative lève, elle) ;
+  `regexreplace` suit la convention des regex (scalaire converti en texte) et non
+  celle des chaînes (`false`) ; `sort` définit un **ordre total** (null <
+  booléens < nombres < chaînes < tableaux < objets, chaînes par points de code)
+  pour ne jamais lever sur des données mélangées, et sa clef s'évalue **par
+  élément** — convention différente de `distinct`, dont le chemin s'applique au
+  tableau entier ; les agrégats **lèvent** sur un élément non numérique comme
+  `sum` ; `avg`/`median`/`min`/`max` d'un tableau vide valent `null` (0 serait une
+  réponse fausse), `product` vaut 1 (élément neutre) ; `count` compte aussi les
+  clés d'un objet et les caractères d'un texte, et vaut 1 pour un scalaire ;
+  `has` existe parce qu'`isnull` ne distingue pas clé absente et valeur nulle ;
+  `merge` est **plat** par défaut et ne mute pas ses sources ; `renamekeys` laisse
+  le dernier écrit gagner une collision (lever casserait une migration en cours) ;
+  la validation de schéma **ignore** les mots-clés non gérés (lever la rendrait
+  inutilisable sur les schémas réels — validation utile, pas complète) ;
+  `weekday` ne connaît **aucun** calendrier de jours fériés (il dépend du pays et
+  de l'année) ; `datestartof(…, "week")` commence **lundi** (ISO) alors que
+  `datepart(…, "dayofweek")` suit le .NET (dimanche = 0) — les deux choix sont
+  délibérés ; `md5`/`sha1` sont là pour l'**identité**, jamais la signature, d'où
+  `hmacsha256` (concaténer secret + message avant un `sha256` expose à
+  l'extension de longueur) ; `tohex` écrit le signe devant les chiffres (un entier
+  JSON n'a pas de largeur, donc pas de complément à deux) ; `parsejson`,
+  `parsenumber` et `parsexml`/`parsecsv` **lèvent** sur une entrée illisible.
+- **Arguments paresseux** (`lazy_args` sur `@jslt_function`) : une position peut
+  être reçue **non évaluée**, sous forme de callable, que la fonction appelle
+  quand elle veut et contre la source qu'elle empile. C'est ce qui permet la clef
+  de tri par élément (`sort`) et le repli non évalué (`trydefault`). Le
+  mécanisme est posé aux **deux** points d'appel (interpréteur et compilateur),
+  sinon les deux chemins divergeraient.
+- **Erreurs de calcul unifiées en `JsltError`** : une division par zéro sortait en
+  `ZeroDivisionError`, un `+` sur du texte en `ValueError`. L'enveloppe est posée
+  dans la **table des opérateurs** (`_BINARY_REPORTED`), que le compilateur
+  pré-résout : la poser côté interpréteur seul faisait diverger les deux chemins
+  (bug trouvé par le test d'équivalence sur `trydefault`). Les plugins plus
+  anciens (`http`, `db`, `elastic`) gardent leurs `ValueError` d'argument :
+  unifier serait une rupture, remise à une majeure.
+- **Paramètres externes** : `transform/render/debug(..., parameters={...})` et
+  `param("nom")` / `params()`. Portés par `RuntimeContext` (3e argument), **pas**
+  visibles dans les chemins JSONPath : un réglage n'est pas une donnée du
+  document. `param` utilise `.get` pour qu'un paramètre passé explicitement à
+  `null` ne soit pas écrasé par son repli.
+- `FunctionRegistry.remove(nom)` : pendant de `register`, pour dériver un registre
+  restreint (bac à sable) sans le reconstruire de zéro.
 - `group` multi-chemins : sous-groupes imbriqués (le .NET les perdait) ; `join` ne
   modifie pas la source (le .NET mutait la gauche) ; `createindex` rend un objet
   `{clé: élément}` (le .NET : `JDictionaryValue` opaque).
@@ -153,10 +199,10 @@ Patterns repris du .NET :
 C'est le mécanisme sur lequel s'appuient les **paquets additionnels** (E-S), hors
 cœur, chacun comme **distribution séparée** dans un **monorepo** :
 
-- `packages/urban-json-csv/` — fonctions `loadcsv` (port de `ServiceCsv`) et `loadmcsv`
+- `packages/urban-json-csv/` — fonctions `loadcsv` / `parsecsv` (port de `ServiceCsv`) et `loadmcsv`
   (CSV multi-enregistrements hiérarchique, port de `ServicesMultiCsv` + `Bb.MultiCsv` ;
   module `urban_json_csv.mcsv`). Distribution `urban-json-csv`, dépend de `urban-json`.
-- `packages/urban-json-xml/` — fonction `loadxml` (conventions XML↔JSON Newtonsoft du
+- `packages/urban-json-xml/` — fonctions `loadxml` / `parsexml` (conventions XML↔JSON Newtonsoft du
   `XmlNodeConverter` .NET ; parsing sécurisé via `defusedxml`). Distribution
   `urban-json-xml`, dépend de `urban-json` + `defusedxml`.
 - `packages/urban-json-db/` — fonctions `connectsql` / `readsql` (port de `ServicesSql`).
@@ -271,26 +317,46 @@ Fonctions portées (modules dans `packages/urban-json/src/urban_json/functions/`
 - maths : `abs`, `floor`, `round`, `truncate`, `min`, `max`, `sqrt`, `pow`, `exp`,
   `logarithm`/`logarithm10`/`logarithm2`, trig (`sin`/`cos`/`tan`/`asin`/`acos`/
   `atan`/`sinh`/`cosh`/`tanh`/`asinh`/`acosh`/`atanh`/`atan2`), `pi`, `e`.
-- texte : `upper`, `lower`, `trim`, `split`, `startswith`, `endswith`,
-  `stringcontains`, `indexof`, `lastindexof`, `padleft`, `padright`, `stringlenght`.
-- encodage : `tobase64`, `frombase64`, `crc32`, `sha256`, `sha512`.
+- nombres (`numbers.py`) : `parsenumber` (cultures de `format`), `sign`, `clamp`,
+  `gcd`, `shiftleft`/`shiftright`, `tohex`/`fromhex`.
+- texte (`text.py`) : `upper`, `lower`, `trim`, `trimstart`, `trimend`, `split`,
+  `startswith`, `endswith`, `stringcontains`, `indexof`, `lastindexof`, `padleft`,
+  `padright`, `stringlenght`, `substring`, `replace`, `repeat`, `titlecase`,
+  `normalize` (formes C/D/KC/KD), `deaccent`, `foldtext`.
+- expressions régulières (`regexes.py`, extrait de `text.py`) : `regexismatch`,
+  `regexmatches`, `regexreplace` (substitution .NET `$1`/`${nom}`/`$&` traduite).
+- encodage (`encoding.py`) : `tobase64`, `frombase64`, `hexencode`, `hexdecode`,
+  `urlencode`, `urldecode`, `htmlescape`, `htmlunescape`, `crc32`, `sha256`,
+  `sha512`, `md5`, `sha1`, `hmacsha256`.
 - collections : `limit`, `union`, `select`, `selectmany`, `any`, `contains`,
   `selectany` (`select`/`selectmany`/`selectany` prennent un argument-chemin).
+- tri et ordre (`ordering.py`) : `sort` (clef **paresseuse** évaluée par élément,
+  ordre total documenté, tri stable), `reverse`, `first`, `last`.
+- agrégats (`aggregate.py`) : `count`, `avg`, `median`, `product` (+ `min`/`max`
+  sur tableau, dans `maths.py`).
+- objets (`objects.py`) : `keys`, `values`, `entries`, `fromentries`, `merge`,
+  `pick`, `omit`, `has`, `renamekeys`.
+- types et repli (`types.py`) : `typeof`, `isarray`, `isobject`, `isstring`,
+  `isnumber`, `isboolean`, `trydefault` (**arguments paresseux**), `parsejson`.
 - regroupement et jointure : `group`, `join`, `index`, `createindex`.
-- expressions régulières : `regexismatch`, `regexmatches`.
 - dates : `parsedate` (culture, masque, fuseau), `dateadd`, `datesub`, `datediff`,
-  `datepart` (fonctions et calcul dans `dates.py`, lecture du texte — détection,
-  masque, fuseau — dans `_dateread.py`).
-- formatage, Unicode : `format`, `normalize`.
-- schéma : `schema` (JSON Schema déduit d'un exemple).
-- divers : `uuid`, `now`, `isnull`, `isnotnull`.
+  `datepart`, `datestartof`, `dateendof`, `datezone`, `today`, `dateduration`
+  (enregistrement dans `dates.py`, calcul dans `_datecalc.py`, lecture du texte —
+  détection, masque, fuseau — dans `_dateread.py`).
+- formatage : `format`.
+- schéma (`schema.py`) : `schema` (JSON Schema déduit d'un exemple),
+  `schemaerrors`, `schemaisvalid` (validation dans `_schemacheck.py`).
+- divers : `uuid`, `now`, `isnull`, `isnotnull`, `param`, `params`.
 - sortie (`kind="output"`, dans `$directives.output.mode`) : `to_json`, `to_block`.
 
-Soit **75 fonctions** dans le registre par défaut (`default_registry.names()` fait
-foi ; cette liste est un index, pas la source de vérité).
+Soit **135 fonctions** dans le registre par défaut (`default_registry.names()` fait
+foi ; cette liste est un index, pas la source de vérité). Le `CHANGELOG.md`
+détaille ce qui est entré à quelle version.
 
 Quirks .NET conservés : `floor`/`round`/`truncate`/`min`/`max`/`pow`/trig
-renvoient un flottant, `round` = arrondi bancaire, `min`/`max` sont binaires.
+renvoient un flottant, `round` = arrondi bancaire. `min`/`max` gardent leur forme
+binaire .NET (résultat décimal) **et** acceptent un tableau (type conservé) ;
+tableau + second argument lève, plutôt que d'ignorer le second.
 Hors du cœur : `getrandom_*` et les E-S, qui sont dans les paquets `urban-json-*`.
 Non portées nulle part : `write`/`to_file` et `to_sqlserver` (décision utilisateur).
 
@@ -353,8 +419,9 @@ python -m twine check dist/*           # valide les distributions (métadonnées
 
 - **Documentation bilingue** : toute documentation destinée aux utilisateurs
   existe en **français** (canonique) et en **anglais**, côte à côte —
-  `README.md` / `README.en.md`, `docs/guide.md` / `docs/guide.en.md`, et de même
-  pour chaque paquet et chaque application. Les deux portent un bandeau de
+  `README.md` / `README.en.md`, `docs/guide.md` / `docs/guide.en.md`,
+  `CHANGELOG.md` / `CHANGELOG.en.md`, et de même pour chaque paquet et chaque
+  application. Les deux portent un bandeau de
   langue sous le titre ; celui des paquets publiés est en **URL absolue**
   (`https://github.com/gaelgael5/Jslt/blob/main/...`), un lien relatif ne
   résolvant pas sur PyPI. Une modification d'un côté n'est pas finie tant que
@@ -363,8 +430,8 @@ python -m twine check dist/*           # valide les distributions (métadonnées
 - **Guide découpé par thème** : `docs/guide.md` est le **hub** (modèle mental,
   constantes, appel des fonctions, erreurs, aide-mémoire, sommaire) ; chaque
   thème a son document, doublé en anglais — `chemins`, `expressions`,
-  `conditions-et-boucles`, `collections`, `nombres`, `texte`, `dates`, `sortie`,
-  `extensibilite`. Le **nom de fichier reste français** des deux côtés
+  `conditions-et-boucles`, `collections`, `objets`, `types`, `nombres`, `texte`,
+  `encodage`, `dates`, `sortie`, `extensibilite`, `integration`. Le **nom de fichier reste français** des deux côtés
   (`dates.md` / `dates.en.md`), comme `README.en.md` : le radical identifie le
   document, `.en` la langue. Ajouter un document, c'est l'ajouter dans les deux
   langues, le lier depuis le sommaire du hub et depuis les deux README.
@@ -374,6 +441,16 @@ python -m twine check dist/*           # valide les distributions (métadonnées
   du nombre d'exemples entre les deux langues. Les exemples sont extraits par
   `tests/_docs.py` (partagé avec `test_compiler.py`, qui rejoue tout le guide par
   le chemin compilé) : la liste des fichiers balayés n'existe qu'à cet endroit.
+- **Surface d'intégration** : `docs/integration.md` définit trois niveaux de
+  garantie — API publique (`urban_json.__all__`, stable), internes **documentés**
+  (`parsing`, `runtime`, `ast`, `jsonpath` : non figés mais tout mouvement est
+  annoncé au `CHANGELOG`), et le reste (aucune garantie). Écrit parce qu'une
+  intégration s'y branchait et devait comparer les sources de deux versions octet
+  par octet pour valider une montée. `tests/test_integration_surface.py` épingle
+  cette surface : si un nom documenté disparaît, la suite rougit là.
+- **Journal des modifications** : `CHANGELOG.md` / `.en.md`, par version, pour le
+  cœur **et** les plugins, avec les mouvements des internes documentés. Il
+  n'existait pas ; une montée de version se validait en lisant les sources.
 - snake_case côté code maison ; les overrides du visiteur ANTLR restent en
   camelCase (API imposée par le générateur).
 - Toute fonctionnalité portée s'accompagne de tests, dont, quand c'est possible,

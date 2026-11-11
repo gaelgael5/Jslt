@@ -41,7 +41,13 @@ bundled (no ANTLR tooling, no Java required to *use* the library).
   [expressions](https://github.com/gaelgael5/Jslt/blob/main/docs/expressions.en.md),
   [collections](https://github.com/gaelgael5/Jslt/blob/main/docs/collections.en.md),
   [text and formatting](https://github.com/gaelgael5/Jslt/blob/main/docs/texte.en.md),
-  [dates and times](https://github.com/gaelgael5/Jslt/blob/main/docs/dates.en.md)
+  [dates and times](https://github.com/gaelgael5/Jslt/blob/main/docs/dates.en.md),
+  [objects](https://github.com/gaelgael5/Jslt/blob/main/docs/objets.en.md),
+  [types and validation](https://github.com/gaelgael5/Jslt/blob/main/docs/types.en.md),
+  [encoding and digests](https://github.com/gaelgael5/Jslt/blob/main/docs/encodage.en.md)
+- **Embedding the engine** (public API, documented internals, sandbox):
+  <https://github.com/gaelgael5/Jslt/blob/main/docs/integration.en.md>
+- **Changelog**: <https://github.com/gaelgael5/Jslt/blob/main/CHANGELOG.en.md>
 - **Project and plugin overview**:
   <https://github.com/gaelgael5/Jslt>
 

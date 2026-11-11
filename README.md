@@ -59,7 +59,11 @@ découpé par thème — on va droit à celui qu'on cherche :
 | [Données et collections](docs/collections.md) | `sum`, `distinct`, `select`, `group`, `join`, `schema` |
 | [Nombres et maths](docs/nombres.md) | `min`, `max`, `round`, `sqrt`… |
 | [Texte, regex et formatage](docs/texte.md) | `upper`, `split`, `regexmatches`, `normalize`, `format` |
-| [Dates et heures](docs/dates.md) | `parsedate` (culture, masque, fuseau), `dateadd`, `datesub`, `datediff`, `datepart` |
+| [Dates et heures](docs/dates.md) | `parsedate` (culture, masque, fuseau), `dateadd`, `datesub`, `datediff`, `datepart`, bornes de période, jours ouvrés |
+| [Objets](docs/objets.md) | `keys`, `values`, `entries`, `merge`, `pick`, `omit`, `has`, `renamekeys` |
+| [Types et validation](docs/types.md) | `typeof`, `isarray`, `trydefault`, `parsejson`, `schema`, `schemaisvalid` |
+| [Encodage et empreintes](docs/encodage.md) | `tobase64`, `sha256`, `hmacsha256`, `urlencode`, `htmlescape`, `hexencode` |
+| [Intégrer le moteur](docs/integration.md) | API publique, internes documentés, pipeline, bac à sable |
 | [Sortie texte](docs/sortie.md) | `to_json`, `to_block`, `$directives.output` |
 | [Extensibilité et débogage](docs/extensibilite.md) | registre, plugins, pas à pas, `to_source()` |
 
@@ -159,12 +163,16 @@ sont la source de vérité du langage, reprise du dépôt .NET.
 
 ## Périmètre
 
-Le cœur porte **75 fonctions** : maths, texte, encodage et hachage, collections,
-regroupement et jointure (`group`, `join`, `index`, `createindex`), expressions
-régulières, dates (`parsedate` avec masque et fuseau, `dateadd`, `datesub`,
-`datediff`, `datepart`, `now`) et formatage (`format`, `normalize`), schéma, et
-les fonctions de sortie texte. La liste qui fait foi est
-`default_registry.names()`.
+Le cœur porte **135 fonctions** : maths et nombres (dont `parsenumber`,
+`clamp`, `round` à précision), texte (découpe, remplacement, regex, pliage
+Unicode), encodage et empreintes (base64, hexadécimal, URL, HTML, `sha256`,
+`hmacsha256`), collections (tri, agrégats, regroupement et jointure), objets
+(`keys`, `entries`, `merge`, `pick`…), types et validation (`typeof`,
+`schemaisvalid`, `trydefault`), dates (`parsedate` avec masque et fuseau,
+calcul, écart, bornes de période, jours ouvrés), formatage, schéma, paramètres
+externes (`param`) et les fonctions de sortie texte. La liste qui fait foi est
+`default_registry.names()` ; le détail par thème est dans le guide, et les
+évolutions dans le [CHANGELOG](CHANGELOG.md).
 
 Hors du cœur **par décision**, dans les paquets `urban-json-*` ci-dessus : les
 entrées-sorties (fichiers, réseau, base) et la génération aléatoire. Non portés :

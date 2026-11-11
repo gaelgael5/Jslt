@@ -130,21 +130,80 @@ whose `Key` is equal (compared as text); the source is not modified.
 
 ---
 
-## Schema: `schema`
+## Sorting and ordering (`sort`, `reverse`, `first`, `last`)
 
-`schema(sample)` infers a JSON Schema (draft-04) from a JSON fragment, like
-NJsonSchema on the .NET side: nested objects become referenced `definitions`.
+`limit` truncated in input order: "the three largest amounts" was not
+expressible. `sort(array, key, descending)` sorts, `reverse` reverses (without
+modifying the source), `first` and `last` take an edge.
+
+The **key** is an expression evaluated for **each element**, with the element as
+the current source: `sort($.items, $.price)` sorts on each element's price, and
+`sort($.names, foldtext($))` sorts on a computed key. This is a convention
+*different* from `distinct`, whose path applies to the whole array (`$.*.price`):
+there, a missing key could no longer be paired with its element. With no key the
+sort is on the elements themselves; to state the direction, the key is `$`.
+
+**A total order that never raises.** An array of real data mixes types; a sort
+refusing to compare `null` with a string would be useless exactly where it is
+needed. The order is therefore: `null` < booleans < numbers < strings < arrays <
+objects. Within a rank, numbers compare numerically, strings by **code point**
+(so "Zoé" before "école"), arrays and objects by their compact JSON — arbitrary
+but stable. For a human order, sort on a folded key (`foldtext`). The sort is
+**stable** both ways: equal keys keep their original order.
 
 ```jslt
-{ "s": schema($.exemple) }
-```
-```json
-{ "exemple": { "nom": "Ana", "age": 30 } }
-```
-```json
-{ "s": { "$schema": "http://json-schema.org/draft-04/schema#", "type": "object", "properties": { "nom": { "type": "string" }, "age": { "type": "integer" } } } }
+{ "top": limit(sort($.sales, $.amount, true), 2) }
 ```
 
+```json
+{ "sales": [
+  { "city": "Lyon", "amount": 50 },
+  { "city": "Nice", "amount": 150 },
+  { "city": "Brest", "amount": 90 }
+] }
+```
+
+```json
+{ "top": [ { "city": "Nice", "amount": 150 }, { "city": "Brest", "amount": 90 } ] }
+```
+
+An element whose key is missing counts as `null`, so it comes **first**: gaps
+gather where you can see them, instead of making the sort raise.
+
+## Aggregating (`count`, `avg`, `median`, `product`, `min`, `max`)
+
+`sum` was alone, and `min`/`max` were **binary** (two numbers): "the smallest in
+the list" did not exist. `min` and `max` now accept **an array** in addition to
+their two-argument .NET form — it is the same question, and `sum($.n)` already
+aggregates. Given an array they preserve the type (an integer stays an integer);
+given two numbers they keep the .NET quirk of a decimal result. Passing an array
+**and** a second argument raises, rather than silently ignoring the second.
+
+| Function | On an empty array |
+|---|---|
+| `count(v)` | `0` — also counts an object's keys, a string's characters |
+| `sum(v)` | `0` |
+| `product(v)` | `1` (neutral element) |
+| `avg(v)`, `median(v)`, `min(v)`, `max(v)` | `null` — the average of nothing is not 0 |
+
+Like `sum`, they all **raise** on a non-numeric element: an aggregate that
+silently skips intruders returns a plausible, wrong result.
+
+```jslt
+{
+  "n": count($.v), "total": sum($.v), "mean": avg($.v),
+  "median": median($.v), "min": min($.v), "max": max($.v),
+  "keys": count($.o)
+}
+```
+
+```json
+{ "v": [10, 20, 30, 40], "o": { "a": 1, "b": 2 } }
+```
+
+```json
+{ "n": 4, "total": 100, "mean": 25.0, "median": 25.0, "min": 10, "max": 40, "keys": 2 }
+```
 
 ---
 

@@ -131,21 +131,83 @@ index que `index(i, clé)` interroge.
 
 ---
 
-## Schéma : `schema`
+## Trier et ordonner (`sort`, `reverse`, `first`, `last`)
 
-`schema(exemple)` déduit un JSON Schema (draft-04) d'un fragment JSON, comme
-NJsonSchema côté .NET : objets imbriqués en `definitions` référencées.
+`limit` tronquait dans l'ordre d'entrée : « les trois plus gros montants » n'était
+pas exprimable. `sort(tableau, clef, descendant)` trie, `reverse` inverse (sans
+modifier la source), `first` et `last` prennent un bord.
+
+La **clef** est une expression évaluée pour **chaque élément**, l'élément étant la
+source courante : `sort($.items, $.prix)` trie sur le prix de chaque élément, et
+`sort($.noms, foldtext($))` trie sur une clé calculée. C'est une convention
+*différente* de celle de `distinct`, dont le chemin s'applique au tableau entier
+(`$.*.prix`) : là, une clé manquante ne pourrait plus être appariée à son élément.
+Sans clef, le tri porte sur les éléments eux-mêmes ; pour préciser le sens, la
+clef est `$`.
+
+**Ordre total, qui ne lève jamais.** Un tableau de données réelles mélange les
+types ; un tri qui refuserait de comparer `null` à une chaîne serait inutilisable
+là où on en a le plus besoin. L'ordre est donc : `null` < booléens < nombres <
+chaînes < tableaux < objets. Dans un même rang, les nombres se comparent
+numériquement, les chaînes par **points de code** (donc « Zoé » avant « école »),
+tableaux et objets par leur JSON compact — arbitraire mais stable. Pour un ordre
+humain, trier sur une clé pliée (`foldtext`). Le tri est **stable** dans les deux
+sens : à clefs égales, l'ordre d'origine survit.
 
 ```jslt
-{ "s": schema($.exemple) }
-```
-```json
-{ "exemple": { "nom": "Ana", "age": 30 } }
-```
-```json
-{ "s": { "$schema": "http://json-schema.org/draft-04/schema#", "type": "object", "properties": { "nom": { "type": "string" }, "age": { "type": "integer" } } } }
+{ "top": limit(sort($.ventes, $.montant, true), 2) }
 ```
 
+```json
+{ "ventes": [
+  { "ville": "Lyon", "montant": 50 },
+  { "ville": "Nice", "montant": 150 },
+  { "ville": "Brest", "montant": 90 }
+] }
+```
+
+```json
+{ "top": [ { "ville": "Nice", "montant": 150 }, { "ville": "Brest", "montant": 90 } ] }
+```
+
+Un élément dont la clef est absente vaut `null`, donc passe **devant** : les
+trous se regroupent là où on les voit, au lieu de faire lever le tri.
+
+## Agréger (`count`, `avg`, `median`, `product`, `min`, `max`)
+
+`sum` était seul, et `min`/`max` étaient **binaires** (deux nombres) : « le plus
+petit de la liste » n'existait pas. `min` et `max` acceptent désormais **un
+tableau** en plus de leur forme .NET à deux arguments — c'est la même question,
+et `sum($.n)` agrège déjà. Avec un tableau, ils conservent le type (un entier
+reste entier) ; avec deux nombres, ils gardent le quirk .NET du résultat décimal.
+Passer un tableau **et** un second argument lève, plutôt que d'ignorer le second
+en silence.
+
+| Fonction | Sur un tableau vide |
+|---|---|
+| `count(v)` | `0` — et compte aussi les clés d'un objet, les caractères d'un texte |
+| `sum(v)` | `0` |
+| `product(v)` | `1` (élément neutre) |
+| `avg(v)`, `median(v)`, `min(v)`, `max(v)` | `null` — la moyenne de rien n'est pas 0 |
+
+Comme `sum`, tous **lèvent** sur un élément non numérique : un agrégat qui saute
+les intrus en silence rend un résultat plausible et faux.
+
+```jslt
+{
+  "n": count($.v), "total": sum($.v), "moyenne": avg($.v),
+  "mediane": median($.v), "mini": min($.v), "maxi": max($.v),
+  "clefs": count($.o)
+}
+```
+
+```json
+{ "v": [10, 20, 30, 40], "o": { "a": 1, "b": 2 } }
+```
+
+```json
+{ "n": 4, "total": 100, "moyenne": 25.0, "mediane": 25.0, "mini": 10, "maxi": 40, "clefs": 2 }
+```
 
 ---
 

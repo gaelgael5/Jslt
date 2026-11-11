@@ -40,7 +40,13 @@ embarqué (aucun outil ANTLR ni Java requis pour *utiliser* la librairie).
   [expressions](https://github.com/gaelgael5/Jslt/blob/main/docs/expressions.md),
   [collections](https://github.com/gaelgael5/Jslt/blob/main/docs/collections.md),
   [texte et formatage](https://github.com/gaelgael5/Jslt/blob/main/docs/texte.md),
-  [dates et heures](https://github.com/gaelgael5/Jslt/blob/main/docs/dates.md)
+  [dates et heures](https://github.com/gaelgael5/Jslt/blob/main/docs/dates.md),
+  [objets](https://github.com/gaelgael5/Jslt/blob/main/docs/objets.md),
+  [types et validation](https://github.com/gaelgael5/Jslt/blob/main/docs/types.md),
+  [encodage et empreintes](https://github.com/gaelgael5/Jslt/blob/main/docs/encodage.md)
+- **Intégrer le moteur** (API publique, internes documentés, bac à sable) :
+  <https://github.com/gaelgael5/Jslt/blob/main/docs/integration.md>
+- **Journal des modifications** : <https://github.com/gaelgael5/Jslt/blob/main/CHANGELOG.md>
 - **Vue d'ensemble du projet et des plugins** :
   <https://github.com/gaelgael5/Jslt>
 
