@@ -12,6 +12,23 @@ décrits dans [Intégrer le moteur](docs/integration.md).
 Versions selon [SemVer](https://semver.org/lang/fr/) ; une version PyPI est
 immuable, une correction de documentation destinée à l'index vaut donc un patch.
 
+## Plugins — 2026-11-11
+
+Versions prêtes à publier en même temps que le cœur 0.6.0.
+
+- **urban-json-csv 0.2.0** et **urban-json-xml 0.2.0** : `parsecsv` et `parsexml`
+  (lecture depuis une **chaîne**, sans fichier), entrés avec le cœur 0.4.0 et
+  jamais publiés depuis. Les deux READMEs sont aussi nettoyés de leurs renvois au
+  moteur .NET.
+- **urban-json-db 0.1.2**, **urban-json-html 0.1.2**, **urban-json-random
+  0.1.2** : documentation seule. Les passages qui expliquaient un comportement
+  par comparaison au .NET disent maintenant le comportement ; chez `random`,
+  « Écarts volontaires avec le .NET » devient « Règles de tirage ». Une version
+  PyPI étant immuable, une description corrigée n'atteint l'index que par un
+  patch.
+- Inchangés, donc non republiés : `urban-json-files`, `urban-json-excel`,
+  `urban-json-phone`, `urban-json-elastic`, `urban-json-http`.
+
 ## urban-json-editor 0.4.0 — 2026-11-11
 
 ### Ajouté

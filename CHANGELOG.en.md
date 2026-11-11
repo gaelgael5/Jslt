@@ -12,6 +12,22 @@ in [Embedding the engine](docs/integration.en.md).
 Versions follow [SemVer](https://semver.org/); a PyPI version is immutable, so a
 documentation fix aimed at the index is worth a patch release.
 
+## Plugins — 2026-11-11
+
+Versions ready to be published alongside the 0.6.0 core.
+
+- **urban-json-csv 0.2.0** and **urban-json-xml 0.2.0**: `parsecsv` and
+  `parsexml` (reading from a **string**, with no file), which came with the 0.4.0
+  core and have never been published since. Both READMEs are also cleaned of
+  their pointers to the .NET engine.
+- **urban-json-db 0.1.2**, **urban-json-html 0.1.2**, **urban-json-random
+  0.1.2**: documentation only. The passages that explained a behaviour by
+  comparison with .NET now state the behaviour; in `random`, "Deliberate
+  deviations from .NET" becomes "Drawing rules". A PyPI version being immutable,
+  a corrected description only reaches the index through a patch.
+- Unchanged, hence not republished: `urban-json-files`, `urban-json-excel`,
+  `urban-json-phone`, `urban-json-elastic`, `urban-json-http`.
+
 ## urban-json-editor 0.4.0 — 2026-11-11
 
 ### Added

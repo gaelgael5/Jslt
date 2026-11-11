@@ -38,7 +38,7 @@ from urban_json import JsltError
 
 from ._naughty import NAUGHTY_STRINGS
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 __all__ = ["NAUGHTY_STRINGS", "register"]
 
