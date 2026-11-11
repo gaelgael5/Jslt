@@ -1,0 +1,22 @@
+<!-- Page engendrée par packages/urban-json/scripts/generate_function_docs.py. Modifier la description dans le registre, pas ici. -->
+
+# `require`
+
+*[Français](require.md) · English*
+
+Returns the value when it is present, otherwise raises with the given message
+
+```
+require(value, message)
+```
+
+| Parameter | Expected | Note |
+|---|---|---|
+| `value` | optional |  |
+| `message` | optional |  |
+
+**Chapter**: [Quality: refuse, observe, validate](../qualite.en.md) · **Index**: [all functions](sommaire.en.md)
+
+---
+
+[← jslt guide](../guide.en.md)

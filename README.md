@@ -56,16 +56,18 @@ découpé par thème — on va droit à celui qu'on cherche :
 | [Chemins JSONPath](docs/chemins.md) | accès, sémantique 0 / 1 / N, filtres `?(...)`, `length()` / `value()` |
 | [Expressions](docs/expressions.md) | variables, opérateurs, coalescence `??`, casts `#type`, chaînage `->` |
 | [Conditions et boucles](docs/conditions-et-boucles.md) | `when` / `switch`, `$source` / `$where` |
-| [Données et collections](docs/collections.md) | `sum`, `distinct`, `select`, `group`, `join`, `schema` |
+| [Données et collections](docs/collections.md) | `sum`, `distinct`, `select`, `skip`, `flatten`, `partition`, `group`, `groupby`, `sumby`, `sort`, `unzip`, agrégats et statistiques |
 | [Nombres et maths](docs/nombres.md) | `min`, `max`, `round`, `sqrt`… |
 | [Texte, regex et formatage](docs/texte.md) | `upper`, `split`, `regexmatches`, `normalize`, `format` |
 | [Dates et heures](docs/dates.md) | `parsedate` (culture, masque, fuseau), `dateadd`, `datesub`, `datediff`, `datepart`, bornes de période, jours ouvrés |
-| [Objets](docs/objets.md) | `keys`, `values`, `entries`, `merge`, `pick`, `omit`, `has`, `renamekeys` |
+| [Objets et structures profondes](docs/objets.md) | `keys`, `entries`, `merge`, `pick`, `omit`, `has`, `flattenobject`, `unflatten`, `walk`, `prune`, `setpath` |
 | [Types et validation](docs/types.md) | `typeof`, `isarray`, `trydefault`, `parsejson`, `schema`, `schemaisvalid` |
 | [Encodage et empreintes](docs/encodage.md) | `tobase64`, `sha256`, `hmacsha256`, `urlencode`, `htmlescape`, `hexencode` |
 | [Intégrer le moteur](docs/integration.md) | API publique, internes documentés, pipeline, bac à sable |
-| [Sortie texte](docs/sortie.md) | `to_json`, `to_block`, `$directives.output` |
+| [Sortie texte](docs/sortie.md) | `to_json`, `to_block`, `to_csv`, `to_xml`, `to_yaml` |
+| [Qualité et diagnostic](docs/qualite.md) | `require`, `requirethat`, `trace`, `traces`, `isemail`, `isiban` |
 | [Extensibilité et débogage](docs/extensibilite.md) | registre, plugins, pas à pas, `to_source()` |
+| [Référence des fonctions](docs/fonctions/sommaire.md) | une page par fonction : signature, arguments, description |
 
 ## API publique
 
@@ -163,7 +165,7 @@ sont la source de vérité du langage, reprise du dépôt .NET.
 
 ## Périmètre
 
-Le cœur porte **135 fonctions** : maths et nombres (dont `parsenumber`,
+Le cœur porte **182 fonctions** : maths et nombres (dont `parsenumber`,
 `clamp`, `round` à précision), texte (découpe, remplacement, regex, pliage
 Unicode), encodage et empreintes (base64, hexadécimal, URL, HTML, `sha256`,
 `hmacsha256`), collections (tri, agrégats, regroupement et jointure), objets

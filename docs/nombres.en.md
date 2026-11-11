@@ -109,4 +109,60 @@ hence no natural two's-complement signed representation.
 
 ---
 
+## Directed rounding and precision
+
+`floor` existed **without** `ceil`: the most visible asymmetry of the port, which
+forced you to write `0 - floor(0 - x)`. `ceil` is here now, and all three
+directed roundings accept a precision.
+
+| Call | Result |
+|---|---|
+| `ceil(2.1)` | `3.0` |
+| `ceil(1.2345, 2)` | `1.24` |
+| `floor(1.2345, 2)` | `1.23` |
+| `truncate(-1.2345, 2)` | `-1.23` (towards zero) |
+| `floor(-1.2345, 2)` | `-1.24` (downwards) |
+
+`truncate` cuts towards zero, `floor` goes down: on a negative number the two
+differ, which is the whole point of having both. `round` remains **banker's**
+rounding (see above).
+
+## Logarithm, bases and non-finite values
+
+| Function | Purpose |
+|---|---|
+| `log(v, base)` | logarithm in any base (`logarithm` is fixed to e, its variants to 10 and 2) |
+| `tobase(v, base, width)` / `frombase(t, base)` | writing in a base from 2 to 36 |
+| `isfinite(v)` / `isnan(v)` | is the value a usable number? |
+
+`log(1000, 10)` returns exactly `3.0`: bases 10 and 2 go through their dedicated
+function, because dividing two logarithms would return `2.9999999999999996` — and
+that number would come straight out in the JSON produced.
+
+`isfinite` serves where JSON is silent: a computation **can** produce infinity
+(overflow of a product) while JSON notation cannot write it. Untested, the value
+propagates and comes out as `Infinity`, which most readers reject.
+
+`tohex` / `fromhex` remain: they are the special cases written most often, and
+they agree with `tobase(v, 16)`.
+
+```jslt
+{
+  "up": ceil($.v, 2),
+  "bits": tobase($.n, 2, 8),
+  "read": frombase($.t, 36),
+  "usable": isfinite($.v * $.v)
+}
+```
+
+```json
+{ "v": 1.2345, "n": 5, "t": "73" }
+```
+
+```json
+{ "up": 1.24, "bits": "00000101", "read": 255, "usable": true }
+```
+
+---
+
 [← jslt guide](guide.en.md)

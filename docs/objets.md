@@ -123,6 +123,97 @@ renommage impraticable sur un flux qui porte les deux noms pendant une migration
 
 ---
 
+## Structures profondes
+
+Lire profond se faisait déjà (`$..k`) ; **transformer** profond manquait.
+
+| Fonction | Rôle |
+|---|---|
+| `flattenobject(o, séparateur)` | objet imbriqué → clés pointées (`adr.ville`), tableaux indexés |
+| `unflatten(o, séparateur, tableaux)` | l'inverse ; `tableaux` à `true` pour relire les indices |
+| `walk(v, expression)` | applique une expression à **chaque nœud**, des feuilles vers la racine |
+| `prune(v, options)` | retire récursivement les `null`, et le vide avec `"empty"` |
+| `setpath(o, chemin, valeur)` | copie avec une valeur posée au bout d'un chemin |
+| `unsetpath(o, chemin)` | copie privée de ce chemin |
+
+**Aplatir.** C'est le pont vers un format tabulaire, et `to_csv` l'emprunte.
+Un conteneur **vide** est conservé comme feuille (`{"a": {}}` reste
+`{"a": {}}`), sans quoi l'aller-retour perdrait l'information.
+
+**Reconstruire.** Les segments numériques ne redeviennent des tableaux que si on
+le demande : une clé `2026` est un nom d'année dans bien des documents, et en
+faire un indice créerait un tableau de deux mille trous. Un chemin qui en
+contredit un autre (`a` valant 1 **et** `a.b` valant 2) **lève** : écraser
+silencieusement ferait disparaître une donnée.
+
+```jslt
+{
+  "plat": flattenobject($.client),
+  "retour": unflatten(flattenobject($.client), ".", true)
+}
+```
+
+```json
+{ "client": { "id": 1, "adr": { "ville": "Lyon" }, "tags": ["a", "b"] } }
+```
+
+```json
+{
+  "plat": { "id": 1, "adr.ville": "Lyon", "tags.0": "a", "tags.1": "b" },
+  "retour": { "id": 1, "adr": { "ville": "Lyon" }, "tags": ["a", "b"] }
+}
+```
+
+**Parcourir.** `walk` remonte **des feuilles vers la racine** : l'expression voit
+des enfants déjà transformés, donc une règle qui dépend d'eux fonctionne. Dans
+l'autre sens, elle verrait l'original et devrait redescendre elle-même.
+
+`prune` ne retire que les `null` par défaut : une chaîne vide, un tableau vide et
+`0` sont des **valeurs**, et les supprimer d'office ferait disparaître un
+« montant : 0 » qui dit quelque chose. L'option `"empty"` est là pour qui veut
+l'inverse — elle garde `0` et `false`, qui ne sont pas vides.
+
+```jslt
+{
+  "propre": prune($.doc),
+  "rognes": walk($.doc, when(isstring($)) { "true": trim($), "default": $ })
+}
+```
+
+```json
+{ "doc": { "a": " x ", "b": null, "l": [" y ", null] } }
+```
+
+```json
+{
+  "propre": { "a": " x ", "l": [" y "] },
+  "rognes": { "a": "x", "b": null, "l": ["y", null] }
+}
+```
+
+**Poser et retirer.** `setpath` crée les niveaux manquants et traverse les
+tableaux par indice (`l.1.v`) ; il **lève** s'il devait écraser un scalaire pour
+descendre. `unsetpath` ne lève pas sur un chemin absent : on demande un document
+sans cette donnée, et il l'est déjà. Ni l'un ni l'autre ne modifie sa source.
+
+```jslt
+{ "r": setpath($.o, "adr.pays", "FR") -> unsetpath("interne") }
+```
+
+```json
+{ "o": { "adr": { "ville": "Lyon" }, "interne": true } }
+```
+
+```json
+{ "r": { "adr": { "ville": "Lyon", "pays": "FR" } } }
+```
+
+Enfin, `merge` accepte un 4e argument : `merge(a, b, true, true)` **concatène**
+les tableaux au lieu de les remplacer. Le remplacement reste le défaut, parce que
+fusionner deux listes de longueurs différentes n'a pas de sens unique.
+
+---
+
 **Voir aussi** : [Types et validation](types.md) pour savoir *si* une valeur est
 un objet, [Données et collections](collections.md) pour les tableaux.
 

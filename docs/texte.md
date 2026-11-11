@@ -183,6 +183,96 @@ sert aussi à **trier** (cf. [`sort`](collections.md#trier-et-ordonner-sort-reve
 
 ---
 
+## Découper finement : `splitstring`, `splitregex`
+
+**`split` ne retient que le premier caractère du séparateur.** C'est la fidélité
+au .NET, et c'est un piège : `split($.t, ", ")` coupe sur la virgule et laisse
+les espaces, silencieusement. D'où deux fonctions plutôt qu'un changement de
+`split`, qui casserait les templates portés :
+
+- `splitstring(t, séparateur, limite)` coupe sur le séparateur **entier**, au
+  plus `limite` fois ;
+- `splitregex(t, motif, limite)` coupe sur un motif, pour les séparateurs à
+  géométrie variable (`"a ; b;c"`).
+
+```jslt
+{
+  "piege": split($.t, ", "),
+  "correct": splitstring($.t, ", "),
+  "variable": splitregex($.v, "\\s*;\\s*")
+}
+```
+
+```json
+{ "t": "a, b, c", "v": "a ; b;c" }
+```
+
+```json
+{ "piege": ["a", " b", " c"], "correct": ["a", "b", "c"], "variable": ["a", "b", "c"] }
+```
+
+## Raccourcir, retourner, identifier
+
+| Fonction | Rôle |
+|---|---|
+| `shorten(t, longueur, suffixe)` | raccourcit avec une ellipse, **suffixe compris** dans la longueur |
+| `reverse(t)` | retourne un texte (ou un tableau) |
+| `slugify(t, séparateur)` | identifiant d'URL : sans accent, en minuscules, mots joints |
+
+Le nom n'est pas `truncate` : il est déjà pris par la troncature **numérique**.
+Le suffixe compte dans la longueur demandée, sinon « 8 caractères maximum » en
+rendrait 9 et déborderait la colonne qu'on voulait tenir. Et quand la coupe
+tombe au milieu d'un mot, `shorten` remonte au dernier espace — « Paris L… »
+donne à lire un mot qui n'existe pas ; sans espace dans la fenêtre (un
+identifiant, un mot très long), il coupe net plutôt que de tout perdre.
+
+`reverse` accepte maintenant une chaîne (il rendait `null`), et retourne par
+**graphème** : sur un « é » écrit en forme décomposée, inverser les points de
+code collerait l'accent sur la lettre voisine.
+
+```jslt
+{
+  "court": shorten($.t, 12),
+  "slug": slugify($.t),
+  "envers": reverse($.mot)
+}
+```
+
+```json
+{ "t": "Crème Brûlée à Paris", "mot": "été" }
+```
+
+```json
+{ "court": "Crème…", "slug": "creme-brulee-a-paris", "envers": "été" }
+```
+
+## Rapprocher deux écritures : `levenshtein`, `similarity`
+
+`==` répond « identiques ou non », `foldtext` rapproche la casse et les accents ;
+reste la faute de frappe. `levenshtein(a, b)` compte les caractères à insérer,
+supprimer ou remplacer ; `similarity(a, b)` ramène ce compte entre 0 et 1, plus
+facile à seuiller. Deux chaînes vides valent 1 : elles sont identiques, et rendre
+« indéfini » obligerait chaque appelant à traiter ce cas.
+
+Le coût est en O(n·m) : c'est l'outil des libellés, pas des documents.
+
+```jslt
+{
+  "distance": levenshtein($.a, $.b),
+  "proche": similarity(foldtext($.a), foldtext($.b)) > 0.8
+}
+```
+
+```json
+{ "a": "Crème brulee", "b": "creme brûlée" }
+```
+
+```json
+{ "distance": 4, "proche": true }
+```
+
+---
+
 **Voir aussi** : [Dates et heures](dates.md) pour lire une date (`parsedate`)
 et la calculer.
 

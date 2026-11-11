@@ -35,24 +35,39 @@ JsltTemplate.parse(TEMPLATE).transform(INPUT)   # == OUTPUT
 **Built-in functions** — how they are called:
 [Built-in functions](#built-in-functions)
 
-- [Data and collections](collections.en.md) — `sum`, `concat`, `distinct`, `limit`,
-  `union`, `select`, `selectmany`, `any`, `contains`, `group`, `join`, `index`,
-  `sort`, `reverse`, `first`, `last`, `count`, `avg`, `median`, `product`
-- [Objects](objets.en.md) — `keys`, `values`, `entries`, `fromentries`, `merge`,
-  `pick`, `omit`, `has`, `renamekeys`
+- [Data and collections](collections.en.md) — `sum`, `distinct`, `limit`, `skip`,
+  `union`, `flatten`, `select`, `selectmany`, `zip`, `unzip`, `chunk`, `window`,
+  `partition`, `distinctby`, `intersect`, `difference`, `group`, `groupby`,
+  `countby`, `sumby`, `avgby`, `join`, `index`, `sort`, `reverse`, `first`,
+  `last`, `count`, `avg`, `median`, `product`, `variance`, `stddev`,
+  `percentile`, `mode`
+- [Objects and deep structures](objets.en.md) — `keys`, `values`, `entries`,
+  `fromentries`, `merge`, `pick`, `omit`, `has`, `renamekeys`,
+  `flattenobject`, `unflatten`, `walk`, `prune`, `setpath`, `unsetpath`
 - [Types, error fallback and validation](types.en.md) — `typeof`, `isarray`,
   `isobject`, `isstring`, `isnumber`, `isboolean`, `trydefault`, `parsejson`,
   `schema`, `schemaerrors`, `schemaisvalid`
-- [Numbers and math](nombres.en.md) — `min`, `max`, `abs`, `floor`, `round`, `sqrt`,
-  `parsenumber`, `sign`, `clamp`, `gcd`, `tohex`…
+- [Numbers and math](nombres.en.md) — `min`, `max`, `abs`, `floor`, `ceil`,
+  `round`, `sqrt`, `log`, `parsenumber`, `sign`, `clamp`, `gcd`, `tobase`,
+  `isfinite`…
 - [Text, regular expressions and formatting](texte.en.md) — `upper`, `split`,
-  `substring`, `replace`, `regexreplace`, `foldtext`, `deaccent`, `normalize`,
+  `splitstring`, `splitregex`, `substring`, `replace`, `regexreplace`, `shorten`,
+  `slugify`, `levenshtein`, `similarity`, `foldtext`, `deaccent`, `normalize`,
   `format`
 - [Encoding, digests and escaping](encodage.en.md) — `tobase64`, `sha256`,
   `hmacsha256`, `urlencode`, `htmlescape`, `hexencode`…
 - [Dates and times](dates.en.md) — `parsedate` (culture, mask, timezone), `dateadd`,
   `datesub`, `datediff`, `datepart`
-- [Text output](sortie.en.md) — `to_json`, `to_block`, `$directives.output`
+- [Text output](sortie.en.md) — `to_json`, `to_block`, `to_csv`, `to_xml`,
+  `to_yaml`, `$directives.output`
+- [Quality: refusing, observing, validating](qualite.en.md) — `require`,
+  `requirethat`, `trace`, `traces`, `isemail`, `isurl`, `isuuid`, `isiban`
+
+**Reference**
+
+- [Every function, one page each](fonctions/sommaire.en.md) — signature,
+  arguments and description, generated from the registry. That is where the
+  editor's tooltip leads; the examples stay in the chapters above.
 
 **Around the language**
 
@@ -179,7 +194,10 @@ JsltTemplate.parse('{ "r": $.a[?(@.x contains 1)] }')   # -> NotImplementedError
 | Path function | `$.x.length()`, `$.x.value()` | [Paths](chemins.en.md#path-functions-length--value) |
 | External parameter | `param("batch", "default")` | [Expressions](expressions.en.md#external-parameters-param-params) |
 | Error fallback | `trydefault(expr, fallback)` | [Types](types.en.md#error-fallback-trydefault) |
+| Explicit refusal | `require($.x, "message")` | [Quality](qualite.en.md#refusing-require-requirethat) |
+| Observation | `trace($.x, "label")` | [Quality](qualite.en.md#observing-trace-traces) |
 | Sorting | `sort($.l, $.k, true)` | [Collections](collections.en.md#sorting-and-ordering-sort-reverse-first-last) |
+| Total per group | `sumby($.l, $.k, $.v)` | [Collections](collections.en.md#aggregating-per-group-groupby-countby-sumby-avgby) |
 
 For the internal architecture, the porting patterns and the deliberate deviations
 from .NET, see [`CLAUDE.md`](../CLAUDE.md) (in French).

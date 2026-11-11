@@ -1,0 +1,23 @@
+<!-- Page engendrée par packages/urban-json/scripts/generate_function_docs.py. Modifier la description dans le registre, pas ici. -->
+
+# `concat`
+
+*[Français](concat.md) · English*
+
+Joins the elements of an array into text, separated by split_char then delimit_char
+
+```
+concat(token, split_char, delimit_char)
+```
+
+| Parameter | Expected | Note |
+|---|---|---|
+| `token` | optional |  |
+| `split_char` | optional |  |
+| `delimit_char` | optional |  |
+
+**Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
+
+---
+
+[← jslt guide](../guide.en.md)

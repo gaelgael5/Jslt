@@ -12,6 +12,179 @@ décrits dans [Intégrer le moteur](docs/integration.md).
 Versions selon [SemVer](https://semver.org/lang/fr/) ; une version PyPI est
 immuable, une correction de documentation destinée à l'index vaut donc un patch.
 
+## urban-json-editor 0.4.0 — 2026-11-11
+
+### Ajouté
+
+- **Aide à la signature.** Dès la parenthèse ouvrante, l'appel qui entoure le
+  caret est rappelé avec le **paramètre en cours de saisie en gras**, et il suit
+  les virgules — la liste de propositions, elle, disparaissait à la première
+  virgule et ne disait jamais *où* l'on en était. Les virgules d'un tableau ou
+  d'un objet n'avancent pas le paramètre (`sort($.l, [$.a, $.b], …)` reste au
+  2ᵉ), et un argument en trop ne met rien en gras plutôt que de désigner un
+  paramètre au hasard.
+- **L'aide suit le caret, pas la frappe** : cliquer dans les parenthèses d'un
+  appel déjà écrit la rouvre, de même que les flèches. C'est le geste de qui
+  revient corriger un argument, et il ne produit aucun `input`.
+- **La signature est un lien** vers la page de référence de la fonction, dans la
+  langue du lecteur (attribut `lang`, sinon celui du document, sinon le
+  navigateur) et sous la racine de son choix (attribut `docs-base`). L'URL vient
+  du champ `doc` du catalogue : une fonction de plugin, qui n'a pas de page dans
+  ce dépôt, s'affiche sans lien plutôt qu'avec un lien mort. L'infobulle et la
+  liste de propositions suivent la même langue (`description_en`).
+- Nouvel asset `jslt-signature.js` (logique pure, éprouvée sous node) : il
+  s'ajoute à `ASSET_FILES` et doit être servi avec les autres.
+
+## urban-json 0.6.0 — 2026-11-11
+
+Quatre catégories comblées (162 → 182) et un défaut de sortie corrigé.
+
+### Corrigé
+
+- **Du `repr` Python pouvait sortir dans le JSON produit.** `to_text` rendait
+  `str(valeur)` pour un tableau ou un objet, donc la représentation *Python*,
+  guillemets simples compris : `concat($.l, ",")` sur `[[1,"x"], 2]` rendait
+  `"[1, 'x'],2"`, et une clef composite de `groupby` / `countby` donnait
+  `"[1, 'x']"`. Le cast `#string` passait, lui, par le JSON : deux chemins de
+  mise en texte coexistaient, l'un correct et l'autre non. Il n'en reste qu'un,
+  celui du JSON compact — qui est aussi ce que rend `token.ToString()` côté
+  Newtonsoft.
+
+### Ajouté — 20 fonctions
+
+- **Structures profondes** : `flattenobject`, `unflatten` (les segments
+  numériques ne redeviennent des tableaux que sur demande : une clé « 2026 » est
+  un nom d'année dans bien des documents), `walk` (des feuilles vers la racine,
+  pour qu'une règle dépendant des enfants fonctionne), `prune`, `setpath`,
+  `unsetpath`.
+- **Sortie** : `to_csv` (RFC 4180, colonnes = union des clés, valeurs imbriquées
+  aplaties en clés pointées), `to_xml` (conventions de `parsexml` : `@attribut`,
+  `#text`, tableau = élément répété), `to_yaml` (style bloc ou style JSON ;
+  sous-ensemble assumé, sans ancres ni tags). Les trois sont **sans dépendance**.
+- **Qualité et diagnostic** : `require` (exige une valeur **présente** : `0`,
+  `false` et `""` sont des valeurs), `requirethat` (exige une condition
+  strictement vraie), `trace` / `traces` (observer sans polluer la sortie ; le
+  journal vit sur le contexte, donc deux exécutions ne se mélangent jamais), et
+  les validateurs `isemail`, `isurl`, `isuuid`, `isiban` (structure **et** clé
+  modulo 97).
+- **Une page de référence par fonction**, dans les deux langues
+  (`docs/fonctions/<nom>.md` et `.en.md`, plus un sommaire) : signature,
+  arguments et description, **engendrées** depuis le registre par
+  `packages/urban-json/scripts/generate_function_docs.py` — une recopie à la
+  main aurait vieilli dès la première signature élargie, et un test refuse une
+  page qui ne suit plus le registre. C'est l'URL stable que l'éditeur peut
+  dériver du seul nom de la fonction, là où une ancre dans un chapitre se casse
+  en silence au premier titre renommé. Les exemples et la prose restent dans les
+  chapitres.
+- **Toutes les descriptions sont traduites** (`description_en`) : la page
+  anglaise n'a pas d'autre source, et l'intellisense parle désormais la langue
+  du lecteur.
+- **Tri et regroupement, les finitions** : `unzip` (réciproque de `zip`, qui n'en
+  avait pas), `sumby` et `avgby` (le total par groupe demandait quatre fonctions
+  imbriquées pour l'usage le plus fréquent du regroupement ; la valeur agrégée
+  est paresseuse, omise elle vaut l'élément, et une valeur non numérique lève
+  comme pour `sum`).
+
+### Modifié — signature élargie, compatible
+
+- `merge(a, b, deep, arrays)` : 4e argument pour **concaténer** les tableaux au
+  lieu de les remplacer. Le remplacement reste le défaut, fusionner deux listes
+  de longueurs différentes n'ayant pas de sens unique.
+- `sort(l, clef, descendant)` : `descendant` accepte un **tableau de booléens**,
+  un sens par clef (`sort($.l, [$.a, $.b], [true, false])`). Le booléen unique
+  reste valable et inchangé. Un sens manquant vaut croissant ; un sens **en trop
+  lève**, parce que c'est la faute d'écriture la plus probable et qu'elle
+  laisserait un tri d'apparence juste. Cette forme compare composante par
+  composante, donc un peu plus lentement — elle seule.
+- `groupby(l, clef, nested)` : 3e argument pour **imbriquer** un niveau d'objet
+  par clef, au lieu de la clef textuelle `["FR","Lyon"]` qu'il fallait
+  re-analyser. La forme plate reste le défaut. Imbriquer exige le même nombre de
+  clefs pour tous les éléments : sinon une même clef porterait des éléments *et*
+  un sous-groupe, et l'un des deux disparaîtrait — ce cas lève.
+
+### Internes documentés
+
+- `FunctionInfo` porte `description_en` (la même description en anglais) et
+  `doc` (la page de référence, `"fonctions/<nom>"` pour le cœur, `None` pour une
+  fonction dont ce dépôt ne porte pas la page). Les deux sont dans
+  `catalog()` : c'est de là que l'éditeur tire l'infobulle et son lien.
+  `register()` et `jslt_function()` les acceptent en arguments nommés, à la fin
+  — un appel existant est inchangé.
+- `RuntimeContext` porte désormais `traces` (liste des observations), lisible par
+  un intégrateur après l'exécution. Attribut ajouté, rien n'est retiré.
+- Nouveaux modules internes : `functions/deep.py`, `functions/quality.py`,
+  `functions/_writers.py` (les trois émetteurs), `functions/bykey.py`.
+- `groupby` et `countby` ont quitté `functions/aggregate.py` pour
+  `functions/bykey.py`, avec `sumby` et `avgby` : elles partagent une clef
+  calculée par élément, pas la convention des agrégats. Aucun changement pour un
+  template (le registre résout par **nom**) ; seul un import direct du module
+  est concerné.
+
+### Toujours pas traité
+
+- **Dates** : `fromunix` / `tounix` (et `convert(x, "datetime")` rend encore
+  l'epoch en **texte**, ce qui ressemble à une date sans en être une), durées ISO
+  8601, `daterange`.
+- **Sécurité** : chiffrement, JWT, base32, `uuid` v5/v7, masquage.
+- **Tri** : pas de `minby` / `maxby` (l'élément qui porte l'extremum) ; le
+  classement par rang (`rank`) n'existe pas non plus.
+- **Langage** : fonctions définies dans le template, inclusion, interpolation de
+  chaînes — grammaire ANTLR, Java requis.
+
+## urban-json 0.5.0 — 2026-11-11
+
+Corrige un tri faux et comble quatre catégories de fonctions (135 → 162).
+
+### Corrigé
+
+- **Tri multi-clefs faux sur les nombres.** L'ordre total comparait tableaux et
+  objets par leur **JSON compact**, donc par points de code : `sort($.l, [$.a,
+  $.b])` — l'usage naturel d'une clef, puisque c'est une expression qui peut
+  rendre un tableau — plaçait `[10]` avant `[2]`. Les tableaux sont désormais
+  comparés **élément par élément** (un préfixe passe devant la séquence qu'il
+  préfixe) et les objets par leurs clés triées puis leurs valeurs. Invisible
+  tant qu'on triait des scalaires ; silencieusement faux sinon.
+
+### Ajouté — 27 fonctions
+
+- **Collections** : `skip` (le complément de `limit`, sans lequel il n'y avait
+  pas de pagination), `flatten` (récursif, là où `union` ne descend que d'un
+  niveau), `zip`, `chunk`, `window`, `partition`, `distinctby`, `intersect`,
+  `difference`.
+- **Statistiques** : `variance`, `stddev` (population par défaut),
+  `percentile` (interpolation linéaire, donc `percentile(v, 50)` coïncide avec
+  `median`), `mode` (sur toutes valeurs, pas seulement des nombres), `groupby`
+  (en **objet**, donc réductible par `entries`), `countby`.
+- **Texte** : `splitstring` (séparateur **entier** : `split` ne retient que son
+  premier caractère, fidélité .NET), `splitregex`, `shorten` (ellipse, suffixe
+  compris dans la longueur, coupe au dernier espace), `slugify`, `levenshtein`,
+  `similarity`.
+- **Nombres** : `ceil` (`floor` existait seul), `log` à base libre, `tobase` /
+  `frombase` (2 à 36), `isfinite`, `isnan`.
+
+### Modifié — signatures élargies, compatibles
+
+- `indexof` / `lastindexof` acceptent un **tableau** (position, ou `-1`). Sur un
+  tableau, l'égalité est **structurelle** : chercher `2` ne trouve pas `"2"`,
+  là où `contains` garde l'égalité `==` du langage par fidélité .NET.
+- `reverse` accepte une **chaîne** (il rendait `null`) et travaille par
+  graphème : sur un « é » décomposé, inverser les points de code collerait
+  l'accent sur la lettre voisine.
+- `floor`, `ceil` et `truncate` acceptent une précision en décimales.
+
+### Modifié — comportement
+
+- `log(1000, 10)` rend exactement `3.0` : les bases 10 et 2 passent par leur
+  fonction dédiée, parce que diviser deux logarithmes rend `2.9999999999999996`
+  — un nombre qui ressortirait tel quel dans le JSON produit.
+
+### Internes documentés
+
+- `functions/folding.py` (pliage Unicode) et `functions/similarity.py` extraits
+  de `text.py`, `functions/_lazy.py` partagé par toutes les fonctions à clef
+  calculée. Ce sont des modules internes non documentés : aucune garantie, mais
+  c'est noté ici parce que le découpage de `functions/` sert de carte.
+
 ## urban-json 0.4.0 — 2026-11-11
 
 Comble onze familles de fonctions manquantes. **Aucune rupture** : rien n'est

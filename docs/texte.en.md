@@ -181,6 +181,96 @@ have doubled the semantics of the first, and because the same key also serves to
 
 ---
 
+## Splitting precisely: `splitstring`, `splitregex`
+
+**`split` only keeps the first character of the separator.** That is .NET
+fidelity, and it is a trap: `split($.t, ", ")` cuts on the comma and leaves the
+spaces, silently. Hence two functions rather than a change to `split`, which
+would break ported templates:
+
+- `splitstring(t, separator, limit)` cuts on the **whole** separator, at most
+  `limit` times;
+- `splitregex(t, pattern, limit)` cuts on a pattern, for separators of varying
+  shape (`"a ; b;c"`).
+
+```jslt
+{
+  "trap": split($.t, ", "),
+  "correct": splitstring($.t, ", "),
+  "varying": splitregex($.v, "\\s*;\\s*")
+}
+```
+
+```json
+{ "t": "a, b, c", "v": "a ; b;c" }
+```
+
+```json
+{ "trap": ["a", " b", " c"], "correct": ["a", "b", "c"], "varying": ["a", "b", "c"] }
+```
+
+## Shortening, reversing, identifying
+
+| Function | Purpose |
+|---|---|
+| `shorten(t, length, suffix)` | shortens with an ellipsis, **suffix included** in the length |
+| `reverse(t)` | reverses a text (or an array) |
+| `slugify(t, separator)` | URL identifier: unaccented, lowercase, words joined |
+
+The name is not `truncate`: that one is already taken by **numeric** truncation.
+The suffix counts towards the requested length, otherwise "at most 8 characters"
+would return 9 and overflow the column you were trying to fit. And when the cut
+falls in the middle of a word, `shorten` backs up to the last space — "Paris L…"
+makes the reader see a word that does not exist; with no space in the window (an
+identifier, a very long word) it cuts hard rather than losing everything.
+
+`reverse` now accepts a string (it used to return `null`), and reverses by
+**grapheme**: on an "é" written in decomposed form, reversing code points would
+stick the accent onto the neighbouring letter.
+
+```jslt
+{
+  "short": shorten($.t, 12),
+  "slug": slugify($.t),
+  "backwards": reverse($.word)
+}
+```
+
+```json
+{ "t": "Crème Brûlée à Paris", "word": "été" }
+```
+
+```json
+{ "short": "Crème…", "slug": "creme-brulee-a-paris", "backwards": "été" }
+```
+
+## Matching two spellings: `levenshtein`, `similarity`
+
+`==` answers "identical or not", `foldtext` reconciles case and accents; what
+remains is the typo. `levenshtein(a, b)` counts the characters to insert, delete
+or replace; `similarity(a, b)` scales that count between 0 and 1, which is easier
+to threshold. Two empty strings score 1: they are identical, and returning
+"undefined" would force every caller to handle that case.
+
+The cost is O(n·m): this is the tool for labels, not for documents.
+
+```jslt
+{
+  "distance": levenshtein($.a, $.b),
+  "close": similarity(foldtext($.a), foldtext($.b)) > 0.8
+}
+```
+
+```json
+{ "a": "Crème brulee", "b": "creme brûlée" }
+```
+
+```json
+{ "distance": 4, "close": true }
+```
+
+---
+
 **See also**: [Dates and times](dates.en.md) to read a date (`parsedate`) and compute with it.
 
 ---

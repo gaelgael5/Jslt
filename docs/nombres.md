@@ -110,4 +110,61 @@ largeur, donc pas de représentation signée naturelle en complément à deux.
 
 ---
 
+## Arrondis dirigés et précision
+
+`floor` existait **sans** `ceil` : l'asymétrie la plus visible du portage, qui
+obligeait à écrire `0 - floor(0 - x)`. `ceil` est là, et les trois arrondis
+dirigés acceptent une précision.
+
+| Appel | Résultat |
+|---|---|
+| `ceil(2.1)` | `3.0` |
+| `ceil(1.2345, 2)` | `1.24` |
+| `floor(1.2345, 2)` | `1.23` |
+| `truncate(-1.2345, 2)` | `-1.23` (vers zéro) |
+| `floor(-1.2345, 2)` | `-1.24` (vers le bas) |
+
+`truncate` coupe vers zéro, `floor` descend : sur un négatif, les deux
+diffèrent, et c'est tout l'intérêt d'avoir les deux. `round` reste l'arrondi
+**bancaire** (cf. ci-dessus).
+
+## Logarithme, bases et valeurs non finies
+
+| Fonction | Rôle |
+|---|---|
+| `log(v, base)` | logarithme dans une base libre (`logarithm` est fixé à e, ses variantes à 10 et 2) |
+| `tobase(v, base, largeur)` / `frombase(t, base)` | écriture dans une base de 2 à 36 |
+| `isfinite(v)` / `isnan(v)` | la valeur est-elle un nombre exploitable ? |
+
+`log(1000, 10)` rend exactement `3.0` : les bases 10 et 2 passent par leur
+fonction dédiée, parce que diviser deux logarithmes rendrait
+`2.9999999999999996` — et ce nombre ressortirait tel quel dans le JSON produit.
+
+`isfinite` sert là où JSON est muet : un calcul **peut** produire l'infini (le
+débordement d'un produit) alors que la notation JSON ne sait pas l'écrire. Sans
+test, la valeur se propage et ressort en `Infinity`, que la plupart des lecteurs
+refusent.
+
+`tohex` / `fromhex` restent : ce sont les cas particuliers qu'on écrit le plus
+souvent, et ils concordent avec `tobase(v, 16)`.
+
+```jslt
+{
+  "haut": ceil($.v, 2),
+  "bits": tobase($.n, 2, 8),
+  "lu": frombase($.t, 36),
+  "exploitable": isfinite($.v * $.v)
+}
+```
+
+```json
+{ "v": 1.2345, "n": 5, "t": "73" }
+```
+
+```json
+{ "haut": 1.24, "bits": "00000101", "lu": 255, "exploitable": true }
+```
+
+---
+
 [← Guide jslt](guide.md)

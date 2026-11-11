@@ -121,6 +121,96 @@ feed that carries both names during a migration.
 
 ---
 
+## Deep structures
+
+Reading deep was already possible (`$..k`); **transforming** deep was missing.
+
+| Function | Purpose |
+|---|---|
+| `flattenobject(o, separator)` | nested object → dotted keys (`addr.city`), arrays indexed |
+| `unflatten(o, separator, arrays)` | the inverse; `arrays` set to `true` to read indices back |
+| `walk(v, expression)` | applies an expression to **every node**, leaves first |
+| `prune(v, options)` | recursively removes `null`, and emptiness with `"empty"` |
+| `setpath(o, path, value)` | copy with a value set at the end of a path |
+| `unsetpath(o, path)` | copy without that path |
+
+**Flattening.** This is the bridge to a tabular format, and `to_csv` uses it. An
+**empty** container is kept as a leaf (`{"a": {}}` stays `{"a": {}}`), otherwise
+the round trip would lose information.
+
+**Rebuilding.** Numeric segments only become arrays when asked: a key `2026` is a
+year's name in plenty of documents, and turning it into an index would create an
+array with two thousand holes. A path that contradicts another (`a` being 1
+**and** `a.b` being 2) **raises**: overwriting silently would make data vanish.
+
+```jslt
+{
+  "flat": flattenobject($.client),
+  "back": unflatten(flattenobject($.client), ".", true)
+}
+```
+
+```json
+{ "client": { "id": 1, "addr": { "city": "Lyon" }, "tags": ["a", "b"] } }
+```
+
+```json
+{
+  "flat": { "id": 1, "addr.city": "Lyon", "tags.0": "a", "tags.1": "b" },
+  "back": { "id": 1, "addr": { "city": "Lyon" }, "tags": ["a", "b"] }
+}
+```
+
+**Walking.** `walk` works **from the leaves up**: the expression sees children
+that are already transformed, so a rule that depends on them works. The other way
+round it would see the original and have to descend by itself.
+
+`prune` removes only `null` by default: an empty string, an empty array and `0`
+are **values**, and removing them outright would make an "amount: 0" that says
+something disappear. The `"empty"` option is there for the opposite — it keeps
+`0` and `false`, which are not empty.
+
+```jslt
+{
+  "clean": prune($.doc),
+  "trimmed": walk($.doc, when(isstring($)) { "true": trim($), "default": $ })
+}
+```
+
+```json
+{ "doc": { "a": " x ", "b": null, "l": [" y ", null] } }
+```
+
+```json
+{
+  "clean": { "a": " x ", "l": [" y "] },
+  "trimmed": { "a": "x", "b": null, "l": ["y", null] }
+}
+```
+
+**Setting and removing.** `setpath` creates the missing levels and walks arrays by
+index (`l.1.v`); it **raises** if it would have to overwrite a scalar to descend.
+`unsetpath` does not raise on a missing path: you asked for a document without
+that data, and it already is. Neither modifies its source.
+
+```jslt
+{ "r": setpath($.o, "addr.country", "FR") -> unsetpath("internal") }
+```
+
+```json
+{ "o": { "addr": { "city": "Lyon" }, "internal": true } }
+```
+
+```json
+{ "r": { "addr": { "city": "Lyon", "country": "FR" } } }
+```
+
+Finally, `merge` takes a 4th argument: `merge(a, b, true, true)` **concatenates**
+arrays instead of replacing them. Replacement stays the default, because merging
+two lists of different lengths has no single meaning.
+
+---
+
 **See also**: [Types and validation](types.en.md) to find out *whether* a value
 is an object, [Data and collections](collections.en.md) for arrays.
 

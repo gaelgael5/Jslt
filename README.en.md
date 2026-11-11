@@ -55,16 +55,18 @@ theme, so you can go straight to the one you need:
 | [JSONPath paths](docs/chemins.en.md) | access, 0 / 1 / N semantics, filters `?(...)`, `length()` / `value()` |
 | [Expressions](docs/expressions.en.md) | variables, operators, coalescing `??`, casts `#type`, chaining `->` |
 | [Conditionals and loops](docs/conditions-et-boucles.en.md) | `when` / `switch`, `$source` / `$where` |
-| [Data and collections](docs/collections.en.md) | `sum`, `distinct`, `select`, `group`, `join`, `schema` |
+| [Data and collections](docs/collections.en.md) | `sum`, `distinct`, `select`, `skip`, `flatten`, `partition`, `group`, `groupby`, `sort`, aggregates and statistics |
 | [Numbers and math](docs/nombres.en.md) | `min`, `max`, `round`, `sqrt`… |
 | [Text, regex and formatting](docs/texte.en.md) | `upper`, `split`, `regexmatches`, `normalize`, `format` |
 | [Dates and times](docs/dates.en.md) | `parsedate` (culture, mask, timezone), `dateadd`, `datesub`, `datediff`, `datepart`, period bounds, business days |
-| [Objects](docs/objets.en.md) | `keys`, `values`, `entries`, `merge`, `pick`, `omit`, `has`, `renamekeys` |
+| [Objects and deep structures](docs/objets.en.md) | `keys`, `entries`, `merge`, `pick`, `omit`, `has`, `flattenobject`, `unflatten`, `walk`, `prune`, `setpath` |
 | [Types and validation](docs/types.en.md) | `typeof`, `isarray`, `trydefault`, `parsejson`, `schema`, `schemaisvalid` |
 | [Encoding and digests](docs/encodage.en.md) | `tobase64`, `sha256`, `hmacsha256`, `urlencode`, `htmlescape`, `hexencode` |
 | [Embedding the engine](docs/integration.en.md) | public API, documented internals, pipeline, sandbox |
-| [Text output](docs/sortie.en.md) | `to_json`, `to_block`, `$directives.output` |
+| [Text output](docs/sortie.en.md) | `to_json`, `to_block`, `to_csv`, `to_xml`, `to_yaml` |
+| [Quality and diagnostics](docs/qualite.en.md) | `require`, `requirethat`, `trace`, `traces`, `isemail`, `isiban` |
 | [Extensibility and debugging](docs/extensibilite.en.md) | registry, plugins, step-by-step, `to_source()` |
+| [Function reference](docs/fonctions/sommaire.en.md) | one page per function: signature, arguments, description |
 
 ## Public API
 
@@ -162,7 +164,7 @@ The grammar is authoritative: `packages/urban-json/grammar/JsltLexer.g4` and
 
 ## Scope
 
-The core ships **135 functions**: maths and numbers (including `parsenumber`,
+The core ships **182 functions**: maths and numbers (including `parsenumber`,
 `clamp`, `round` with precision), text (slicing, replacement, regex, Unicode
 folding), encoding and digests (base64, hexadecimal, URL, HTML, `sha256`,
 `hmacsha256`), collections (sorting, aggregates, grouping and joins), objects
