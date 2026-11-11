@@ -10,6 +10,28 @@ Output: serialises the result as JSON, indented when indented is true; ignore_nu
 to_json(indented, ignore_null_and_empty_value)
 ```
 
+**Example**
+
+```jslt
+{ "$directives": { "output": { "mode": to_json(true) } }, "ville": $.v }
+```
+
+```json
+{ "v": "Lyon" }
+```
+
+```json
+{ "ville": "Lyon" }
+```
+
+`render()` produces:
+
+```text
+{
+  "ville": "Lyon"
+}
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `indented` | optional |  |

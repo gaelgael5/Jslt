@@ -10,6 +10,20 @@ Cuts a text into an array on the first character of charset
 split(token, charset)
 ```
 
+**Example**
+
+```jslt
+{ "r": split($.t, ";") }
+```
+
+```json
+{ "t": "a;b;c" }
+```
+
+```json
+{ "r": ["a", "b", "c"] }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

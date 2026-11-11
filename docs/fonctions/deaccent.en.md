@@ -10,6 +10,20 @@ Removes diacritics (accents, cedillas) without touching the case
 deaccent(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": deaccent($.t) }
+```
+
+```json
+{ "t": "Évêché" }
+```
+
+```json
+{ "r": "Eveche" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

@@ -10,6 +10,20 @@ Variance des nombres d'un tableau : de population par défaut, d'échantillon si
 variance(token, sample)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": variance($.n) }
+```
+
+```json
+{ "n": [2, 4, 4, 4, 5, 5, 7, 9] }
+```
+
+```json
+{ "r": 4.0 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

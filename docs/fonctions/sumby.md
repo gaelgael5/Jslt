@@ -10,6 +10,20 @@ Somme par clef calculée, en un objet { clef: somme } (la valeur par défaut est
 sumby(source, key, value)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": sumby($.l, $.ville, $.m) }
+```
+
+```json
+{ "l": [{ "ville": "Lyon", "m": 10 }, { "ville": "Lyon", "m": 5 }, { "ville": "Brest", "m": 7 }] }
+```
+
+```json
+{ "r": { "Lyon": 15, "Brest": 7 } }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |

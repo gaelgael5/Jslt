@@ -10,6 +10,20 @@ Encodes a value for a URL (path mode to keep the slashes)
 urlencode(token, mode)
 ```
 
+**Example**
+
+```jslt
+{ "r": urlencode($.t) }
+```
+
+```json
+{ "t": "café noir" }
+```
+
+```json
+{ "r": "caf%C3%A9%20noir" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

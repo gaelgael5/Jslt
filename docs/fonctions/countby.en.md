@@ -10,6 +10,20 @@ Counts the elements of an array per computed key, as an object { key: count }
 countby(source, key)
 ```
 
+**Example**
+
+```jslt
+{ "r": countby($.l, $.ville) }
+```
+
+```json
+{ "l": [{ "ville": "Lyon" }, { "ville": "Lyon" }, { "ville": "Brest" }] }
+```
+
+```json
+{ "r": { "Lyon": 2, "Brest": 1 } }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

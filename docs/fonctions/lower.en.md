@@ -10,6 +10,20 @@ Text in lower case (null stays null, a non-string gives false)
 lower(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": lower($.t) }
+```
+
+```json
+{ "t": "ACME SA" }
+```
+
+```json
+{ "r": "acme sa" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

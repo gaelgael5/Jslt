@@ -10,6 +10,20 @@ Converse of zip: from an array of rows, returns one array per position
 unzip(source)
 ```
 
+**Example**
+
+```jslt
+{ "r": unzip($.l) }
+```
+
+```json
+{ "l": [[1, "a"], [2, "b"]] }
+```
+
+```json
+{ "r": [[1, 2], ["a", "b"]] }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

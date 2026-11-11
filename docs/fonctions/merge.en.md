@@ -10,6 +10,20 @@ Merges two objects, the right one winning the shared keys (deep for sub-objects,
 merge(left, right, deep, arrays)
 ```
 
+**Example**
+
+```jslt
+{ "r": merge($.a, $.b) }
+```
+
+```json
+{ "a": { "x": 1, "y": 2 }, "b": { "y": 9 } }
+```
+
+```json
+{ "r": { "x": 1, "y": 9 } }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `left` | optional |  |

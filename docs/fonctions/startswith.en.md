@@ -10,6 +10,20 @@ True when the text starts with txt
 startswith(token, txt)
 ```
 
+**Example**
+
+```jslt
+{ "r": startswith($.t, "FR") }
+```
+
+```json
+{ "t": "FR7630006000011234567890189" }
+```
+
+```json
+{ "r": true }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

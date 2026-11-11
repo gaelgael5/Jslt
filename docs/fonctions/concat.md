@@ -10,6 +10,20 @@ Joint les éléments d'un tableau en un texte, séparés par split_char suivi de
 concat(token, split_char, delimit_char)
 ```
 
+**Exemple**
+
+```jslt
+{ "colle": concat($.l), "joint": concat($.l, "-") }
+```
+
+```json
+{ "l": ["a", "b", "c"] }
+```
+
+```json
+{ "colle": "abc", "joint": "a-b-c" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

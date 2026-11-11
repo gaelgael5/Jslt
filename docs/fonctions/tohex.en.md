@@ -10,6 +10,20 @@ Writes an integer in lower-case hexadecimal, padded to width digits
 tohex(token, width)
 ```
 
+**Example**
+
+```jslt
+{ "r": tohex($.n), "sur_quatre": tohex($.n, 4) }
+```
+
+```json
+{ "n": 255 }
+```
+
+```json
+{ "r": "ff", "sur_quatre": "00ff" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

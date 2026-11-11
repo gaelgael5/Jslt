@@ -10,6 +10,20 @@ Découpe un tableau en tranches consécutives de size éléments
 chunk(source, size)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": chunk($.l, 2) }
+```
+
+```json
+{ "l": [1, 2, 3, 4, 5] }
+```
+
+```json
+{ "r": [[1, 2], [3, 4], [5]] }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |

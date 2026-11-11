@@ -10,6 +10,20 @@ Met en majuscule la première lettre de chaque mot, sans toucher au reste
 titlecase(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": titlecase($.t) }
+```
+
+```json
+{ "t": "ana de la tour" }
+```
+
+```json
+{ "r": "Ana De La Tour" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

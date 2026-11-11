@@ -10,6 +10,20 @@ Copy of the object with a value placed at the end of a dotted path (levels creat
 setpath(token, path, value, separator)
 ```
 
+**Example**
+
+```jslt
+{ "r": setpath($.o, "client.ville", "Lyon") }
+```
+
+```json
+{ "o": { "client": { "nom": "Ana" } } }
+```
+
+```json
+{ "r": { "client": { "nom": "Ana", "ville": "Lyon" } } }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

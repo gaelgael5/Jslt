@@ -10,6 +10,20 @@ Lit un entier écrit en hexadécimal (avec ou sans préfixe 0x)
 fromhex(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": fromhex($.t) }
+```
+
+```json
+{ "t": "0xff" }
+```
+
+```json
+{ "r": 255 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

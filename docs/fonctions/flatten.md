@@ -10,6 +10,20 @@ Aplatit un tableau de tableaux, à fond par défaut ou sur depth niveaux
 flatten(source, depth)
 ```
 
+**Exemple**
+
+```jslt
+{ "a_fond": flatten($.l), "un_niveau": flatten($.l, 1) }
+```
+
+```json
+{ "l": [1, [2, [3]]] }
+```
+
+```json
+{ "a_fond": [1, 2, 3], "un_niveau": [1, 2, [3]] }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |

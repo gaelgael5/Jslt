@@ -10,6 +10,20 @@ Sépare un tableau en { true, false } selon un prédicat évalué par élément
 partition(source, predicate)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": partition($.l, $.actif) }
+```
+
+```json
+{ "l": [{ "n": "a", "actif": true }, { "n": "b", "actif": false }] }
+```
+
+```json
+{ "r": { "true": [{ "n": "a", "actif": true }], "false": [{ "n": "b", "actif": false }] } }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |

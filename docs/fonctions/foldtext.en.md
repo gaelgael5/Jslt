@@ -10,6 +10,20 @@ Comparison key for a text: lowercase without accents by default, or case / accen
 foldtext(token, options)
 ```
 
+**Example**
+
+```jslt
+{ "r": foldtext($.t) }
+```
+
+```json
+{ "t": "Évêché" }
+```
+
+```json
+{ "r": "eveche" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

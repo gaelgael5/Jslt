@@ -10,6 +10,20 @@ Aplatit d'un niveau un tableau de tableaux
 union(source)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": union($.l) }
+```
+
+```json
+{ "l": [[1, 2], [3]] }
+```
+
+```json
+{ "r": [1, 2, 3] }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |

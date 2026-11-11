@@ -10,6 +10,20 @@ True when the text is an IBAN whose check digits (modulo 97) are right
 isiban(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": isiban($.t) }
+```
+
+```json
+{ "t": "FR7630006000011234567890189" }
+```
+
+```json
+{ "r": true }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

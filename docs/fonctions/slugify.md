@@ -10,6 +10,20 @@ Transforme un texte en identifiant d'URL : sans accent, en minuscules, mots join
 slugify(token, separator)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": slugify($.t) }
+```
+
+```json
+{ "t": "Évêché de Lyon" }
+```
+
+```json
+{ "r": "eveche-de-lyon" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

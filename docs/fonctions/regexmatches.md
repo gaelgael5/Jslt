@@ -10,6 +10,20 @@ Liste des correspondances du motif regex dans le texte
 regexmatches(token, pattern)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": regexmatches($.t, "[0-9]+") }
+```
+
+```json
+{ "t": "a1 b22 c333" }
+```
+
+```json
+{ "r": ["1", "22", "333"] }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

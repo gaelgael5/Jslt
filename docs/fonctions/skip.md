@@ -10,6 +10,20 @@ Ignore les n premiers éléments d'un tableau (complément de limit)
 skip(source, count)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": skip($.l, 2) }
+```
+
+```json
+{ "l": [1, 2, 3, 4] }
+```
+
+```json
+{ "r": [3, 4] }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |

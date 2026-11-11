@@ -10,6 +10,20 @@ Constante e, base du logarithme népérien (2.71828…)
 e()
 ```
 
+**Exemple**
+
+```jslt
+{ "r": round(e(), 3) }
+```
+
+```json
+{}
+```
+
+```json
+{ "r": 2.718 }
+```
+
 Cette fonction ne prend aucun argument.
 
 **Chapitre** : [Nombres et maths](../nombres.md) · **Index** : [toutes les fonctions](sommaire.md)

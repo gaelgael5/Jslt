@@ -10,6 +10,20 @@ True when the JSONPath path selects at least one value in the source
 selectany(source, path)
 ```
 
+**Example**
+
+```jslt
+{ "r": selectany($.d, $.client.nom) }
+```
+
+```json
+{ "d": { "client": { "nom": "Ana" } } }
+```
+
+```json
+{ "r": true }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

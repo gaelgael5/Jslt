@@ -10,6 +10,20 @@ Variance of the numbers in an array: of population by default, of sample when sa
 variance(token, sample)
 ```
 
+**Example**
+
+```jslt
+{ "r": variance($.n) }
+```
+
+```json
+{ "n": [2, 4, 4, 4, 5, 5, 7, 9] }
+```
+
+```json
+{ "r": 4.0 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

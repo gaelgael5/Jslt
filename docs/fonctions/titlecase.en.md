@@ -10,6 +10,20 @@ Upper-cases the first letter of every word, leaving the rest alone
 titlecase(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": titlecase($.t) }
+```
+
+```json
+{ "t": "ana de la tour" }
+```
+
+```json
+{ "r": "Ana De La Tour" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

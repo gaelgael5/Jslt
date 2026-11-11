@@ -10,6 +10,27 @@ Sortie : le tableau résultat en CSV (séparateur et ligne d'en-tête réglables
 to_csv(separator, header)
 ```
 
+**Exemple**
+
+```jslt
+{ "$directives": { "output": { "filter": $.lignes, "mode": to_csv() } }, "lignes": [ { "$source": $.clients, "id": $.id, "ville": $.adr.ville } ] }
+```
+
+```json
+{ "clients": [{ "id": 1, "adr": { "ville": "Lyon" } }] }
+```
+
+```json
+{ "lignes": [{ "id": 1, "ville": "Lyon" }] }
+```
+
+`render()` produit :
+
+```text
+id;ville
+1;Lyon
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `separator` | optionnel |  |

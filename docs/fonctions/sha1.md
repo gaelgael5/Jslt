@@ -10,6 +10,20 @@ Empreinte SHA-1 d'une valeur, en hexadécimal (identité, pas signature)
 sha1(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": sha1($.t) }
+```
+
+```json
+{ "t": "abc" }
+```
+
+```json
+{ "r": "a9993e364706816aba3e25717850c26c9cd0d89d" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

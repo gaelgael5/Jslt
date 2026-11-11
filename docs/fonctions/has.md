@@ -10,6 +10,20 @@ Vrai si l'objet porte cette clé, même avec une valeur nulle
 has(token, key)
 ```
 
+**Exemple**
+
+```jslt
+{ "presente": has($.o, "a"), "absente": has($.o, "z") }
+```
+
+```json
+{ "o": { "a": null } }
+```
+
+```json
+{ "presente": true, "absente": false }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

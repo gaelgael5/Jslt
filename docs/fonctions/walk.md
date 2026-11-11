@@ -10,6 +10,20 @@ Applique une expression à chaque nœud d'une structure, des feuilles vers la ra
 walk(token, expression)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": walk($.o, when(isstring($)) { "True": upper($), "default": $ }) }
+```
+
+```json
+{ "o": { "a": "x", "b": { "c": "y" } } }
+```
+
+```json
+{ "r": { "a": "X", "b": { "c": "Y" } } }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

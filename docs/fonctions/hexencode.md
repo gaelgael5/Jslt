@@ -10,6 +10,20 @@
 hexencode(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": hexencode($.t) }
+```
+
+```json
+{ "t": "abc" }
+```
+
+```json
+{ "r": "616263" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

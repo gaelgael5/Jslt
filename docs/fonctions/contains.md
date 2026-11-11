@@ -10,6 +10,20 @@ Vrai si le tableau contient un élément égal à la valeur
 contains(source, to_match)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": contains($.l, "b") }
+```
+
+```json
+{ "l": ["a", "b"] }
+```
+
+```json
+{ "r": true }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |

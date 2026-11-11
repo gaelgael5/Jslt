@@ -10,6 +10,20 @@ Tangent of an angle in radians
 tan(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": tan($.n) }
+```
+
+```json
+{ "n": 0 }
+```
+
+```json
+{ "r": 0.0 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

@@ -10,6 +10,20 @@ Splits an array into { true, false } according to a predicate evaluated per elem
 partition(source, predicate)
 ```
 
+**Example**
+
+```jslt
+{ "r": partition($.l, $.actif) }
+```
+
+```json
+{ "l": [{ "n": "a", "actif": true }, { "n": "b", "actif": false }] }
+```
+
+```json
+{ "r": { "true": [{ "n": "a", "actif": true }], "false": [{ "n": "b", "actif": false }] } }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

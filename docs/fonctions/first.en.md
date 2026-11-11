@@ -10,6 +10,20 @@ First element of an array, or null when it is empty
 first(source)
 ```
 
+**Example**
+
+```jslt
+{ "r": first($.l) }
+```
+
+```json
+{ "l": [3, 1] }
+```
+
+```json
+{ "r": 3 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

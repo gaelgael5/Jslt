@@ -10,6 +10,20 @@ Fenêtres glissantes de size éléments consécutifs (vide si le tableau est plu
 window(source, size)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": window($.l, 2) }
+```
+
+```json
+{ "l": [1, 2, 3] }
+```
+
+```json
+{ "r": [[1, 2], [2, 3]] }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |

@@ -10,6 +10,20 @@ Left join: attaches to the left objects the right elements sharing the key
 join(source_left, key_left, clean_source, rights)
 ```
 
+**Example**
+
+```jslt
+{ "r": join($.c, $.id, false, [{ "Name": "commandes", "Key": "$.client", "Source": $.o }]) }
+```
+
+```json
+{ "c": [{ "id": 1, "nom": "Ana" }], "o": [{ "client": 1, "total": 12 }] }
+```
+
+```json
+{ "r": [{ "id": 1, "nom": "Ana", "commandes": [{ "total": 12 }] }] }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source_left` | optional |  |

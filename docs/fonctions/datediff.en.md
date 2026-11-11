@@ -10,6 +10,20 @@ Counts the whole units elapsed between two ISO 8601 dates: second, minute, hour,
 datediff(start, end, unit)
 ```
 
+**Example**
+
+```jslt
+{ "jours": datediff($.a, $.b, "day") }
+```
+
+```json
+{ "a": "2026-11-01T00:00:00", "b": "2026-11-11T00:00:00" }
+```
+
+```json
+{ "jours": 10 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `start` | optional |  |

@@ -10,6 +10,20 @@ SHA-1 digest of a value, in hexadecimal (identity, not signature)
 sha1(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": sha1($.t) }
+```
+
+```json
+{ "t": "abc" }
+```
+
+```json
+{ "r": "a9993e364706816aba3e25717850c26c9cd0d89d" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

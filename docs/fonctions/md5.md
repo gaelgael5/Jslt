@@ -10,6 +10,20 @@ Empreinte MD5 d'une valeur, en hexadécimal (identité, pas signature)
 md5(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": md5($.t) }
+```
+
+```json
+{ "t": "abc" }
+```
+
+```json
+{ "r": "900150983cd24fb0d6963f7d28e17f72" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

@@ -10,6 +10,20 @@ Escapes the characters that mean something in HTML (< > & " ')
 htmlescape(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": htmlescape($.t) }
+```
+
+```json
+{ "t": "<b>ok</b>" }
+```
+
+```json
+{ "r": "&lt;b&gt;ok&lt;/b&gt;" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

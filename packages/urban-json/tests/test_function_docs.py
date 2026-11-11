@@ -9,6 +9,7 @@ le registre (elle est engendrée), et le catalogue pointe là où elle est.
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
@@ -108,6 +109,32 @@ def test_every_function_has_a_chapter() -> None:
         assert DOCS is not None
         assert (DOCS / f"{chapter}.md").is_file(), (info.name, chapter)
         assert title_fr and title_en
+
+
+def test_every_function_has_an_example() -> None:
+    """Une page sans exemple n'aide pas : la signature seule ne dit ni ce qu'on
+    met dedans, ni ce qui en sort. Les triplets eux-mêmes sont rejoués par la
+    suite du guide, qui balaie `docs/fonctions/`."""
+    examples = load_generator().EXAMPLES
+    missing = [name for name in core_names() if name.lower() not in examples]
+    assert not missing, f"fonctions sans exemple : {sorted(missing)}"
+
+
+def test_output_examples_render_what_the_page_shows() -> None:
+    """Les cinq fonctions de sortie ne s'appellent pas dans le corps du
+    template : leur texte produit n'est pas un triplet, donc rien ne le
+    vérifierait — sauf ici, en rejouant `render()`."""
+    from urban_json import JsltTemplate
+
+    checked = 0
+    for name, items in load_generator().EXAMPLES.items():
+        for example in items:
+            if "render" not in example:
+                continue
+            template = JsltTemplate.parse(example["template"])
+            assert template.render(json.loads(example["source"])) == example["render"], name
+            checked += 1
+    assert checked == 5, f"{checked} sorties vérifiées, 5 attendues"
 
 
 def test_the_index_is_not_shadowed_by_a_function() -> None:

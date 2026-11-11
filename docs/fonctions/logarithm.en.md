@@ -10,6 +10,20 @@ Natural logarithm (base e) of a number
 logarithm(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": logarithm($.n) }
+```
+
+```json
+{ "n": 1 }
+```
+
+```json
+{ "r": 0.0 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

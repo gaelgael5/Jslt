@@ -10,6 +10,20 @@ True when the source is a non-empty array
 any(source)
 ```
 
+**Example**
+
+```jslt
+{ "pleine": any($.l), "vide": any($.v) }
+```
+
+```json
+{ "l": [1], "v": [] }
+```
+
+```json
+{ "pleine": true, "vide": false }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

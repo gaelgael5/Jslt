@@ -10,6 +10,20 @@ Somme de contrôle CRC32 d'une valeur (entier non signé)
 crc32(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": crc32($.t) }
+```
+
+```json
+{ "t": "abc" }
+```
+
+```json
+{ "r": 891568578 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

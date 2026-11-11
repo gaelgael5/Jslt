@@ -10,6 +10,20 @@ Sign of a number: -1, 0 or 1
 sign(token)
 ```
 
+**Example**
+
+```jslt
+{ "negatif": sign($.a), "zero": sign($.b), "positif": sign($.c) }
+```
+
+```json
+{ "a": -4, "b": 0, "c": 7 }
+```
+
+```json
+{ "negatif": -1, "zero": 0, "positif": 1 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

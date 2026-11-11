@@ -10,6 +10,20 @@ Nombre de caractères d'un texte (0 pour null ou une non-chaîne) — orthograph
 stringlenght(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": stringlenght($.t) }
+```
+
+```json
+{ "t": "bonjour" }
+```
+
+```json
+{ "r": 7 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

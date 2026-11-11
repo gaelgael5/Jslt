@@ -10,6 +10,20 @@ Joins the elements of an array into text, separated by split_char then delimit_c
 concat(token, split_char, delimit_char)
 ```
 
+**Example**
+
+```jslt
+{ "colle": concat($.l), "joint": concat($.l, "-") }
+```
+
+```json
+{ "l": ["a", "b", "c"] }
+```
+
+```json
+{ "colle": "abc", "joint": "a-b-c" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

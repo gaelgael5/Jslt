@@ -10,6 +10,20 @@ Somme des nombres d'un tableau (0 pour un tableau vide ou null)
 sum(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": sum($.n) }
+```
+
+```json
+{ "n": [1, 2, 3] }
+```
+
+```json
+{ "r": 6 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

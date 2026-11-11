@@ -10,6 +10,20 @@ Fusionne deux objets, la droite gagnant les clés communes (deep pour les sous-o
 merge(left, right, deep, arrays)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": merge($.a, $.b) }
+```
+
+```json
+{ "a": { "x": 1, "y": 2 }, "b": { "y": 9 } }
+```
+
+```json
+{ "r": { "x": 1, "y": 9 } }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `left` | optionnel |  |

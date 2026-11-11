@@ -10,6 +10,20 @@ Sinus d'un angle en radians
 sin(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": sin($.n) }
+```
+
+```json
+{ "n": 0 }
+```
+
+```json
+{ "r": 0.0 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

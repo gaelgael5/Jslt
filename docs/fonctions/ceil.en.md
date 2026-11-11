@@ -10,6 +10,20 @@ Rounds up, to the integer (2.1 -> 3.0) or to digits decimals
 ceil(token, digits)
 ```
 
+**Example**
+
+```jslt
+{ "entier": ceil($.n), "deux_decimales": ceil($.n, 2) }
+```
+
+```json
+{ "n": 2.341 }
+```
+
+```json
+{ "entier": 3.0, "deux_decimales": 2.35 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

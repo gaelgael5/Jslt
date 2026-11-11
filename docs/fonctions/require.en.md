@@ -10,6 +10,20 @@ Returns the value when it is present, otherwise raises with the given message
 require(value, message)
 ```
 
+**Example**
+
+```jslt
+{ "r": require($.n, "le montant est obligatoire") }
+```
+
+```json
+{ "n": 0 }
+```
+
+```json
+{ "r": 0 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `value` | optional |  |

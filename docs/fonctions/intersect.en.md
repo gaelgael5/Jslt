@@ -10,6 +10,20 @@ Elements of the left array also present on the right, deduplicated
 intersect(left, right)
 ```
 
+**Example**
+
+```jslt
+{ "r": intersect($.a, $.b) }
+```
+
+```json
+{ "a": [1, 2, 3], "b": [3, 1] }
+```
+
+```json
+{ "r": [1, 3] }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `left` | optional |  |

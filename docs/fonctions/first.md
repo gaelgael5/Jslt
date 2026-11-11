@@ -10,6 +10,20 @@ Premier élément d'un tableau, ou null s'il est vide
 first(source)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": first($.l) }
+```
+
+```json
+{ "l": [3, 1] }
+```
+
+```json
+{ "r": 3 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |

@@ -10,6 +10,20 @@ Valeur d'un paramètre externe passé à transform, ou la valeur de repli
 param(name, default)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": param("lot", "defaut") }
+```
+
+```json
+{}
+```
+
+```json
+{ "r": "defaut" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `name` | optionnel |  |

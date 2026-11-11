@@ -10,6 +10,20 @@ Hyperbolic arc tangent
 atanh(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": atanh($.n) }
+```
+
+```json
+{ "n": 0 }
+```
+
+```json
+{ "r": 0.0 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

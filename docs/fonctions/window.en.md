@@ -10,6 +10,20 @@ Sliding windows of size consecutive elements (empty when the array is shorter)
 window(source, size)
 ```
 
+**Example**
+
+```jslt
+{ "r": window($.l, 2) }
+```
+
+```json
+{ "l": [1, 2, 3] }
+```
+
+```json
+{ "r": [[1, 2], [2, 3]] }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

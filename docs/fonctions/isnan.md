@@ -10,6 +10,20 @@ Vrai si la valeur est le résultat indéfini d'un calcul (NaN)
 isnan(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": isnan($.n) }
+```
+
+```json
+{ "n": 3 }
+```
+
+```json
+{ "r": false }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

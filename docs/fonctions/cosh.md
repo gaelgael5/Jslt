@@ -10,6 +10,20 @@ Cosinus hyperbolique
 cosh(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": cosh($.n) }
+```
+
+```json
+{ "n": 0 }
+```
+
+```json
+{ "r": 1.0 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

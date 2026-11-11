@@ -10,6 +10,20 @@ Greatest common divisor of two integers
 gcd(left, right)
 ```
 
+**Example**
+
+```jslt
+{ "r": gcd($.a, $.b) }
+```
+
+```json
+{ "a": 84, "b": 36 }
+```
+
+```json
+{ "r": 12 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `left` | optional |  |

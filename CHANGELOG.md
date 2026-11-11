@@ -74,8 +74,11 @@ Quatre catégories comblées (162 → 182) et un défaut de sortie corrigé.
   main aurait vieilli dès la première signature élargie, et un test refuse une
   page qui ne suit plus le registre. C'est l'URL stable que l'éditeur peut
   dériver du seul nom de la fonction, là où une ancre dans un chapitre se casse
-  en silence au premier titre renommé. Les exemples et la prose restent dans les
-  chapitres.
+  en silence au premier titre renommé. **Chaque page porte un exemple exécuté** :
+  la signature seule ne dit ni ce qu'on met dedans ni ce qui en sort. Les 185
+  exemples sont rejoués par la suite du guide, donc par les deux moteurs ; les
+  chapitres gardent la prose et les exemples d'*usage*, qui mêlent plusieurs
+  fonctions.
 - **Toutes les descriptions sont traduites** (`description_en`) : la page
   anglaise n'a pas d'autre source, et l'intellisense parle désormais la langue
   du lecteur.

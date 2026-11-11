@@ -10,6 +10,20 @@ The constant pi (3.14159…)
 pi()
 ```
 
+**Example**
+
+```jslt
+{ "r": round(pi(), 4) }
+```
+
+```json
+{}
+```
+
+```json
+{ "r": 3.1416 }
+```
+
 This function takes no argument.
 
 **Chapter**: [Numbers and maths](../nombres.en.md) · **Index**: [all functions](sommaire.en.md)

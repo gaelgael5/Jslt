@@ -10,6 +10,20 @@ Shifts the bits of an integer to the right (divides by 2^bits)
 shiftright(token, bits)
 ```
 
+**Example**
+
+```jslt
+{ "r": shiftright($.n, 3) }
+```
+
+```json
+{ "n": 64 }
+```
+
+```json
+{ "r": 8 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

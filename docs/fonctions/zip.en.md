@@ -10,6 +10,20 @@ Pairs two arrays element by element, stopping at the shorter one
 zip(left, right)
 ```
 
+**Example**
+
+```jslt
+{ "r": zip($.a, $.b) }
+```
+
+```json
+{ "a": [1, 2], "b": ["x", "y"] }
+```
+
+```json
+{ "r": [[1, "x"], [2, "y"]] }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `left` | optional |  |

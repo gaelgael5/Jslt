@@ -10,6 +10,20 @@ Object without the requested keys (one key or an array of keys)
 omit(token, keys)
 ```
 
+**Example**
+
+```jslt
+{ "r": omit($.o, ["secret"]) }
+```
+
+```json
+{ "o": { "nom": "Ana", "secret": "x" } }
+```
+
+```json
+{ "r": { "nom": "Ana" } }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

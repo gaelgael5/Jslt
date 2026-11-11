@@ -10,6 +10,20 @@ Percentile p (0 to 100) of the numbers in an array, by linear interpolation
 percentile(token, p)
 ```
 
+**Example**
+
+```jslt
+{ "p90": percentile($.n, 90) }
+```
+
+```json
+{ "n": [1, 2, 3, 4, 5] }
+```
+
+```json
+{ "p90": 4.6 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

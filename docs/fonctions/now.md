@@ -10,6 +10,20 @@ Date et heure courantes en ISO 8601 : locales, ou UTC si utc vaut true
 now(utc)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": datepart(now(), "year") >= 2026 }
+```
+
+```json
+{}
+```
+
+```json
+{ "r": true }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `utc` | optionnel |  |

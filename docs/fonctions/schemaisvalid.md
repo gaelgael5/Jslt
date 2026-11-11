@@ -10,6 +10,20 @@ Vrai si le document respecte le JSON Schema donné (sous-ensemble géré)
 schemaisvalid(fragment, schema_document)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": schemaisvalid($.o, $.s) }
+```
+
+```json
+{ "o": { "age": 42 }, "s": { "type": "object", "properties": { "age": { "type": "integer" } } } }
+```
+
+```json
+{ "r": true }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `fragment` | optionnel |  |

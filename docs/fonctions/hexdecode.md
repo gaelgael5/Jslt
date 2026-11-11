@@ -10,6 +10,20 @@ Relit un texte hexadécimal en chaîne UTF-8
 hexdecode(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": hexdecode($.t) }
+```
+
+```json
+{ "t": "616263" }
+```
+
+```json
+{ "r": "abc" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

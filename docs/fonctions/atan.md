@@ -10,6 +10,20 @@ Arc tangente, en radians
 atan(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": atan($.n) }
+```
+
+```json
+{ "n": 0 }
+```
+
+```json
+{ "r": 0.0 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

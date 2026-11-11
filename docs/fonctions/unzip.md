@@ -10,6 +10,20 @@ Inverse de zip : d'un tableau de rangées, rend un tableau par position
 unzip(source)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": unzip($.l) }
+```
+
+```json
+{ "l": [[1, "a"], [2, "b"]] }
+```
+
+```json
+{ "r": [[1, 2], ["a", "b"]] }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |

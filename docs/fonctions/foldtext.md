@@ -10,6 +10,20 @@ Clef de comparaison d'un texte : minuscules sans accents par défaut, ou seuleme
 foldtext(token, options)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": foldtext($.t) }
+```
+
+```json
+{ "t": "Évêché" }
+```
+
+```json
+{ "r": "eveche" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

@@ -10,6 +10,20 @@ Median value of the numbers in an array (null for an empty array)
 median(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": median($.n) }
+```
+
+```json
+{ "n": [1, 9, 2] }
+```
+
+```json
+{ "r": 2 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

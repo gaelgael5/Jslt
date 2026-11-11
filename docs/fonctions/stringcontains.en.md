@@ -10,6 +10,20 @@ True when the text holds contain_str
 stringcontains(token, contain_str)
 ```
 
+**Example**
+
+```jslt
+{ "r": stringcontains($.t, "@") }
+```
+
+```json
+{ "t": "ana@exemple.fr" }
+```
+
+```json
+{ "r": true }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

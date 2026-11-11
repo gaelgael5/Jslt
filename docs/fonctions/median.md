@@ -10,6 +10,20 @@ Valeur médiane des nombres d'un tableau (null pour un tableau vide)
 median(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": median($.n) }
+```
+
+```json
+{ "n": [1, 9, 2] }
+```
+
+```json
+{ "r": 2 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

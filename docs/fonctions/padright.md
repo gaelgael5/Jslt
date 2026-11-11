@@ -10,6 +10,20 @@ Complète le texte à droite jusqu'à length avec le 1er caractère de charset (
 padright(token, length, charset)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": padright($.t, 6, ".") }
+```
+
+```json
+{ "t": "42" }
+```
+
+```json
+{ "r": "42...." }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

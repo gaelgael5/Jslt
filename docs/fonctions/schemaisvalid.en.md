@@ -10,6 +10,20 @@ True when the document satisfies the given JSON Schema (supported subset)
 schemaisvalid(fragment, schema_document)
 ```
 
+**Example**
+
+```jslt
+{ "r": schemaisvalid($.o, $.s) }
+```
+
+```json
+{ "o": { "age": 42 }, "s": { "type": "object", "properties": { "age": { "type": "integer" } } } }
+```
+
+```json
+{ "r": true }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `fragment` | optional |  |

@@ -10,6 +10,20 @@ Removes the trailing spaces, or the characters of txt
 trimend(token, txt)
 ```
 
+**Example**
+
+```jslt
+{ "r": trimend($.t) }
+```
+
+```json
+{ "t": "ok   " }
+```
+
+```json
+{ "r": "ok" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

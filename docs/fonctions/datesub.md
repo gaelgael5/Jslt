@@ -10,6 +10,20 @@ Retranche une durée à une date ISO 8601 : unité second, minute, hour, day, we
 datesub(token, unit, amount)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": datesub($.d, "day", 1) }
+```
+
+```json
+{ "d": "2026-03-01T00:00:00" }
+```
+
+```json
+{ "r": "2026-02-28T00:00:00" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

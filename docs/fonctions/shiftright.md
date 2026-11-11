@@ -10,6 +10,20 @@ Décale les bits d'un entier vers la droite (divise par 2^bits)
 shiftright(token, bits)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": shiftright($.n, 3) }
+```
+
+```json
+{ "n": 64 }
+```
+
+```json
+{ "r": 8 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

@@ -10,6 +10,20 @@ A new random unique identifier (UUID v4) on each call
 uuid()
 ```
 
+**Example**
+
+```jslt
+{ "r": stringlenght(uuid()) }
+```
+
+```json
+{}
+```
+
+```json
+{ "r": 36 }
+```
+
 This function takes no argument.
 
 **Chapter**: [Expressions and operators](../expressions.en.md) · **Index**: [all functions](sommaire.en.md)

@@ -10,6 +10,20 @@ Dernier instant de la période contenant la date (borne inclusive, à la microse
 dateendof(token, period)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": dateendof($.d, "month") }
+```
+
+```json
+{ "d": "2026-02-10T12:00:00" }
+```
+
+```json
+{ "r": "2026-02-28T23:59:59.999999" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

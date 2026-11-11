@@ -10,6 +10,20 @@ Retire les espaces en fin, ou les caractères de txt
 trimend(token, txt)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": trimend($.t) }
+```
+
+```json
+{ "t": "ok   " }
+```
+
+```json
+{ "r": "ok" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

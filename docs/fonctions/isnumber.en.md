@@ -10,6 +10,20 @@ True when the value is a number (a boolean is not one)
 isnumber(token)
 ```
 
+**Example**
+
+```jslt
+{ "nombre": isnumber($.n), "booleen": isnumber($.b) }
+```
+
+```json
+{ "n": 3, "b": true }
+```
+
+```json
+{ "nombre": true, "booleen": false }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

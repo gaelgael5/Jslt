@@ -10,6 +10,20 @@ Texte en majuscules (null reste null, une non-chaîne donne false)
 upper(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": upper($.t) }
+```
+
+```json
+{ "t": "acme" }
+```
+
+```json
+{ "r": "ACME" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

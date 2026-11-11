@@ -10,6 +10,20 @@ True when the value is a finite number (neither infinite nor NaN)
 isfinite(token)
 ```
 
+**Example**
+
+```jslt
+{ "nombre": isfinite($.n), "texte": isfinite($.t) }
+```
+
+```json
+{ "n": 3, "t": "3" }
+```
+
+```json
+{ "nombre": true, "texte": false }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

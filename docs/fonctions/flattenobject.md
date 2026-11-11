@@ -10,6 +10,20 @@ Aplatit un objet en clés pointées (a.b.c), tableaux indexés par leur position
 flattenobject(token, separator)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": flattenobject($.o) }
+```
+
+```json
+{ "o": { "client": { "nom": "Ana" } } }
+```
+
+```json
+{ "r": { "client.nom": "Ana" } }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

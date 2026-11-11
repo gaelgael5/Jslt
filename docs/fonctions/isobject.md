@@ -10,6 +10,20 @@ Vrai si la valeur est un objet JSON
 isobject(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "objet": isobject($.o), "tableau": isobject($.l) }
+```
+
+```json
+{ "o": {}, "l": [] }
+```
+
+```json
+{ "objet": true, "tableau": false }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

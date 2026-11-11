@@ -10,6 +10,20 @@ Vrai si le texte est un IBAN dont la clé de contrôle (modulo 97) est juste
 isiban(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": isiban($.t) }
+```
+
+```json
+{ "t": "FR7630006000011234567890189" }
+```
+
+```json
+{ "r": true }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

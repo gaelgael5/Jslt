@@ -10,6 +10,20 @@ Convertit une valeur vers un type : integer, decimal, string, boolean (uri, uuid
 convert(token, target_type)
 ```
 
+**Exemple**
+
+```jslt
+{ "entier": convert($.t, "integer"), "texte": convert($.n, "string") }
+```
+
+```json
+{ "t": "42", "n": 7 }
+```
+
+```json
+{ "entier": 42, "texte": "7" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

@@ -10,6 +10,20 @@ Reads an integer written in hexadecimal (with or without the 0x prefix)
 fromhex(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": fromhex($.t) }
+```
+
+```json
+{ "t": "0xff" }
+```
+
+```json
+{ "r": 255 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

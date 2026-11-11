@@ -10,6 +10,20 @@ Keys of an object, in document order (null when it is not an object)
 keys(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": keys($.o) }
+```
+
+```json
+{ "o": { "a": 1, "b": 2 } }
+```
+
+```json
+{ "r": ["a", "b"] }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

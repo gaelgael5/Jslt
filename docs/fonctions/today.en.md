@@ -10,6 +10,20 @@ Today's date at midnight in ISO 8601: local, or UTC when utc is true
 today(utc)
 ```
 
+**Example**
+
+```jslt
+{ "r": datepart(today(), "hour") }
+```
+
+```json
+{}
+```
+
+```json
+{ "r": 0 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `utc` | optional |  |

@@ -10,6 +10,20 @@ Reads hexadecimal text back into a UTF-8 string
 hexdecode(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": hexdecode($.t) }
+```
+
+```json
+{ "t": "616263" }
+```
+
+```json
+{ "r": "abc" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

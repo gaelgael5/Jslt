@@ -10,6 +10,20 @@ Plus petit de deux nombres, ou du tableau donné (décimal pour deux nombres)
 min(left, right)
 ```
 
+**Exemple**
+
+```jslt
+{ "deux": min($.a, $.b), "du_tableau": min($.l) }
+```
+
+```json
+{ "a": 2, "b": 9, "l": [3, 11, 7] }
+```
+
+```json
+{ "deux": 2.0, "du_tableau": 3 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `left` | optionnel |  |

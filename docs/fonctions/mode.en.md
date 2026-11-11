@@ -10,6 +10,20 @@ Most frequent value of an array (the first one seen in case of a tie)
 mode(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": mode($.l) }
+```
+
+```json
+{ "l": ["a", "b", "a"] }
+```
+
+```json
+{ "r": "a" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

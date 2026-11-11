@@ -10,6 +10,20 @@
 stddev(token, sample)
 ```
 
+**Exemple**
+
+```jslt
+{ "population": stddev($.n), "echantillon": round(stddev($.n, true), 3) }
+```
+
+```json
+{ "n": [2, 4, 4, 4, 5, 5, 7, 9] }
+```
+
+```json
+{ "population": 2.0, "echantillon": 2.138 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

@@ -10,6 +10,20 @@ Removes the leading spaces, or the characters of txt
 trimstart(token, txt)
 ```
 
+**Example**
+
+```jslt
+{ "r": trimstart($.t) }
+```
+
+```json
+{ "t": "   ok" }
+```
+
+```json
+{ "r": "ok" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

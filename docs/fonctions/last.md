@@ -10,6 +10,20 @@ Dernier élément d'un tableau, ou null s'il est vide
 last(source)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": last($.l) }
+```
+
+```json
+{ "l": [3, 1] }
+```
+
+```json
+{ "r": 1 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `source` | optionnel |  |

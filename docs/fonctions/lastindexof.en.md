@@ -10,6 +10,20 @@ Position (from 0) of the last occurrence in a text or an array, -1 when absent
 lastindexof(token, txt)
 ```
 
+**Example**
+
+```jslt
+{ "r": lastindexof($.t, "o") }
+```
+
+```json
+{ "t": "bonjour" }
+```
+
+```json
+{ "r": 4 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

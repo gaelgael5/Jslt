@@ -10,6 +10,20 @@ Arc sine, in radians
 asin(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": asin($.n) }
+```
+
+```json
+{ "n": 0 }
+```
+
+```json
+{ "r": 0.0 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

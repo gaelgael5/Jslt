@@ -10,6 +10,20 @@ Shifts the bits of an integer to the left (multiplies by 2^bits)
 shiftleft(token, bits)
 ```
 
+**Example**
+
+```jslt
+{ "r": shiftleft($.n, 3) }
+```
+
+```json
+{ "n": 1 }
+```
+
+```json
+{ "r": 8 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

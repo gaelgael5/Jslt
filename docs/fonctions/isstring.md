@@ -10,6 +10,20 @@ Vrai si la valeur est une chaîne de caractères
 isstring(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "texte": isstring($.t), "nombre": isstring($.n) }
+```
+
+```json
+{ "t": "a", "n": 1 }
+```
+
+```json
+{ "texte": true, "nombre": false }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

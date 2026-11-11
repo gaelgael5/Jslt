@@ -10,6 +10,20 @@ Absolute value of a number (null when it is not a number)
 abs(token)
 ```
 
+**Example**
+
+```jslt
+{ "r": abs($.n) }
+```
+
+```json
+{ "n": -3.5 }
+```
+
+```json
+{ "r": 3.5 }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

@@ -10,6 +10,20 @@ Tous les paramètres externes de l'exécution, sous forme d'objet
 params()
 ```
 
+**Exemple**
+
+```jslt
+{ "r": params() }
+```
+
+```json
+{}
+```
+
+```json
+{ "r": {} }
+```
+
 Cette fonction ne prend aucun argument.
 
 **Chapitre** : [Expressions et opérateurs](../expressions.md) · **Index** : [toutes les fonctions](sommaire.md)

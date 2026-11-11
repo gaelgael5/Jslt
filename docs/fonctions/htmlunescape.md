@@ -10,6 +10,20 @@ Remplace les entités HTML (&amp;, &lt;…) par leurs caractères
 htmlunescape(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": htmlunescape($.t) }
+```
+
+```json
+{ "t": "&lt;b&gt;ok&lt;/b&gt;" }
+```
+
+```json
+{ "r": "<b>ok</b>" }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

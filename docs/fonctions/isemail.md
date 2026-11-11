@@ -10,6 +10,20 @@ Vrai si le texte a la forme d'une adresse électronique
 isemail(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": isemail($.t) }
+```
+
+```json
+{ "t": "ana@exemple.fr" }
+```
+
+```json
+{ "r": true }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

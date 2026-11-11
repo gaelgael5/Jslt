@@ -10,6 +10,20 @@ The first max_items elements of an array
 limit(source, max_items)
 ```
 
+**Example**
+
+```jslt
+{ "r": limit($.l, 2) }
+```
+
+```json
+{ "l": [1, 2, 3, 4] }
+```
+
+```json
+{ "r": [1, 2] }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

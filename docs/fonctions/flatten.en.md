@@ -10,6 +10,20 @@ Flattens an array of arrays, all the way down by default or over depth levels
 flatten(source, depth)
 ```
 
+**Example**
+
+```jslt
+{ "a_fond": flatten($.l), "un_niveau": flatten($.l, 1) }
+```
+
+```json
+{ "l": [1, [2, [3]]] }
+```
+
+```json
+{ "a_fond": [1, 2, 3], "un_niveau": [1, 2, [3]] }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `source` | optional |  |

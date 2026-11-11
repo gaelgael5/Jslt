@@ -10,6 +10,20 @@ Moyenne des nombres d'un tableau (null pour un tableau vide)
 avg(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": avg($.n) }
+```
+
+```json
+{ "n": [1, 2, 6] }
+```
+
+```json
+{ "r": 3.0 }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |

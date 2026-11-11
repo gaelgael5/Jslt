@@ -10,6 +10,20 @@ Rebuilds a nested object from dotted keys (arrays true for the indices)
 unflatten(token, separator, arrays)
 ```
 
+**Example**
+
+```jslt
+{ "r": unflatten($.o) }
+```
+
+```json
+{ "o": { "client.nom": "Ana" } }
+```
+
+```json
+{ "r": { "client": { "nom": "Ana" } } }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

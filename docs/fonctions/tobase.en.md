@@ -10,6 +10,20 @@ Writes an integer in a base from 2 to 36, padded to width digits
 tobase(token, base, width)
 ```
 
+**Example**
+
+```jslt
+{ "binaire": tobase($.n, 2), "sur_huit": tobase($.n, 2, 8) }
+```
+
+```json
+{ "n": 11 }
+```
+
+```json
+{ "binaire": "1011", "sur_huit": "00001011" }
+```
+
 | Parameter | Expected | Note |
 |---|---|---|
 | `token` | optional |  |

@@ -10,6 +10,20 @@ Reconstruit un objet depuis un tableau de { key, value } ou de paires [clé, val
 fromentries(token)
 ```
 
+**Exemple**
+
+```jslt
+{ "r": fromentries($.l) }
+```
+
+```json
+{ "l": [{ "key": "a", "value": 1 }] }
+```
+
+```json
+{ "r": { "a": 1 } }
+```
+
 | Paramètre | Attendu | Note |
 |---|---|---|
 | `token` | optionnel |  |
