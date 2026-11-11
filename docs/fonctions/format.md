@@ -4,7 +4,7 @@
 
 *Français · [English](format.en.md)*
 
-Formate un nombre ou une date (chaîne ISO) avec un masque .NET et une culture
+Formate un nombre ou une date ISO selon un masque (N2, #,##0.00, dd/MM/yyyy…) et une culture
 
 ```
 format(token, mask, culture)

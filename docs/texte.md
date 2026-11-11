@@ -38,7 +38,8 @@ suite de tests** (`tests/test_guide_examples.py`), sous la forme de triplets
 `regexmatches(texte, motif)` rend la liste des correspondances complètes. Un
 nombre ou un booléen est converti en texte avant la recherche ; `null`, un objet
 ou un tableau donnent `null`. Dans une chaîne jslt, l'antislash se double
-(`"\\d+"`). La syntaxe .NET des groupes nommés `(?<nom>…)` est acceptée.
+(`"\\d+"`). Les groupes **nommés** s'écrivent `(?<nom>…)` ou `(?P<nom>…)` : les
+deux formes sont acceptées.
 
 ```jslt
 { "valide": regexismatch($.mail, "^[\\w.]+@[\\w.]+\\.[a-z]+$"), "nombres": regexmatches($.s, "\\d+") }
@@ -60,17 +61,64 @@ ou un tableau donnent `null`. Dans une chaîne jslt, l'antislash se double
 
 ## Formatage : `format`
 
-`format(valeur, masque, culture)` reprend les masques .NET : nombres (`N2`,
-`C`, `P1`, `D5`, `#,##0.00`…) et dates — une chaîne ISO 8601 est une date —
-(`d`, `D`, `dd/MM/yyyy`, `dddd d MMMM yyyy`…). Cultures : invariante (vide),
-`en-US`, `en-GB`, `fr-FR`, `de-DE`, `es-ES`, `it-IT`. Un masque hors de ce
-sous-ensemble lève une erreur plutôt qu'un texte approximatif.
+`format(valeur, masque, culture)` écrit un **nombre** ou une **date** (une chaîne
+ISO 8601 **est** une date) selon un masque. Un masque hors du vocabulaire
+ci-dessous **lève** plutôt que de rendre un texte approximatif.
+
+**Masques de nombre standards** : une lettre, suivie d'une précision optionnelle
+(`N2`, `F0`, `D5`). Colonne de droite : `1234.5` en `fr-FR`.
+
+| Masque | Rend | Exemple |
+|---|---|---|
+| `N` | nombre **groupé** par milliers, 2 décimales par défaut | `1 234,50` |
+| `F` | nombre **non groupé** | `1234,50` |
+| `C` | montant, avec le symbole monétaire de la culture | `1 234,50 €` |
+| `P` | pourcentage — la valeur est multipliée par 100 | `123 450,00 %` |
+| `D` | entier complété de zéros à gauche (`D5` = cinq chiffres) | `00042` (de `42`) |
+| `X` / `x` | entier en hexadécimal, majuscule ou minuscule | `002A` (de `42`, `X4`) |
+| `E` / `e` | notation scientifique, 6 décimales par défaut | `1,234500E+003` |
+| `G` | la représentation la plus courte qui fait l'aller-retour | `1234,5` |
+
+**Masques de nombre personnalisés** : un assemblage de ces caractères.
+
+| Caractère | Rôle |
+|---|---|
+| `0` | chiffre **toujours** écrit (un zéro s'il n'y en a pas) |
+| `#` | chiffre écrit seulement s'il existe |
+| `.` | séparateur décimal **de la culture** |
+| `,` | séparateur de milliers **de la culture** |
+| `%` | multiplie par 100 et écrit le signe |
+| `'…'` `"…"` `\x` | littéral, en tête ou en fin de masque |
+
+D'où `#,##0.00` → `1 234,50` en `fr-FR`, et `1,234.50` en `en-US` : c'est la
+culture qui décide des séparateurs, pas le masque.
+
+**Masques de date.** Le vocabulaire des jetons (`yyyy`, `MM`, `MMMM`, `dd`,
+`dddd`, `HH`, `mm`, `ss`, `tt`, `zzz`, `K`, littéraux…) est **commun** à la
+lecture : son tableau est dans [Dates et heures](dates.md#masques-de-date). S'y
+ajoutent les masques **standards** d'une lettre, résolus selon la culture :
+
+| Masque | Rend |
+|---|---|
+| `d` / `D` | date courte / date longue |
+| `t` / `T` | heure courte / heure longue |
+| `f` / `F` | date longue + heure courte / + heure longue |
+| `g` / `G` | date courte + heure courte / + heure longue |
+| `s` | ISO 8601 triable (`2026-10-22T14:05:00`) |
+| `u` | ISO 8601 universel (`2026-10-22 14:05:00Z`) |
+| `o` / `O` | aller-retour complet, à la fraction de seconde près |
+
+**Cultures** : invariante (chaîne vide, ou `invariant`), `en-US`, `en-GB`,
+`fr-FR`, `de-DE`, `es-ES`, `it-IT`. Elles fixent les séparateurs décimal et de
+milliers, le symbole monétaire, les noms de jours et de mois, le désignateur
+AM/PM et le séparateur de date (`/` s'écrit `.` en `de-DE`). Une culture inconnue
+lève, avec la liste de celles qui existent.
 
 Le décalage horaire s'écrit aussi (`zzz`, `zz`, `z`, et `K` qui rend `Z` pour
 UTC et rien pour une date sans fuseau), de sorte que `parsedate(…, fuseau)` et
-`format` font l'aller-retour. Comme en .NET, un spécificateur **seul** (`"z"`,
-`"K"`) est lu comme un masque standard, et refusé : il faut l'écrire dans un
-masque plus long (`"HH:mmK"`).
+`format` font l'aller-retour. Un spécificateur **seul** (`"z"`, `"K"`) est lu
+comme un masque standard d'une lettre — et il n'en existe pas pour ces deux-là,
+donc il est refusé : il faut l'écrire dans un masque plus long (`"HH:mmK"`).
 
 ```jslt
 { "prix": format($.p, "#,##0.00"), "jour": format($.d, "dddd d MMMM yyyy", "fr-FR"), "code": format($.n, "D5") }
@@ -99,7 +147,7 @@ sans que rien ne les consomme.
 | `repeat(t, n)` | répétition (`n` ≤ 0 : chaîne vide) |
 | `titlecase(t)` | majuscule initiale de chaque mot, **le reste intact** |
 
-**Bornes tolérantes.** `Substring` en .NET jette dès que les bornes sortent de la
+**Bornes tolérantes.** `substring` ne lève **pas** dès que les bornes sortent de la
 chaîne ; ici un début hors bornes rend une chaîne vide et une longueur trop
 grande s'arrête au bout. Un template transforme des données qu'il ne choisit
 pas : tomber sur un champ plus court que prévu ne doit pas faire échouer toute la
@@ -132,10 +180,10 @@ c'est une dégradation : seule la première lettre de chaque mot est touchée.
 }
 ```
 
-**`regexreplace` suit la syntaxe .NET** pour le remplacement : `$1` pour un
+**Le remplacement de `regexreplace` s'écrit avec `$`** : `$1` pour un
 groupe numéroté, `${nom}` pour un groupe nommé, `$&` pour la correspondance
 entière, `$$` pour un `$` littéral. C'est traduit vers le dialecte Python, donc
-un remplacement écrit pour le .NET se comporte pareil.
+la même écriture vaut des deux côtés.
 
 Attention à la convention : comme `regexismatch` et `regexmatches`,
 `regexreplace` **convertit un scalaire en texte** (`42` devient `"42"`), là où
@@ -186,7 +234,7 @@ sert aussi à **trier** (cf. [`sort`](collections.md#trier-et-ordonner-sort-reve
 ## Découper finement : `splitstring`, `splitregex`
 
 **`split` ne retient que le premier caractère du séparateur.** C'est la fidélité
-au .NET, et c'est un piège : `split($.t, ", ")` coupe sur la virgule et laisse
+historique, et c'est un piège : `split($.t, ", ")` coupe sur la virgule et laisse
 les espaces, silencieusement. D'où deux fonctions plutôt qu'un changement de
 `split`, qui casserait les templates portés :
 

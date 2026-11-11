@@ -34,7 +34,7 @@ tpl.transform({})
 - `connectsql(client, connection)` → a `{client, connection}` descriptor (to be
   stored in a variable).
 - `readsql(connection, sql)` → an array of rows; each row is an object
-  `{"$_line": n, <columns...>}` (column names sanitised, as in .NET).
+  `{"$_line": n, <columns...>}` (column names sanitised).
 
 ## Clients
 

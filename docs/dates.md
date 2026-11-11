@@ -37,8 +37,10 @@ reste 8 h 30, avec le décalage d'été `+02:00`.
 { "auto": "2026-10-22T14:05:00", "masque": "2026-10-22T00:00:00", "paris": "2026-11-10T08:30:00+01:00" }
 ```
 
-**Masques de date.** Le masque reprend le vocabulaire .NET de `format` : ce qui
-s'écrit se relit.
+## Masques de date
+
+Le masque de lecture et celui d'écriture (`format`) partagent **un seul**
+vocabulaire : ce qui s'écrit se relit.
 
 | Jeton | Lit | Exemple |
 |---|---|---|
@@ -60,8 +62,9 @@ s'écrit se relit.
 | `'…'` `"…"` `\x` | littéral, protégé de l'interprétation | `'T'` |
 | `/` | séparateur de date **de la culture** (`.` en `de-DE`) | `/` |
 
-Les largeurs sont **strictes**, comme `ParseExact` en .NET : `dd` exige deux
-chiffres, `d` en accepte un ou deux. Un masque d'une **seule lettre** est un
+Les largeurs sont **strictes** : `dd` exige deux chiffres, `d` en accepte un ou
+deux. Une largeur tolérante ferait passer `1/2/26` pour une date au masque
+`dd/MM/yyyy`, et c'est rarement ce qu'on veut quand on impose un masque. Un masque d'une **seule lettre** est un
 masque standard de `format` (`d D t T f F g G s u o`), résolu selon la culture :
 `parsedate($.x, "fr-FR", "d")` lit `22/10/2026`. Une composante absente du
 masque vaut celle de l'époque Unix (`1970-01-01`, `00:00:00`) — et non
@@ -98,7 +101,7 @@ supposer un.
 
 **Extraire — `datepart(date, partie)`.** Parties : `year`, `month`, `day`,
 `dayofweek`, `hour`, `minute`, `second`, toujours rendues en nombre.
-`dayofweek` suit la convention `DayOfWeek` du .NET : **dimanche = 0**, samedi = 6.
+`dayofweek` numérote la semaine à partir de **dimanche = 0** (samedi = 6).
 
 ```jslt
 { "dans3mois": dateadd($.d, "month", 3), "veille": datesub($.d, "day", 1), "an": datepart($.d, "year"), "jour": datepart($.d, "dayofweek") }
@@ -130,7 +133,7 @@ Le bornage du jour, et le chaînage avec `format` pour l'affichage :
 `dayofyear`, `dayofweek`, `hour`, `minute`, `second` et `millisecond`. `week` est
 la semaine **ISO** : le 1er janvier appartient parfois à la semaine 52 ou 53 de
 l'année précédente, et c'est la définition attendue en Europe. `dayofweek`, lui,
-garde la convention `DayOfWeek` du .NET (dimanche = 0).
+numérote à partir de dimanche = 0.
 
 `datestartof(date, période)` et `dateendof(date, période)` bornent une période :
 `year`, `quarter`, `month`, `week`, `day`, `hour`, `minute`. La fin est
@@ -138,8 +141,7 @@ garde la convention `DayOfWeek` du .NET (dimanche = 0).
 qu'attend un filtre `<=`. Le décalage horaire de l'entrée est conservé.
 
 La semaine commence **lundi** (ISO). Oui, cela coexiste avec un `dayofweek` où
-dimanche vaut 0 : le numéro suit le .NET pour qu'un template porté donne le même
-résultat, la borne suit l'usage européen. Les deux choix sont délibérés.
+dimanche vaut 0 : les deux conventions coexistent, la borne suit l'usage européen. Les deux choix sont délibérés.
 
 ```jslt
 {

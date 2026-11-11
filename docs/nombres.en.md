@@ -7,9 +7,9 @@ suite** (`tests/test_guide_examples.py`) as *template → input → output* trip
 
 ---
 
-.NET quirks preserved: `floor`/`round`/`min`/`max` return a **float**, `round`
-does **banker's rounding** (0.5 → 0, 1.5 → 2), and `min`/`max` are **binary** (two
-arguments).
+Three conventions to know before reading on: `floor`/`round`/`min`/`max` return a
+**float**, `round` does **banker's rounding** (0.5 → 0, 1.5 → 2), and `min`/`max`
+keep their **binary** form (two arguments) on top of accepting an array.
 
 ```jslt
 { "min": min($.a, $.b), "max": max($.a, $.b), "abs": abs($.n), "floor": floor($.d) }

@@ -557,6 +557,15 @@ python -m twine check dist/*           # valide les distributions (métadonnées
   générateur ne documente que le **cœur** (au module), pour qu'un plugin installé
   dans l'environnement ne peuple pas `docs/fonctions/` de pages que le dépôt ne
   porte pas.
+- **Le guide ne s'explique pas par le .NET** : la documentation utilisateur dit
+  ce que **fait** le moteur. « masque .NET », « comme en .NET », « quirk .NET
+  conservé » renvoyaient à un moteur que le lecteur Python n'a pas, et la
+  première de ces mentions cachait tout le vocabulaire des masques de `format`,
+  qui n'était écrit nulle part. `tests/test_docs_links.py` refuse désormais toute
+  mention de `.NET`/`Newtonsoft` dans `docs/` ; la provenance et les écarts vivent
+  **ici** et au `CHANGELOG`, et les README des paquets gardent leur ligne
+  d'attribution (citer l'origine n'est pas expliquer par elle). Corollaire : si
+  une mention doit disparaître, ce qu'elle désignait doit d'abord être **écrit**.
 - **Surface d'intégration** : `docs/integration.md` définit trois niveaux de
   garantie — API publique (`urban_json.__all__`, stable), internes **documentés**
   (`parsing`, `runtime`, `ast`, `jsonpath` : non figés mais tout mouvement est

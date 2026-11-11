@@ -44,14 +44,14 @@ tpl.transform({})
 | Time | `getrandom_datatime()` (original name kept), `getrandom_timespan()` |
 | Misc | `getrandom_boolean()`, `getrandom_binary(min_length, max_length)`, `getrandom_in_list(items)` |
 
-## Deliberate deviations from .NET
+## Drawing rules
 
-- `exclusiveMinimum` / `exclusiveMaximum` exclude the bound (JSON Schema
-  meaning); .NET widened the interval instead.
+- `exclusiveMinimum` / `exclusiveMaximum` **exclude** the bound, in the JSON
+  Schema meaning.
 - Without bounds: the full range of the type (`integer` 0 to 2³¹−1, `double` in
-  [0, 1)…); .NET often returned 0 every time.
+  [0, 1)…).
 - Impossible interval: explicit `JsltError`.
-- `getrandom_boolean` and `getrandom_in_list` draw for real (.NET used the
-  parity of the current milliseconds); an empty list gives `null`.
+- `getrandom_boolean` and `getrandom_in_list` draw **for real**; an empty list
+  gives `null`.
 - `getrandom_password` uses a cryptographic generator (`secrets`).
 - Dates and durations as text: ISO 8601 and `hh:mm:ss.fff`.

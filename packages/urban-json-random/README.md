@@ -44,14 +44,14 @@ tpl.transform({})
 | Temps | `getrandom_datatime()` (nom d'origine conservé), `getrandom_timespan()` |
 | Divers | `getrandom_boolean()`, `getrandom_binary(min_length, max_length)`, `getrandom_in_list(items)` |
 
-## Écarts volontaires avec le .NET
+## Règles de tirage
 
-- `exclusiveMinimum` / `exclusiveMaximum` excluent la borne (sens JSON Schema) ; le
-  .NET élargissait au contraire l'intervalle.
-- Sans bornes : étendue du type (`integer` 0 à 2³¹−1, `double` dans [0, 1)…) ; le .NET
-  générait souvent toujours 0.
+- `exclusiveMinimum` / `exclusiveMaximum` **excluent** la borne, au sens JSON
+  Schema.
+- Sans bornes : toute l'étendue du type (`integer` 0 à 2³¹−1, `double` dans
+  [0, 1)…).
 - Intervalle impossible : erreur `JsltError` explicite.
-- `getrandom_boolean` et `getrandom_in_list` font un vrai tirage (le .NET prenait la
-  parité des millisecondes) ; liste vide → `null`.
+- `getrandom_boolean` et `getrandom_in_list` font un **vrai** tirage ; liste
+  vide → `null`.
 - `getrandom_password` utilise un générateur cryptographique (`secrets`).
 - Dates et durées en texte : ISO 8601 et `hh:mm:ss.fff`.

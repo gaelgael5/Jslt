@@ -54,8 +54,8 @@ séparateur :
 
 `any(tableau)` est vrai pour un tableau non vide ; `contains(tableau, valeur)`
 compare avec l'égalité de l'opérateur `==` ; `selectany(source, "chemin")` est
-vrai si le chemin JSONPath (écrit en chaîne, comme en .NET, ou directement)
-sélectionne au moins une valeur.
+vrai si le chemin JSONPath (écrit en chaîne ou directement) sélectionne au moins
+une valeur.
 
 ```jslt
 { "plein": any($.a), "a_b": contains($.a, "b"), "grand": selectany($.n, "$[?(@ > 2)]") }
@@ -222,12 +222,12 @@ trous se regroupent là où on les voit, au lieu de faire lever le tri.
 ## Agréger (`count`, `avg`, `median`, `product`, `min`, `max`)
 
 `sum` était seul, et `min`/`max` étaient **binaires** (deux nombres) : « le plus
-petit de la liste » n'existait pas. `min` et `max` acceptent désormais **un
-tableau** en plus de leur forme .NET à deux arguments — c'est la même question,
-et `sum($.n)` agrège déjà. Avec un tableau, ils conservent le type (un entier
-reste entier) ; avec deux nombres, ils gardent le quirk .NET du résultat décimal.
-Passer un tableau **et** un second argument lève, plutôt que d'ignorer le second
-en silence.
+petit de la liste » n'existait pas. `min` et `max` acceptent donc **un tableau**
+en plus de leur forme à deux arguments — c'est la même question, et `sum($.n)`
+agrège déjà. Avec un tableau, ils conservent le type (un entier reste entier) ;
+avec deux nombres, ils rendent un **décimal**, convention conservée de leur forme
+d'origine. Passer un tableau **et** un second argument lève, plutôt que d'ignorer
+le second en silence.
 
 | Fonction | Sur un tableau vide |
 |---|---|
@@ -271,8 +271,8 @@ les intrus en silence rend un résultat plausible et faux.
 
 `indexof` et `lastindexof` acceptent désormais un **tableau** en plus d'un texte.
 Sur un tableau, l'égalité est **structurelle** : chercher `2` ne trouve pas
-`"2"`. `contains`, lui, garde l'égalité `==` du langage pour rester fidèle au
-.NET — l'écart est volontaire, et c'est pourquoi les deux cohabitent.
+`"2"`. `contains`, lui, garde l'égalité `==` du langage, où `"2" == 2` est vrai —
+l'écart entre les deux est volontaire, et c'est pourquoi les deux cohabitent.
 
 `zip` tronque au plus court plutôt que de compléter par `null` : un appariement
 inventé serait indiscernable d'une vraie valeur nulle. `unzip` est sa réciproque
@@ -390,7 +390,7 @@ gagne.
 
 ## Agréger par groupe (`groupby`, `countby`, `sumby`, `avgby`)
 
-`group` rend la forme .NET (`Label` / `Items`). `groupby(l, clef)` rend un
+`group` rend des groupes `{ "Label", "Items" }`. `groupby(l, clef)` rend un
 **objet** `{ clef: éléments }`, qui se parcourt avec `entries` : l'agrégation par
 groupe tient alors dans une expression. `countby` fait directement le cas le plus
 fréquent. La clef est convertie en texte, puisqu'une clé d'objet JSON est une

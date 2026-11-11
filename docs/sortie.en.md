@@ -7,7 +7,7 @@ suite** (`tests/test_guide_examples.py`) as *template → input → output* trip
 
 ---
 
-As in .NET, a template can declare how its result is **serialized to text**. The
+A template can declare how its result is **serialized to text**. The
 `$directives` key never appears in the result of `transform()`;
 `template.render(source)` applies it: `filter` (JSONPath, optional) selects part
 of the result (1 node → that node, several → array, none → `null`), then the
@@ -37,8 +37,9 @@ Here `render()` yields one JSON line per element (JSON Lines):
 - `to_block()`: one compact line per array element, or the object on one line.
 - Without a directive, `render()` returns the indented JSON of the result.
 - Output functions cannot be called in the template body (explicit error); `mode`
-  is required. The .NET writer functions (`write`, `to_file`) and `to_sqlserver`
-  are not ported.
+  is required. Writing to a file (`write`, `to_file`) or to a database
+  (`to_sqlserver`) does not exist: a transformation returns text, and it is up to
+  the caller to decide where it goes.
 
 ---
 

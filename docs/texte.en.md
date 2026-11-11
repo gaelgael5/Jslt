@@ -36,8 +36,8 @@ suite** (`tests/test_guide_examples.py`) as *template → input → output* trip
 `regexismatch(text, pattern)` tells whether the text contains a match;
 `regexmatches(text, pattern)` returns the list of full matches. A number or a
 boolean is converted to text first; `null`, an object or an array yield `null`.
-Inside a jslt string, backslashes are doubled (`"\\d+"`). The .NET named-group
-syntax `(?<name>…)` is accepted.
+Inside a jslt string, backslashes are doubled (`"\\d+"`). **Named** groups are
+written `(?<name>…)` or `(?P<name>…)`: both forms are accepted.
 
 ```jslt
 { "valide": regexismatch($.mail, "^[\\w.]+@[\\w.]+\\.[a-z]+$"), "nombres": regexmatches($.s, "\\d+") }
@@ -59,17 +59,64 @@ syntax `(?<name>…)` is accepted.
 
 ## Formatting: `format`
 
-`format(value, mask, culture)` follows .NET masks: numbers (`N2`, `C`, `P1`,
-`D5`, `#,##0.00`…) and dates — an ISO 8601 string is a date — (`d`, `D`,
-`dd/MM/yyyy`, `dddd d MMMM yyyy`…). Cultures: invariant (empty), `en-US`,
-`en-GB`, `fr-FR`, `de-DE`, `es-ES`, `it-IT`. A mask outside this subset raises
-an error rather than an approximate text.
+`format(value, mask, culture)` writes a **number** or a **date** (an ISO 8601
+string **is** a date) according to a mask. A mask outside the vocabulary below
+**raises** rather than returning an approximate text.
+
+**Standard number masks**: one letter, followed by an optional precision (`N2`,
+`F0`, `D5`). Right-hand column: `1234.5` in `fr-FR`.
+
+| Mask | Returns | Example |
+|---|---|---|
+| `N` | number **grouped** by thousands, 2 decimals by default | `1 234,50` |
+| `F` | number **not grouped** | `1234,50` |
+| `C` | amount, with the culture's currency symbol | `1 234,50 €` |
+| `P` | percentage — the value is multiplied by 100 | `123 450,00 %` |
+| `D` | integer padded with leading zeros (`D5` = five digits) | `00042` (from `42`) |
+| `X` / `x` | integer in hexadecimal, upper or lower case | `002A` (from `42`, `X4`) |
+| `E` / `e` | scientific notation, 6 decimals by default | `1,234500E+003` |
+| `G` | the shortest representation that round-trips | `1234,5` |
+
+**Custom number masks**: an assembly of these characters.
+
+| Character | Purpose |
+|---|---|
+| `0` | digit **always** written (a zero when there is none) |
+| `#` | digit written only when it exists |
+| `.` | the **culture's** decimal separator |
+| `,` | the **culture's** thousands separator |
+| `%` | multiplies by 100 and writes the sign |
+| `'…'` `"…"` `\x` | literal, at the head or the tail of the mask |
+
+Hence `#,##0.00` → `1 234,50` in `fr-FR`, and `1,234.50` in `en-US`: the culture
+decides the separators, not the mask.
+
+**Date masks.** The token vocabulary (`yyyy`, `MM`, `MMMM`, `dd`, `dddd`, `HH`,
+`mm`, `ss`, `tt`, `zzz`, `K`, literals…) is **shared** with reading: its table is
+in [Dates and times](dates.en.md#date-masks). On top of it come the one-letter
+**standard** masks, resolved per culture:
+
+| Mask | Returns |
+|---|---|
+| `d` / `D` | short date / long date |
+| `t` / `T` | short time / long time |
+| `f` / `F` | long date + short time / + long time |
+| `g` / `G` | short date + short time / + long time |
+| `s` | sortable ISO 8601 (`2026-10-22T14:05:00`) |
+| `u` | universal ISO 8601 (`2026-10-22 14:05:00Z`) |
+| `o` / `O` | full round-trip, down to the fraction of a second |
+
+**Cultures**: invariant (empty string, or `invariant`), `en-US`, `en-GB`,
+`fr-FR`, `de-DE`, `es-ES`, `it-IT`. They fix the decimal and thousands
+separators, the currency symbol, the day and month names, the AM/PM designator
+and the date separator (`/` is written `.` in `de-DE`). An unknown culture
+raises, listing the ones that exist.
 
 The UTC offset can be written too (`zzz`, `zz`, `z`, and `K`, which yields `Z`
 for UTC and nothing for a date without a timezone), so that
-`parsedate(…, timezone)` and `format` round-trip. As in .NET, a **lone**
-specifier (`"z"`, `"K"`) is read as a standard mask and refused: write it inside
-a longer mask (`"HH:mmK"`).
+`parsedate(…, timezone)` and `format` round-trip. A **lone** specifier (`"z"`,
+`"K"`) is read as a one-letter standard mask — and there is none for those two,
+so it is refused: write it inside a longer mask (`"HH:mmK"`).
 
 ```jslt
 { "prix": format($.p, "#,##0.00"), "jour": format($.d, "dddd d MMMM yyyy", "fr-FR"), "code": format($.n, "D5") }
@@ -98,8 +145,8 @@ with nothing to consume them.
 | `repeat(t, n)` | repetition (`n` ≤ 0: empty string) |
 | `titlecase(t)` | initial capital on each word, **the rest untouched** |
 
-**Tolerant bounds.** .NET's `Substring` throws as soon as the bounds leave the
-string; here an out-of-range start yields an empty string and an over-long length
+**Tolerant bounds.** `substring` does **not** raise when the bounds leave the
+string: an out-of-range start yields an empty string and an over-long length
 stops at the end. A template transforms data it does not choose: hitting a field
 shorter than expected must not fail the whole transformation. A **negative**
 length does raise: that is an authoring mistake, not surprising data.
@@ -130,10 +177,10 @@ degradation: only the first letter of each word is touched.
 }
 ```
 
-**`regexreplace` follows the .NET syntax** for replacements: `$1` for a numbered
-group, `${name}` for a named group, `$&` for the whole match, `$$` for a literal
-`$`. It is translated into the Python dialect, so a replacement written for .NET
-behaves the same.
+**`regexreplace` writes its replacement with `$`**: `$1` for a numbered group,
+`${name}` for a named group, `$&` for the whole match, `$$` for a literal `$`.
+It is translated into the Python dialect, so the same writing holds on both
+sides.
 
 Mind the convention: like `regexismatch` and `regexmatches`, `regexreplace`
 **converts a scalar to text** (`42` becomes `"42"`), where `replace` would return
@@ -183,8 +230,8 @@ have doubled the semantics of the first, and because the same key also serves to
 
 ## Splitting precisely: `splitstring`, `splitregex`
 
-**`split` only keeps the first character of the separator.** That is .NET
-fidelity, and it is a trap: `split($.t, ", ")` cuts on the comma and leaves the
+**`split` only keeps the first character of the separator.** That is historical,
+and it is a trap: `split($.t, ", ")` cuts on the comma and leaves the
 spaces, silently. Hence two functions rather than a change to `split`, which
 would break ported templates:
 

@@ -62,7 +62,7 @@ lève `JsltError` (famille du moteur, rattrapable par `trydefault`).
 
 ### Typage des valeurs
 
-Les cellules sont coercées comme en .NET : `true`/`false` → booléen,
+Les cellules sont **typées** à la lecture : `true`/`false` → booléen,
 entiers/décimaux → nombres, le reste → chaîne (les entêtes sont assainis :
 accents → ASCII, espaces → `_`).
 
@@ -96,8 +96,8 @@ JsltTemplate.parse(
   `_metadatas` (nom de fichier, encodage, métadonnées `#clé` du fichier).
 - Lignes `#DEF;<schema>:<NOM>;col…` (colonnes), `#clé;…` (métadonnée), `#END` (fin).
 
-Écarts assumés vs .NET : lecture `utf-8` ; mappage des colonnes par position
-tolérant au `;` final (le .NET l'exige) ; noms de types comparés en majuscules.
+Choix de lecture : encodage `utf-8` ; mappage des colonnes **par position**,
+tolérant à un `;` final en trop ; noms de types comparés en majuscules.
 
 ## Licence
 

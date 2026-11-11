@@ -33,7 +33,7 @@ tpl.transform({})
 - `connectsql(client, connection)` → descripteur `{client, connection}` (à stocker
   dans une variable).
 - `readsql(connection, sql)` → tableau de lignes ; chaque ligne est un objet
-  `{"$_line": n, <colonnes...>}` (noms de colonnes assainis, comme en .NET).
+  `{"$_line": n, <colonnes...>}` (noms de colonnes assainis).
 
 ## Clients
 

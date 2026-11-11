@@ -53,7 +53,7 @@ argument is a **compiled path**, applied to `source`):
 
 `any(array)` is true for a non-empty array; `contains(array, value)` compares
 with the `==` operator's equality; `selectany(source, "path")` is true when the
-JSONPath (written as a string, as in .NET, or directly) selects at least one
+JSONPath (written as a string or directly) selects at least one
 value.
 
 ```jslt
@@ -220,9 +220,10 @@ gather where you can see them, instead of making the sort raise.
 
 `sum` was alone, and `min`/`max` were **binary** (two numbers): "the smallest in
 the list" did not exist. `min` and `max` now accept **an array** in addition to
-their two-argument .NET form — it is the same question, and `sum($.n)` already
+their two-argument form — it is the same question, and `sum($.n)` already
 aggregates. Given an array they preserve the type (an integer stays an integer);
-given two numbers they keep the .NET quirk of a decimal result. Passing an array
+given two numbers they return a **decimal**, a convention kept from their
+original form. Passing an array
 **and** a second argument raises, rather than silently ignoring the second.
 
 | Function | On an empty array |
@@ -267,8 +268,8 @@ silently skips intruders returns a plausible, wrong result.
 
 `indexof` and `lastindexof` now accept an **array** as well as text. On an array
 the equality is **structural**: searching for `2` does not find `"2"`.
-`contains`, by contrast, keeps the language's `==` equality to stay faithful to
-.NET — the discrepancy is deliberate, and that is why both exist.
+`contains`, by contrast, keeps the language's `==` equality, where `"2" == 2` is
+true — the discrepancy is deliberate, and that is why both exist.
 
 `zip` truncates to the shorter rather than padding with `null`: an invented pair
 would be indistinguishable from a genuine null value. `unzip` is its converse and
@@ -383,7 +384,7 @@ that is its main use; on a tie, the first one seen wins.
 
 ## Aggregating per group (`groupby`, `countby`, `sumby`, `avgby`)
 
-`group` returns the .NET shape (`Label` / `Items`). `groupby(l, key)` returns an
+`group` returns `{ "Label", "Items" }` groups. `groupby(l, key)` returns an
 **object** `{ key: elements }`, which `entries` can walk: per-group aggregation
 then fits in one expression. `countby` does the most frequent case directly. The
 key is converted to text, since a JSON object key is a string.

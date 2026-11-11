@@ -191,7 +191,7 @@ Une page par fonction, engendrée depuis le registre : signature, arguments et d
 | [`deaccent`](deaccent.md) | Retire les diacritiques (accents, cédilles) sans toucher à la casse |
 | [`endswith`](endswith.md) | Vrai si le texte se termine par txt |
 | [`foldtext`](foldtext.md) | Clef de comparaison d'un texte : minuscules sans accents par défaut, ou seulement case / accents |
-| [`format`](format.md) | Formate un nombre ou une date (chaîne ISO) avec un masque .NET et une culture |
+| [`format`](format.md) | Formate un nombre ou une date ISO selon un masque (N2, #,##0.00, dd/MM/yyyy…) et une culture |
 | [`indexof`](indexof.md) | Position (à partir de 0) de la première occurrence dans un texte ou un tableau, -1 si absent |
 | [`lastindexof`](lastindexof.md) | Position (à partir de 0) de la dernière occurrence dans un texte ou un tableau, -1 si absent |
 | [`levenshtein`](levenshtein.md) | Nombre de caractères à insérer, supprimer ou remplacer pour passer d'un texte à l'autre |

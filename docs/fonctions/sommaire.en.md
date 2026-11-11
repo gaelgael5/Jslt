@@ -191,7 +191,7 @@ One page per function, generated from the registry: signature, arguments and des
 | [`deaccent`](deaccent.en.md) | Removes diacritics (accents, cedillas) without touching the case |
 | [`endswith`](endswith.en.md) | True when the text ends with txt |
 | [`foldtext`](foldtext.en.md) | Comparison key for a text: lowercase without accents by default, or case / accents only |
-| [`format`](format.en.md) | Formats a number or a date (ISO string) with a .NET mask and a culture |
+| [`format`](format.en.md) | Formats a number or an ISO date according to a mask (N2, #,##0.00, dd/MM/yyyy…) and a culture |
 | [`indexof`](indexof.en.md) | Position (from 0) of the first occurrence in a text or an array, -1 when absent |
 | [`lastindexof`](lastindexof.en.md) | Position (from 0) of the last occurrence in a text or an array, -1 when absent |
 | [`levenshtein`](levenshtein.en.md) | Number of characters to insert, delete or replace to go from one text to the other |

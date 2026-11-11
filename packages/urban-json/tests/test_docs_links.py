@@ -72,3 +72,23 @@ def test_documents_links_resolve() -> None:
             if anchor not in anchors[key]:
                 dangling.append(f"{path.name} -> {link} (ancre absente)")
     assert not dangling, "liens cassés dans docs/ :\n  " + "\n  ".join(dangling)
+
+
+def test_the_guide_explains_itself_without_naming_dotnet() -> None:
+    """Le guide ne renvoie pas à un moteur que son lecteur n'a pas.
+
+    « masque .NET », « comme en .NET », « quirk .NET » : chacune de ces mentions
+    remplaçait l'explication par une référence à un moteur que l'utilisateur de
+    la bibliothèque Python ne connaît pas et ne peut pas consulter. La règle est
+    donc : le guide dit **ce que fait le moteur**, et la provenance du portage
+    vit dans `CLAUDE.md` et le `CHANGELOG` — là où elle sert à qui porte, pas à
+    qui écrit un template. Les README des paquets gardent leur ligne
+    d'attribution : citer l'origine n'est pas expliquer par elle.
+    """
+    guilty = [
+        f"{path.relative_to(DOCS)}:{number}"
+        for path in sorted(DOCS.rglob("*.md"))
+        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1)
+        if ".NET" in line or "Newtonsoft" in line
+    ]
+    assert not guilty, "références au moteur .NET dans le guide :\n  " + "\n  ".join(guilty)

@@ -55,7 +55,7 @@ texte  ──parse_to_tree──▶  arbre ANTLR  ──ScriptBuilderVisitor─�
 |---|---|---|
 | `parse_to_tree(texte)` | `urban_json.parsing` | arbre d'analyse ANTLR (règle `script`) ; lève `JsltSyntaxError` avec `line` / `column` |
 | `ScriptBuilderVisitor` | `urban_json.parsing` | arbre ANTLR → AST jslt (`.visit(tree)`) |
-| `JsltBase`, `JsltKind` | `urban_json.ast` | nœuds de l'AST et leur nature (`JsltKind` est 1:1 avec l'enum .NET) |
+| `JsltBase`, `JsltKind` | `urban_json.ast` | nœuds de l'AST et leur nature (`JsltKind` nomme la nature d'un nœud) |
 | `JsltJsonVisitor`, `JsltBaseVisitor` | `urban_json.ast` | visiteur à double dispatch ; `JsltBaseVisitor` descend par défaut, on surcharge le `visit_*` qui intéresse |
 | `Sources`, `RuntimeContext` | `urban_json.runtime` | documents source / état d'exécution (pile de source courante, variables, `parameters`, `token_result`) |
 | `JsltEvaluationVisitor` | `urban_json.runtime` | interpréteur d'AST (`ast.accept(visitor)`) |
@@ -139,8 +139,8 @@ plugins par entry points).
 ---
 
 **Voir aussi** : [CHANGELOG](../CHANGELOG.md) pour ce qui a bougé entre deux
-versions, [`CLAUDE.md`](../CLAUDE.md) pour l'architecture et les écarts
-volontaires vis-à-vis du .NET.
+versions, [`CLAUDE.md`](../CLAUDE.md) pour l'architecture et les choix de
+portage.
 
 ---
 

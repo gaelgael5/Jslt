@@ -54,7 +54,7 @@ text  ──parse_to_tree──▶  ANTLR tree  ──ScriptBuilderVisitor──
 |---|---|---|
 | `parse_to_tree(text)` | `urban_json.parsing` | ANTLR parse tree (`script` rule); raises `JsltSyntaxError` with `line` / `column` |
 | `ScriptBuilderVisitor` | `urban_json.parsing` | ANTLR tree → jslt AST (`.visit(tree)`) |
-| `JsltBase`, `JsltKind` | `urban_json.ast` | AST nodes and their nature (`JsltKind` is 1:1 with the .NET enum) |
+| `JsltBase`, `JsltKind` | `urban_json.ast` | AST nodes and their nature (`JsltKind` names a node's nature) |
 | `JsltJsonVisitor`, `JsltBaseVisitor` | `urban_json.ast` | double-dispatch visitor; `JsltBaseVisitor` descends by default, you override the `visit_*` you care about |
 | `Sources`, `RuntimeContext` | `urban_json.runtime` | source documents / execution state (current-source stack, variables, `parameters`, `token_result`) |
 | `JsltEvaluationVisitor` | `urban_json.runtime` | AST interpreter (`ast.accept(visitor)`) |
@@ -138,8 +138,8 @@ registry, entry-point plugins).
 ---
 
 **See also**: [CHANGELOG](../CHANGELOG.en.md) for what moved between versions,
-[`CLAUDE.md`](../CLAUDE.md) (in French) for the architecture and the deliberate
-deviations from .NET.
+[`CLAUDE.md`](../CLAUDE.md) (in French) for the architecture and the porting
+choices.
 
 ---
 

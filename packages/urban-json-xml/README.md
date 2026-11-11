@@ -33,7 +33,7 @@ tpl.transform({})
 `loadxml` renvoie un objet ; on navigue dedans avec `select`/`selectmany` (fonctions
 du cœur) avant d'alimenter une boucle `$source`, un filtre `?(...)`, etc.
 
-## Conventions de conversion (Newtonsoft)
+## Conventions de conversion XML ↔ JSON
 
 | XML | JSON |
 |---|---|
@@ -44,7 +44,7 @@ du cœur) avant d'alimenter une boucle `$source`, un filtre `?(...)`, etc.
 
 - Attributs → propriétés préfixées par `@`.
 - Texte d'un élément mixte → clé `#text`.
-- Les valeurs restent des **chaînes** (comme Newtonsoft, pas de coercition).
+- Les valeurs restent des **chaînes** : aucune coercition de type.
 
 ## Signature
 

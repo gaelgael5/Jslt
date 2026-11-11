@@ -76,6 +76,17 @@ Four categories filled (162 → 182) and one output defect fixed.
   signature alone says neither what goes in nor what comes out. The 185 examples
   are replayed by the guide suite, hence by both engines; the chapters keep the
   prose and the *usage* examples, which mix several functions.
+- **The guide no longer explains itself through .NET.** ".NET mask", "as in
+  .NET", ".NET quirk preserved": some thirty pointers replaced the explanation
+  with a reference to an engine the reader of the Python library does not have
+  and cannot consult. Each one is replaced by **what it pointed at** — first of
+  all the complete mask vocabulary of `format` (numbers: `N`, `F`, `C`, `P`,
+  `D`, `X`, `E`, `G` and the custom masks `0 # . , %`; dates: the one-letter
+  standards, the tokens being shared with `parsedate`; the seven cultures and
+  what they fix), which until now fitted in "follows .NET masks". A test now
+  refuses any mention inside `docs/`. The porting provenance stays in
+  `CLAUDE.md` and in this changelog, and the packages' READMEs keep their
+  attribution line: citing the origin is not explaining through it.
 - **Every description is translated** (`description_en`): the English page has no
   other source, and the intellisense now speaks the reader's language.
 - **Sorting and grouping, the finishing touches**: `unzip` (the converse of
