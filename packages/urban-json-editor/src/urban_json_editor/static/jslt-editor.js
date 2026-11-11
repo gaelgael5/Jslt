@@ -14,6 +14,16 @@
  *   ed.setPaths(["$.a[0].b"]);            // ou la liste de chemins de l'hôte
  *   ed.addEventListener("input", ...);    // émis à chaque modification
  *
+ * Aide à la signature : dès la parenthèse ouvrante, l'appel entourant le caret
+ * est rappelé avec le paramètre en cours **en gras**, et il suit les virgules.
+ * Elle se rouvre au clic dans les parenthèses — l'aide répond à la position du
+ * caret, pas à la frappe, sinon elle serait perdue pour qui revient corriger un
+ * argument. La signature est un lien vers la page de référence de la fonction,
+ * dans la langue du lecteur :
+ *   <jslt-editor lang="fr" docs-base="https://.../docs/"></jslt-editor>
+ * `lang` vaut sinon celui du document puis celui du navigateur ; `docs-base`
+ * vaut sinon le dépôt public.
+ *
  * Messages de diagnostic (OPT-IN, silence par défaut — un composant qui se met
  * à parler dans tous les projets qui l'utilisent serait une rupture) :
  *   <jslt-editor hints></jslt-editor>     // ou ed.hints = true
@@ -25,6 +35,13 @@
  * de vérité reste le texte (propriété `value`).
  */
 
+import {
+  callContextAt,
+  descriptionFor,
+  docUrlFor,
+  findFunction,
+  signatureSegments,
+} from "./jslt-signature.js";
 import {
   DEFAULT_HINT_MESSAGES,
   findPathStart,
@@ -66,6 +83,11 @@ function escapeHtml(s) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+// Les guillemets en plus : une URL de documentation est posée dans un attribut.
+function escapeAttr(s) {
+  return escapeHtml(s).replace(/"/g, "&quot;");
+}
+
 function highlight(src) {
   let out = "";
   for (const t of tokenize(src)) {
@@ -83,6 +105,7 @@ TEMPLATE.innerHTML = `
     <textarea class="jslt-input" spellcheck="false" autocomplete="off"
               autocapitalize="off" autocorrect="off" wrap="off"></textarea>
     <div class="jslt-ac" role="listbox" hidden></div>
+    <div class="jslt-sig" role="tooltip" hidden></div>
     <div class="jslt-hint" role="status" hidden></div>
   </div>
 `;
@@ -107,6 +130,7 @@ class JsltEditor extends HTMLElement {
     this._pre = this.querySelector(".jslt-highlight code");
     this._ta = this.querySelector(".jslt-input");
     this._acEl = this.querySelector(".jslt-ac");
+    this._sigEl = this.querySelector(".jslt-sig");
     this._hintEl = this.querySelector(".jslt-hint");
     if (this.hasAttribute("hints")) this._hints = true;
 
@@ -132,8 +156,22 @@ class JsltEditor extends HTMLElement {
     this._ta.addEventListener("input", () => this._onInput());
     this._ta.addEventListener("scroll", () => this._syncScroll());
     this._ta.addEventListener("keydown", (e) => this._onKeyDown(e));
-    this._ta.addEventListener("blur", () => setTimeout(() => this._closeAc(), 120));
+    this._ta.addEventListener("blur", () =>
+      setTimeout(() => {
+        this._closeAc();
+        this._closeSig();
+      }, 120)
+    );
+    // L'aide dépend de la position du caret, que le clic et les flèches
+    // déplacent sans produire d'`input` : sans ces deux écoutes, revenir dans
+    // les parenthèses d'un appel écrit laisserait l'aide fermée.
+    this._ta.addEventListener("click", () => this._maybeOpenSig());
+    this._ta.addEventListener("keyup", (e) => this._onKeyUp(e));
     this._acEl.addEventListener("mousedown", (e) => this._onAcMouseDown(e));
+    // Garder le focus dans la zone de saisie : sans cela le clic la fait perdre,
+    // la boîte se referme avant que le lien n'ait reçu son clic, et l'utilisateur
+    // n'atteint jamais la documentation.
+    this._sigEl.addEventListener("mousedown", (e) => e.preventDefault());
 
     const url = this.getAttribute("catalog-url");
     if (url) this._fetchCatalog(url);
@@ -228,6 +266,7 @@ class JsltEditor extends HTMLElement {
   _onInput() {
     this._render();
     this._maybeOpenAc();
+    this._maybeOpenSig();
     this.dispatchEvent(new Event("input", { bubbles: true }));
   }
   _render() {
@@ -285,7 +324,7 @@ class JsltEditor extends HTMLElement {
         (f, i) =>
           `<div class="jslt-ac-item${i === index ? " active" : ""}" data-i="${i}" role="option">
              <span class="jslt-ac-sig">${escapeHtml(f.signature || f.name)}</span>
-             ${f.description ? `<span class="jslt-ac-desc">${escapeHtml(f.description)}</span>` : ""}
+             ${descriptionFor(f, this._lang()) ? `<span class="jslt-ac-desc">${escapeHtml(descriptionFor(f, this._lang()))}</span>` : ""}
            </div>`
       )
       .join("");
@@ -312,10 +351,57 @@ class JsltEditor extends HTMLElement {
   _closeHint() {
     if (this._hintEl) this._hintEl.hidden = true;
   }
+
+  // --- aide à la signature -------------------------------------------------
+  /** Langue du lecteur : l'attribut du composant, celle de la page, puis celle du navigateur. */
+  _lang() {
+    const own = this.getAttribute("lang");
+    if (own) return own;
+    const page = typeof document !== "undefined" ? document.documentElement.lang : "";
+    if (page) return page;
+    return typeof navigator !== "undefined" ? navigator.language : "";
+  }
+  _maybeOpenSig() {
+    if (!this._sigEl) return;
+    // La liste de propositions peut être ouverte en même temps : l'aide se pose
+    // AU-DESSUS de la ligne et la liste en dessous. Masquer l'une pendant
+    // l'autre reviendrait à perdre le paramètre actif pendant qu'on saisit
+    // justement cet argument.
+    const context = callContextAt(this._ta.value, this._ta.selectionStart);
+    const fn = context && findFunction(this._catalog, context.name);
+    if (!fn) return this._closeSig();
+    this._renderSig(fn, context);
+  }
+  _renderSig(fn, context) {
+    const lang = this._lang();
+    const params = signatureSegments(fn, context.argIndex)
+      .map(
+        (seg) =>
+          `<span class="jslt-sig-param${seg.active ? " active" : ""}">${escapeHtml(seg.text)}</span>`
+      )
+      .join(", ");
+    const call = `<span class="jslt-sig-name">${escapeHtml(fn.name)}</span>(${params})`;
+    const url = docUrlFor(fn, lang, this.getAttribute("docs-base"));
+    const description = descriptionFor(fn, lang);
+    this._sigEl.innerHTML =
+      (url
+        ? `<a class="jslt-sig-call jslt-sig-doc" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">${call} <span class="jslt-sig-ext" aria-hidden="true">\u2197</span></a>`
+        : `<span class="jslt-sig-call">${call}</span>`) +
+      (description ? `<span class="jslt-sig-desc">${escapeHtml(description)}</span>` : "");
+    // Visible d'abord : sa hauteur ne se mesure pas tant qu'elle est masquée,
+    // et c'est elle qui décide de combien remonter.
+    this._sigEl.hidden = false;
+    // Positionnée sur la parenthèse ouvrante et non sur le caret : la boîte ne
+    // saute pas d'un paramètre à l'autre pendant la saisie.
+    this._positionBox(this._sigEl, context.open, true);
+  }
+  _closeSig() {
+    if (this._sigEl) this._sigEl.hidden = true;
+  }
   _positionAc() {
     this._positionBox(this._acEl, this._ac.from);
   }
-  _positionBox(el, pos) {
+  _positionBox(el, pos, above = false) {
     // Coordonnées du caret via une div-miroir (technique standard).
     const style = getComputedStyle(this._ta);
     const mirror = document.createElement("div");
@@ -334,11 +420,19 @@ class JsltEditor extends HTMLElement {
     marker.textContent = "​";
     mirror.appendChild(marker);
     this._root.appendChild(mirror);
-    const top = marker.offsetTop - this._ta.scrollTop + marker.offsetHeight;
+    const lineHeight = marker.offsetHeight;
+    const top = marker.offsetTop - this._ta.scrollTop + lineHeight;
     const left = marker.offsetLeft - this._ta.scrollLeft;
     this._root.removeChild(mirror);
-    el.style.top = `${top}px`;
     el.style.left = `${left}px`;
+    if (!above) {
+      el.style.top = `${top}px`;
+      return;
+    }
+    // Au-dessus de la ligne, sauf s'il n'y a pas la place (appel écrit sur la
+    // première ligne) : une boîte à moitié hors cadre ne se lit pas.
+    const lifted = top - lineHeight - el.offsetHeight;
+    el.style.top = `${lifted >= 0 ? lifted : top}px`;
   }
   _closeAc() {
     if (this._ac.open) {
@@ -358,6 +452,7 @@ class JsltEditor extends HTMLElement {
     this._ta.selectionStart = this._ta.selectionEnd = caret;
     this._closeAc();
     this._render();
+    this._maybeOpenSig();
     this.dispatchEvent(new Event("input", { bubbles: true }));
   }
   _onAcMouseDown(e) {
@@ -390,7 +485,10 @@ class JsltEditor extends HTMLElement {
     }
     // Le message ne capture aucune touche (la liste, elle, consomme Entrée et
     // les flèches) : seul Échap le referme, comme on referme la liste.
-    if (e.key === "Escape") return this._closeHint();
+    if (e.key === "Escape") {
+      this._closeSig();
+      return this._closeHint();
+    }
     if (e.key === "Tab") {
       // Indentation : insère deux espaces plutôt que de changer de focus.
       e.preventDefault();
@@ -399,6 +497,14 @@ class JsltEditor extends HTMLElement {
       this._ta.value = this._ta.value.slice(0, s) + "  " + this._ta.value.slice(en);
       this._ta.selectionStart = this._ta.selectionEnd = s + 2;
       this._render();
+    }
+  }
+  _onKeyUp(e) {
+    // Seules les touches qui déplacent le caret sans modifier le texte : une
+    // frappe ordinaire a déjà déclenché `_onInput`, la traiter deux fois
+    // rouvrirait l'aide par-dessus la liste de propositions.
+    if (e.key && (e.key.startsWith("Arrow") || e.key === "Home" || e.key === "End")) {
+      this._maybeOpenSig();
     }
   }
 }
