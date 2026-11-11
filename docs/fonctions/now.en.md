@@ -28,6 +28,10 @@ now(utc)
 |---|---|---|
 | `utc` | optional |  |
 
+**Good to know**
+
+- Non-deterministic: two calls in the same template may differ. For a **testable** template, pass the instant as an external parameter (`param("reference_date")`) rather than calling `now()`.
+
 **Chapter**: [Dates and times](../dates.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

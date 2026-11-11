@@ -30,6 +30,11 @@ regexreplace(token, pattern, replacement)
 | `pattern` | optional |  |
 | `replacement` | optional |  |
 
+**Good to know**
+
+- The replacement is written with `$`: `$1` (numbered group), `${name}` (named group), `$&` (the whole match), `$$` (a literal `$`).
+- Like the other regex functions, a scalar is **converted to text** (`42` becomes `"42"`), where `replace` would return `false`.
+
 **Chapter**: [Text, regular expressions and formatting](../texte.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

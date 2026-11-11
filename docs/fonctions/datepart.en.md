@@ -12,8 +12,10 @@ datepart(token, part)
 
 **Example**
 
+*`dayofweek` counts from **Sunday = 0**: 11 November 2026 is a Wednesday, hence 3.*
+
 ```jslt
-{ "annee": datepart($.d, "year"), "jour_semaine": datepart($.d, "dayofweek") }
+{ "annee": datepart($.d, "year"), "trimestre": datepart($.d, "quarter"), "jour_semaine": datepart($.d, "dayofweek") }
 ```
 
 ```json
@@ -21,13 +23,18 @@ datepart(token, part)
 ```
 
 ```json
-{ "annee": 2026, "jour_semaine": 3 }
+{ "annee": 2026, "trimestre": 4, "jour_semaine": 3 }
 ```
 
 | Parameter | Expected | Note |
 |---|---|---|
-| `token` | optional |  |
-| `part` | optional |  |
+| `token` | optional | the ISO 8601 date to break down |
+| `part` | optional | `year`, `quarter`, `month`, `day`, `dayofweek`, `dayofyear`, `week`, `hour`, `minute` or `second` |
+
+**Good to know**
+
+- `dayofweek` numbers from **Sunday = 0** (Saturday = 6), whereas `datestartof(…, "week")` starts on **Monday** (ISO). Both conventions coexist: the first names a day, the second bounds a week.
+- Available parts: `year`, `quarter`, `month`, `day`, `dayofweek`, `dayofyear`, `week`, `hour`, `minute`, `second`.
 
 **Chapter**: [Dates and times](../dates.en.md) · **Index**: [all functions](sommaire.en.md)
 

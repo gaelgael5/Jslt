@@ -37,6 +37,10 @@ to_xml(root)
 
 An **output** function: it is not called in the template body, it is declared in `"$directives": {"output": {"mode": …}}`.
 
+**Good to know**
+
+- `parsexml` conventions: a key prefixed with `@` becomes an **attribute**, `#text` the textual content, and a key whose value is an array **repeats** the element. An invalid element name raises.
+
 **Chapter**: [Text output](../sortie.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

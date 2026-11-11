@@ -125,6 +125,50 @@ Le bornage du jour, et le chaînage avec `format` pour l'affichage :
 { "borne": "2026-02-28T00:00:00", "lisible": "28 février 2026" }
 ```
 
+### Lire une date anglaise
+
+Sans masque, la détection ne lit que les formes **numériques** (et l'ISO 8601) :
+la culture ne change que l'**ordre** des composantes. Le même texte donne donc
+deux dates différentes, et c'est voulu :
+
+```jslt
+{ "us": parsedate($.t, "en-US"), "gb": parsedate($.t, "en-GB") }
+```
+```json
+{ "t": "03/04/2026" }
+```
+```json
+{ "us": "2026-03-04T00:00:00", "gb": "2026-04-03T00:00:00" }
+```
+
+Dès qu'un mois ou un jour est écrit **en lettres**, il faut un **masque** —
+« November 11, 2026 » sans masque lève `date illisible`, même en `en-US`. C'est
+alors la culture qui dit dans quelle langue lire `MMMM`, `MMM`, `dddd`, `ddd` et
+le `tt` de l'AM/PM :
+
+```jslt
+{
+  "long": parsedate($.a, "en-US", "MMMM d, yyyy"),
+  "abrege": parsedate($.b, "en-GB", "ddd, d MMM yyyy"),
+  "apres_midi": parsedate($.c, "en-US", "MM/dd/yyyy h:mm tt")
+}
+```
+```json
+{ "a": "November 11, 2026", "b": "Wed, 11 Nov 2026", "c": "11/11/2026 2:05 PM" }
+```
+```json
+{ "long": "2026-11-11T00:00:00", "abrege": "2026-11-11T00:00:00", "apres_midi": "2026-11-11T14:05:00" }
+```
+
+Trois détails qui font échouer un masque autrement correct :
+
+- `h` (heure sur 12) **exige** `t` ou `tt` dans le même masque : sans le
+  désignateur, rien ne distingue 2 h du matin de 14 h, et le masque est refusé.
+- `ddd` / `dddd` sont **lus puis ignorés** : ils servent à faire coller le
+  masque, pas à décider la date — un « Wed » faux ne sera pas signalé.
+- La virgule, le point et l'espace du masque doivent figurer **à l'identique**
+  dans le texte ; seul `/` est remplacé par le séparateur de date de la culture.
+
 ---
 
 ## Parties supplémentaires et bornes de période

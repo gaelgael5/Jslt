@@ -28,6 +28,10 @@ product(token)
 |---|---|---|
 | `token` | optionnel |  |
 
+**À savoir**
+
+- Un tableau vide rend `1`, l'élément neutre — comme `sum([])` rend `0`.
+
 **Chapitre** : [Données et collections](../collections.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

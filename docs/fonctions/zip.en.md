@@ -29,6 +29,10 @@ zip(left, right)
 | `left` | optional |  |
 | `right` | optional |  |
 
+**Good to know**
+
+- Stops at the shorter one rather than padding with `null`: an invented pair would be indistinguishable from a genuine null value.
+
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

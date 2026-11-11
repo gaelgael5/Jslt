@@ -28,6 +28,10 @@ avg(token)
 |---|---|---|
 | `token` | optional |  |
 
+**Good to know**
+
+- An empty array gives `null`, not `0`: the mean of nothing is not zero. A non-numeric element raises.
+
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

@@ -29,6 +29,10 @@ round(token, digits)
 | `token` | optionnel |  |
 | `digits` | optionnel |  |
 
+**À savoir**
+
+- Arrondi **bancaire** (au pair le plus proche) : `2.5` donne `2` et `3.5` donne `4`. Pour couper vers zéro, `truncate` ; vers le haut, `ceil`.
+
 **Chapitre** : [Nombres et maths](../nombres.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

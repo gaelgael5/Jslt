@@ -29,6 +29,10 @@ max(left, right)
 | `left` | optionnel |  |
 | `right` | optionnel |  |
 
+**À savoir**
+
+- Deux formes : deux nombres (résultat **décimal**) ou un tableau (le **type est conservé**). Un tableau *et* un second argument lève.
+
 **Chapitre** : [Nombres et maths](../nombres.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

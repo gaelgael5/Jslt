@@ -29,6 +29,10 @@ flattenobject(token, separator)
 | `token` | optional |  |
 | `separator` | optional |  |
 
+**Good to know**
+
+- Arrays are indexed by **position** (`l.0`, `l.1`): this is the bridge to a CSV, which has no depth.
+
 **Chapter**: [Objects and deep structures](../objets.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

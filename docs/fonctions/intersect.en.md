@@ -29,6 +29,10 @@ intersect(left, right)
 | `left` | optional |  |
 | `right` | optional |  |
 
+**Good to know**
+
+- **Structural** equality (not `==`, where `"2" == 2`), left order preserved, duplicates removed.
+
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

@@ -38,6 +38,11 @@ id;ville
 
 An **output** function: it is not called in the template body, it is declared in `"$directives": {"output": {"mode": …}}`.
 
+**Good to know**
+
+- The columns are the **union of the keys** encountered, in order of appearance: stopping at the first object would lose data on a heterogeneous feed.
+- Nested values are flattened into dotted keys (`flattenobject`), quotes are doubled and lines end with CRLF, as RFC 4180 requires.
+
 **Chapter**: [Text output](../sortie.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

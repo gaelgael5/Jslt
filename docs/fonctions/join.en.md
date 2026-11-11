@@ -31,6 +31,10 @@ join(source_left, key_left, clean_source, rights)
 | `clean_source` | optional |  |
 | `rights` | optional |  |
 
+**Good to know**
+
+- A **left** join: each left object receives, under `Name`, the elements of `Source` whose `Key` is equal (compared as text). The source is not modified.
+
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

@@ -30,6 +30,10 @@ replace(token, search, replacement)
 | `search` | optional |  |
 | `replacement` | optional |  |
 
+**Good to know**
+
+- Replaces **every** occurrence, literally: no character has a special meaning. For a pattern, use `regexreplace`.
+
 **Chapter**: [Text, regular expressions and formatting](../texte.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

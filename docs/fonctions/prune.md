@@ -29,6 +29,11 @@ prune(token, options)
 | `token` | optionnel |  |
 | `options` | optionnel |  |
 
+**À savoir**
+
+- Par défaut, seuls les `null` partent : `0`, `false` et `""` sont des **valeurs**, et supprimer un « montant : 0 » perdrait une information.
+- L'option `"empty"` retire en plus les chaînes, tableaux et objets vides — mais garde `0` et `false`.
+
 **Chapitre** : [Objets et structures profondes](../objets.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

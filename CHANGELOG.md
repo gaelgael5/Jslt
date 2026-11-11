@@ -78,7 +78,14 @@ Quatre catégories comblées (162 → 182) et un défaut de sortie corrigé.
   la signature seule ne dit ni ce qu'on met dedans ni ce qui en sort. Les 185
   exemples sont rejoués par la suite du guide, donc par les deux moteurs ; les
   chapitres gardent la prose et les exemples d'*usage*, qui mêlent plusieurs
-  fonctions.
+  fonctions. Les pages portent en outre un **commentaire par exemple**, une
+  section **« À savoir »** (69 fonctions : refus, valeurs par défaut, pièges) et
+  le **rôle de chaque argument** là où il ne se devine pas (13 fonctions).
+  `parsedate` en est l'exemple : sept cas commentés, dont la lecture d'une date
+  **anglaise**, et la règle qui manquait — sans masque, seules les formes
+  numériques et l'ISO sont reconnues, donc « November 11, 2026 » lève même en
+  `en-US`. Le chapitre [Dates et heures](docs/dates.md) gagne la section
+  correspondante.
 - **Le guide ne s'explique plus par le .NET.** « masque .NET », « comme en .NET »,
   « quirk .NET conservé » : une trentaine de renvois remplaçaient l'explication
   par une référence à un moteur que le lecteur de la bibliothèque Python n'a pas

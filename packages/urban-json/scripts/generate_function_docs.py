@@ -28,7 +28,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 # Import après `sys.path` : c'est un script, pas un module du paquet.
-from function_examples import EXAMPLES
+from function_examples import EXAMPLES, NOTES, PARAMS
 
 #: Chapitre d'où chaque module de fonctions tire sa prose et ses exemples.
 #: Clé = nom du module ``urban_json.functions.*``, valeur = (fichier, titre FR, titre EN).
@@ -88,6 +88,7 @@ LABELS = {
         "example": "**Exemple**",
         "examples": "**Exemples**",
         "render": "`render()` produit :",
+        "notes": "**À savoir**",
         "chapter": "**Chapitre** :",
         "index": "**Index** : [toutes les fonctions](sommaire.md)",
         "back": "[← Guide jslt](../guide.md)",
@@ -108,6 +109,7 @@ LABELS = {
         "example": "**Example**",
         "examples": "**Examples**",
         "render": "`render()` produces:",
+        "notes": "**Good to know**",
         "chapter": "**Chapter**:",
         "index": "**Index**: [all functions](sommaire.en.md)",
         "back": "[← jslt guide](../guide.en.md)",
@@ -131,8 +133,12 @@ def theme_of(info: Any) -> tuple[str, str, str]:
     return THEMES[module]
 
 
-def _notes(info: Any, index: int, param: Any, labels: dict[str, str]) -> str:
+def _notes(info: Any, index: int, param: Any, labels: dict[str, str], lang: str) -> str:
     notes = []
+    described = PARAMS.get(info.name.lower(), {}).get(param.name)
+    if described:
+        # Le rôle de l'argument d'abord : « optionnel » ne dit pas ce qu'on y met.
+        notes.append(described[0] if lang == "fr" else described[1])
     if param.variadic:
         notes.append(labels["variadic"])
     if index in info.path_args:
@@ -142,7 +148,7 @@ def _notes(info: Any, index: int, param: Any, labels: dict[str, str]) -> str:
     return " · ".join(notes)
 
 
-def _example_lines(info: Any, labels: dict[str, str]) -> list[str]:
+def _example_lines(info: Any, labels: dict[str, str], lang: str) -> list[str]:
     """Exemples de la fonction, en triplets du guide.
 
     Le même code sert les deux langues : les clés des documents sont courtes et
@@ -157,6 +163,12 @@ def _example_lines(info: Any, labels: dict[str, str]) -> list[str]:
         )
     lines = [labels["examples"] if len(examples) > 1 else labels["example"], ""]
     for example in examples:
+        if "note" in example:
+            # Le commentaire de l'exemple, au-dessus de lui : ce qu'il montre se
+            # lit avant qu'on déchiffre le template, pas après.
+            if "note_en" not in example:
+                raise SystemExit(f"commentaire non traduit dans l'exemple de {info.name}")
+            lines += [f"*{example['note' if lang == 'fr' else 'note_en']}*", ""]
         lines += ["```jslt", example["template"], "```", ""]
         lines += ["```json", example["source"], "```", ""]
         lines += ["```json", example["output"], "```", ""]
@@ -179,17 +191,26 @@ def render_page(info: Any, lang: str) -> str:
 
     lines = [GENERATED, "", f"# `{info.name}`", "", labels["banner"].format(name=info.name.lower()), ""]
     lines += [description, "", "```", info.signature(), "```", ""]
-    lines += _example_lines(info, labels)
+    lines += _example_lines(info, labels, lang)
     if info.parameters:
         lines += [labels["params"], "|---|---|---|"]
         for index, param in enumerate(info.parameters):
             expected = labels["required"] if param.required else labels["optional"]
-            lines.append(f"| `{param.name}` | {expected} | {_notes(info, index, param, labels)} |")
+            lines.append(
+                f"| `{param.name}` | {expected} | {_notes(info, index, param, labels, lang)} |"
+            )
         lines.append("")
     else:
         lines += [labels["no_params"], ""]
     if info.kind == "output":
         lines += [labels["output"], ""]
+    notes = NOTES.get(info.name.lower(), [])
+    if notes:
+        # Ce qu'un exemple ne montre pas : les refus, les valeurs par défaut, les
+        # pièges. C'est là que la page cesse d'être une fiche signalétique.
+        lines += [labels["notes"], ""]
+        lines += [f"- {french if lang == 'fr' else english}" for french, english in notes]
+        lines.append("")
     lines += [
         f"{labels['chapter']} [{chapter_title}](../{chapter_file}) · {labels['index']}",
         "",

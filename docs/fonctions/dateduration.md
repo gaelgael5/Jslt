@@ -12,6 +12,8 @@ dateduration(start, end)
 
 **Exemple**
 
+*L'intervalle décomposé en valeurs **positives** ; `negative` dit dans quel sens il va.*
+
 ```jslt
 { "r": dateduration($.a, $.b) }
 ```
@@ -28,6 +30,10 @@ dateduration(start, end)
 |---|---|---|
 | `start` | optionnel |  |
 | `end` | optionnel |  |
+
+**À savoir**
+
+- Le résultat porte `negative` : l'intervalle est décomposé en valeurs positives, et c'est ce drapeau qui dit dans quel sens il va.
 
 **Chapitre** : [Dates et heures](../dates.md) · **Index** : [toutes les fonctions](sommaire.md)
 

@@ -28,6 +28,10 @@ today(utc)
 |---|---|---|
 | `utc` | optionnel |  |
 
+**À savoir**
+
+- Minuit **local**, ou UTC si `utc` vaut `true`. Comme `now`, elle rend un template non déterministe : préférer un paramètre externe quand le résultat doit être reproductible.
+
 **Chapitre** : [Dates et heures](../dates.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

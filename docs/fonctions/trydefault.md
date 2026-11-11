@@ -29,6 +29,11 @@ trydefault(expression, fallback)
 | `expression` | optionnel | expression **non évaluée**, calculée par la fonction |
 | `fallback` | optionnel | expression **non évaluée**, calculée par la fonction |
 
+**À savoir**
+
+- Le repli n'est évalué **que** si la première expression lève : il peut donc être coûteux sans ralentir le cas nominal.
+- Il n'attrape que les erreurs du moteur (`JsltError`), pas une valeur `null` : pour un repli sur l'absence, l'opérateur `??`.
+
 **Chapitre** : [Types, repli sur erreur et validation](../types.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

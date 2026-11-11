@@ -29,6 +29,11 @@ regexmatches(token, pattern)
 | `token` | optional |  |
 | `pattern` | optional |  |
 
+**Good to know**
+
+- Inside a jslt string, backslashes are **doubled**: `"\\d+"`. Named groups are written `(?<name>…)` or `(?P<name>…)`.
+- `null`, an object or an array give `null`; an invalid pattern raises.
+
 **Chapter**: [Text, regular expressions and formatting](../texte.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

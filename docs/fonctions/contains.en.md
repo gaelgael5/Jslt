@@ -29,6 +29,10 @@ contains(source, to_match)
 | `source` | optional |  |
 | `to_match` | optional |  |
 
+**Good to know**
+
+- Keeps the language's `==` equality, where `"2" == 2` is **true**. For structural equality, use `indexof(l, v) != -1`.
+
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

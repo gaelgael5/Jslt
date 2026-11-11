@@ -39,6 +39,10 @@ to_json(indented, ignore_null_and_empty_value)
 
 An **output** function: it is not called in the template body, it is declared in `"$directives": {"output": {"mode": …}}`.
 
+**Good to know**
+
+- `ignore_null_and_empty_value` turns empty strings into `null` **then** removes null properties from objects; arrays keep their elements.
+
 **Chapter**: [Text output](../sortie.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

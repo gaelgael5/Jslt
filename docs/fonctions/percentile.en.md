@@ -29,6 +29,10 @@ percentile(token, p)
 | `token` | optional |  |
 | `p` | optional |  |
 
+**Good to know**
+
+- **Linear** interpolation between the two surrounding ranks (NumPy's default method): so `percentile(v, 50)` coincides with `median`.
+
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

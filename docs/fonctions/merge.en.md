@@ -31,6 +31,11 @@ merge(left, right, deep, arrays)
 | `deep` | optional |  |
 | `arrays` | optional |  |
 
+**Good to know**
+
+- A **flat** merge by default: the right-hand side replaces the whole key. `deep` merges sub-objects, `arrays` concatenates arrays instead of replacing them.
+- The sources are **not** modified: the result is a new object.
+
 **Chapter**: [Objects and deep structures](../objets.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

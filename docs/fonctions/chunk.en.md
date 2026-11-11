@@ -29,6 +29,10 @@ chunk(source, size)
 | `source` | optional |  |
 | `size` | optional |  |
 
+**Good to know**
+
+- A zero or negative size **raises**: that is an authoring mistake, not surprising data.
+
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

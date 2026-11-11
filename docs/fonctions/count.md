@@ -28,6 +28,10 @@ count(token)
 |---|---|---|
 | `token` | optionnel |  |
 
+**À savoir**
+
+- Compte les éléments d'un tableau, les **clés** d'un objet, les **caractères** d'un texte ; un scalaire vaut 1 (c'est une valeur) et `null` vaut 0 (c'est une absence).
+
 **Chapitre** : [Données et collections](../collections.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

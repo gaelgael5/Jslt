@@ -29,6 +29,11 @@ distinct(source, path)
 | `source` | optionnel |  |
 | `path` | optionnel | chemin JSONPath **non évalué** |
 
+**À savoir**
+
+- Le chemin s'applique au **tableau entier** (`$.*.v`), pas à chaque élément — convention inverse de `sort` et `distinctby`, dont la clef est évaluée par élément.
+- Pour dédupliquer des **objets** sur une clef, c'est `distinctby`.
+
 **Chapitre** : [Données et collections](../collections.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

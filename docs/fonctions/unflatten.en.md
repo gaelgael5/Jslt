@@ -30,6 +30,11 @@ unflatten(token, separator, arrays)
 | `separator` | optional |  |
 | `arrays` | optional |  |
 
+**Good to know**
+
+- Numeric segments only become **arrays** when `arrays` is `true`: a key "2026" is a year's name in half of real documents, and turning it into an index would create an array with two thousand holes.
+- A path conflict (`a` being 1 and `a.b` being 2) **raises**.
+
 **Chapter**: [Objects and deep structures](../objets.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

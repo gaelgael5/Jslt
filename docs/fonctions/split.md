@@ -29,6 +29,10 @@ split(token, charset)
 | `token` | optionnel |  |
 | `charset` | optionnel |  |
 
+**À savoir**
+
+- Seul le **premier caractère** du séparateur est retenu : `split($.t, ", ")` coupe sur la virgule et laisse les espaces. Pour un séparateur entier, `splitstring`.
+
 **Chapitre** : [Texte, expressions régulières et formatage](../texte.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

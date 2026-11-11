@@ -28,6 +28,10 @@ parsejson(token)
 |---|---|---|
 | `token` | optional |  |
 
+**Good to know**
+
+- Unreadable text **raises** rather than giving `null`: the fault shows where it is.
+
 **Chapter**: [Types, error fallback and validation](../types.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

@@ -37,6 +37,10 @@ to_xml(root)
 
 Fonction de **sortie** : elle ne s'appelle pas dans le corps du template, mais se déclare dans `"$directives": {"output": {"mode": …}}`.
 
+**À savoir**
+
+- Conventions de `parsexml` : une clé préfixée `@` devient un **attribut**, `#text` le contenu textuel, et une clé dont la valeur est un tableau **répète** l'élément. Un nom d'élément invalide lève.
+
 **Chapitre** : [Sortie texte](../sortie.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

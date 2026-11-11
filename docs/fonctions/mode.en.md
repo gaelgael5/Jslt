@@ -28,6 +28,10 @@ mode(token)
 |---|---|---|
 | `token` | optional |  |
 
+**Good to know**
+
+- Accepts **any** values, not only numbers: the most frequent label is meaningful. On a tie, the **first seen** wins.
+
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

@@ -12,8 +12,10 @@ dateendof(token, period)
 
 **Example**
 
+*An **inclusive** bound: the last microsecond of the period, so that a `<=` filter catches the whole day (or the whole month).*
+
 ```jslt
-{ "r": dateendof($.d, "month") }
+{ "mois": dateendof($.d, "month"), "jour": dateendof($.d, "day") }
 ```
 
 ```json
@@ -21,13 +23,17 @@ dateendof(token, period)
 ```
 
 ```json
-{ "r": "2026-02-28T23:59:59.999999" }
+{ "mois": "2026-02-28T23:59:59.999999", "jour": "2026-02-10T23:59:59.999999" }
 ```
 
 | Parameter | Expected | Note |
 |---|---|---|
-| `token` | optional |  |
-| `period` | optional |  |
+| `token` | optional | the ISO 8601 date to carry to the end of its period |
+| `period` | optional | `year`, `quarter`, `month`, `week`, `day`, `hour` or `minute` |
+
+**Good to know**
+
+- The bound is **inclusive**, to the microsecond: the end of a day is `23:59:59.999999`, not the start of the next one. So a `<=` filter catches the whole day.
 
 **Chapter**: [Dates and times](../dates.en.md) · **Index**: [all functions](sommaire.en.md)
 

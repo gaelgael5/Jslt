@@ -30,6 +30,10 @@ shorten(token, length, suffix)
 | `length` | optionnel |  |
 | `suffix` | optionnel |  |
 
+**À savoir**
+
+- La longueur **comprend le suffixe** (`…` par défaut), et la coupe remonte au dernier espace : on ne coupe pas un mot en deux.
+
 **Chapitre** : [Texte, expressions régulières et formatage](../texte.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

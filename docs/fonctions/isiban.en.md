@@ -28,6 +28,10 @@ isiban(token)
 |---|---|---|
 | `token` | optional |  |
 
+**Good to know**
+
+- Checks the structure and the **modulo-97 check digits**, but not the per-country length: that would be a sixty-entry table whose staleness would reject a valid IBAN.
+
 **Chapter**: [Quality: refuse, observe, validate](../qualite.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

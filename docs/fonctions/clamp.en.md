@@ -30,6 +30,10 @@ clamp(token, lower, upper)
 | `lower` | optional |  |
 | `upper` | optional |  |
 
+**Good to know**
+
+- A value that is not a number gives `null` rather than being brought back to a bound.
+
 **Chapter**: [Numbers and maths](../nombres.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

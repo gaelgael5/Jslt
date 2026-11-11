@@ -546,7 +546,14 @@ python -m twine check dist/*           # valide les distributions (métadonnées
   `scripts/function_examples.py` (un par fonction, au plus court, le même code
   servant les deux langues puisque les clés sont neutres) ; `tests/_docs.py`
   balaie `docs/` **récursivement**, donc chaque exemple de page est rejoué par
-  les deux moteurs comme ceux des chapitres. Un exemple de chapitre enseigne un
+  les deux moteurs comme ceux des chapitres. Une page porte aussi, quand
+  l'argument ou le comportement ne se devine pas : un **commentaire** par exemple
+  (`note`/`note_en`, les deux ou aucun — le générateur lève sinon), une section
+  **« À savoir »** (`NOTES`, couples FR/EN : refus, valeurs par défaut, pièges) et
+  le **rôle de chaque argument** (`PARAMS`), parce que « optionnel » ne dit pas ce
+  qu'on met dedans. Règle de rédaction : toute affirmation de comportement dans
+  une note doit avoir été **éprouvée** contre le moteur, et de préférence montrée
+  par l'exemple voisin. Un exemple de chapitre enseigne un
   *usage* et mêle souvent trois fonctions ; une page de référence en montre
   **une**. Les cinq fonctions de sortie montrent en plus le texte de `render()`,
   vérifié par un test dédié (ce n'est pas un triplet). Écrites parce que l'éditeur lie son infobulle à la

@@ -29,6 +29,11 @@ prune(token, options)
 | `token` | optional |  |
 | `options` | optional |  |
 
+**Good to know**
+
+- By default only `null`s go: `0`, `false` and `""` are **values**, and dropping an "amount: 0" would lose information.
+- The `"empty"` option also removes empty strings, arrays and objects — but keeps `0` and `false`.
+
 **Chapter**: [Objects and deep structures](../objets.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

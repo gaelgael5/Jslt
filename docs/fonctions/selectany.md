@@ -29,6 +29,10 @@ selectany(source, path)
 | `source` | optionnel |  |
 | `path` | optionnel | chemin JSONPath **non évalué** |
 
+**À savoir**
+
+- Compte les **nœuds** sélectionnés, pas leur vérité : une valeur `0` ou `""` trouvée rend `true`.
+
 **Chapitre** : [Données et collections](../collections.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

@@ -30,6 +30,10 @@ tobase(token, base, width)
 | `base` | optionnel |  |
 | `width` | optionnel |  |
 
+**À savoir**
+
+- Bases de 2 à 36 (chiffres puis lettres minuscules). `width` complète de zéros à gauche ; le signe est écrit **devant** les chiffres, un entier JSON n'ayant pas de largeur fixe.
+
 **Chapitre** : [Nombres et maths](../nombres.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

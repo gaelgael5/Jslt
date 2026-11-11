@@ -28,6 +28,10 @@ mode(token)
 |---|---|---|
 | `token` | optionnel |  |
 
+**À savoir**
+
+- Accepte **toutes** les valeurs, pas seulement des nombres : la plus fréquente d'un libellé a un sens. À égalité, la **première apparue** gagne.
+
 **Chapitre** : [Données et collections](../collections.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

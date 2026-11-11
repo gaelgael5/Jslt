@@ -29,6 +29,10 @@ max(left, right)
 | `left` | optional |  |
 | `right` | optional |  |
 
+**Good to know**
+
+- Two forms: two numbers (a **decimal** result) or an array (the **type is preserved**). An array *and* a second argument raises.
+
 **Chapter**: [Numbers and maths](../nombres.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

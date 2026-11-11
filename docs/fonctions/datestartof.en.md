@@ -12,8 +12,10 @@ datestartof(token, period)
 
 **Example**
 
+*The week starts on **Monday**: a Wednesday is brought back to the Monday before it, at midnight.*
+
 ```jslt
-{ "r": datestartof($.d, "week") }
+{ "semaine": datestartof($.d, "week"), "mois": datestartof($.d, "month") }
 ```
 
 ```json
@@ -21,13 +23,17 @@ datestartof(token, period)
 ```
 
 ```json
-{ "r": "2026-11-09T00:00:00" }
+{ "semaine": "2026-11-09T00:00:00", "mois": "2026-11-01T00:00:00" }
 ```
 
 | Parameter | Expected | Note |
 |---|---|---|
-| `token` | optional |  |
-| `period` | optional |  |
+| `token` | optional | the ISO 8601 date to bring back to the start of its period |
+| `period` | optional | `year`, `quarter`, `month`, `week` (Monday), `day`, `hour` or `minute` |
+
+**Good to know**
+
+- The week starts on **Monday** (ISO). Periods: `year`, `quarter`, `month`, `week`, `day`, `hour`, `minute`.
 
 **Chapter**: [Dates and times](../dates.en.md) · **Index**: [all functions](sommaire.en.md)
 

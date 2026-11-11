@@ -30,6 +30,10 @@ tobase(token, base, width)
 | `base` | optional |  |
 | `width` | optional |  |
 
+**Good to know**
+
+- Bases from 2 to 36 (digits then lower-case letters). `width` pads with leading zeros; the sign is written **in front of** the digits, a JSON integer having no fixed width.
+
 **Chapter**: [Numbers and maths](../nombres.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

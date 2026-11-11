@@ -29,6 +29,11 @@ select(source, path)
 | `source` | optional |  |
 | `path` | optional | **unevaluated** JSONPath path |
 
+**Good to know**
+
+- The 2nd argument is a **path argument**: it is not evaluated as an expression, it is applied to `source`. It can also be written as a string (`"$.client.nom"`).
+- Several values found: the **first** one. None: `null`.
+
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

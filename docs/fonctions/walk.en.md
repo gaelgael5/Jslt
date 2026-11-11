@@ -29,6 +29,10 @@ walk(token, expression)
 | `token` | optional |  |
 | `expression` | optional | **unevaluated** expression, computed by the function |
 
+**Good to know**
+
+- The walk goes from the **leaves to the root**: the expression sees already transformed children, so a rule that depends on them works.
+
 **Chapter**: [Objects and deep structures](../objets.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

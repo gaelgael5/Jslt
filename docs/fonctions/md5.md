@@ -28,6 +28,10 @@ md5(token)
 |---|---|---|
 | `token` | optionnel |  |
 
+**À savoir**
+
+- Pour l'**identité** seulement : MD5 est cassé pour toute usage de sécurité.
+
 **Chapitre** : [Encodage, empreintes et échappement](../encodage.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

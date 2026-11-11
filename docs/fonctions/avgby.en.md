@@ -26,9 +26,9 @@ avgby(source, key, value)
 
 | Parameter | Expected | Note |
 |---|---|---|
-| `source` | optional |  |
-| `key` | optional | **unevaluated** expression, computed by the function |
-| `value` | optional | **unevaluated** expression, computed by the function |
+| `source` | optional | the array to aggregate |
+| `key` | optional | the group key expression, evaluated per element · **unevaluated** expression, computed by the function |
+| `value` | optional | the expression of the value to average; omitted, it is the element · **unevaluated** expression, computed by the function |
 
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 

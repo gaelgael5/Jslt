@@ -29,6 +29,10 @@ chunk(source, size)
 | `source` | optionnel |  |
 | `size` | optionnel |  |
 
+**À savoir**
+
+- Une taille nulle ou négative **lève** : c'est une faute d'écriture, pas une donnée surprenante.
+
 **Chapitre** : [Données et collections](../collections.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

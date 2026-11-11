@@ -29,6 +29,10 @@ intersect(left, right)
 | `left` | optionnel |  |
 | `right` | optionnel |  |
 
+**À savoir**
+
+- Égalité **structurelle** (et non `==`, où `"2" == 2`), ordre de gauche conservé, doublons retirés.
+
 **Chapitre** : [Données et collections](../collections.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

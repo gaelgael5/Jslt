@@ -30,6 +30,10 @@ shorten(token, length, suffix)
 | `length` | optional |  |
 | `suffix` | optional |  |
 
+**Good to know**
+
+- The length **includes the suffix** (`…` by default), and the cut backs up to the last space: a word is not cut in half.
+
 **Chapter**: [Text, regular expressions and formatting](../texte.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

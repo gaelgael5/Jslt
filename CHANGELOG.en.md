@@ -75,7 +75,14 @@ Four categories filled (162 → 182) and one output defect fixed.
   first renamed heading. **Every page carries an executed example**: the
   signature alone says neither what goes in nor what comes out. The 185 examples
   are replayed by the guide suite, hence by both engines; the chapters keep the
-  prose and the *usage* examples, which mix several functions.
+  prose and the *usage* examples, which mix several functions. The pages also
+  carry a **comment per example**, a **"Good to know"** section (69 functions:
+  refusals, defaults, traps) and the **role of each argument** where it cannot be
+  guessed (13 functions). `parsedate` is the showcase: seven commented cases,
+  including reading an **English** date, and the rule that was missing — with no
+  mask, only numeric forms and ISO are recognised, so "November 11, 2026" raises
+  even in `en-US`. The [Dates and times](docs/dates.en.md) chapter gains the
+  matching section.
 - **The guide no longer explains itself through .NET.** ".NET mask", "as in
   .NET", ".NET quirk preserved": some thirty pointers replaced the explanation
   with a reference to an engine the reader of the Python library does not have

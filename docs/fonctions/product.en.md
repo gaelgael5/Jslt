@@ -28,6 +28,10 @@ product(token)
 |---|---|---|
 | `token` | optional |  |
 
+**Good to know**
+
+- An empty array gives `1`, the neutral element — just as `sum([])` gives `0`.
+
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

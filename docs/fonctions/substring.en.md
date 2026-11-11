@@ -30,6 +30,11 @@ substring(token, start, length)
 | `start` | optional |  |
 | `length` | optional |  |
 
+**Good to know**
+
+- Out-of-range bounds do **not raise**: a start beyond the text gives an empty string, an over-long length stops at the end. A template transforms data it does not choose.
+- A **negative** length does raise: that is an authoring mistake.
+
 **Chapter**: [Text, regular expressions and formatting](../texte.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

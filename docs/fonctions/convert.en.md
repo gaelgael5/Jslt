@@ -29,6 +29,10 @@ convert(token, target_type)
 | `token` | optional |  |
 | `target_type` | optional |  |
 
+**Good to know**
+
+- Types: `integer`, `decimal`, `string`, `boolean` — complete; `uri`, `uuid`, `datetime`, `time` are returned **as text** (the port has no such types). The `$.x #integer` form does the same.
+
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

@@ -29,6 +29,10 @@ has(token, key)
 | `token` | optionnel |  |
 | `key` | optionnel |  |
 
+**À savoir**
+
+- `has` existe parce qu'`isnull` ne distingue pas une **clé absente** d'une clé présente **à `null`** : les deux donnent `true`, et ce n'est pas la même chose dans un flux.
+
 **Chapitre** : [Objets et structures profondes](../objets.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

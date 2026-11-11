@@ -29,6 +29,10 @@ group(source, group_paths)
 | `source` | optional |  |
 | `group_paths` | optional |  |
 
+**Good to know**
+
+- Returns `{Label, Items}` groups, nested when several paths are given. `groupby` returns an **object**, reducible with `entries`.
+
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

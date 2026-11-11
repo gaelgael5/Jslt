@@ -28,6 +28,10 @@ count(token)
 |---|---|---|
 | `token` | optional |  |
 
+**Good to know**
+
+- Counts the elements of an array, the **keys** of an object, the **characters** of a text; a scalar counts as 1 (it is a value) and `null` as 0 (it is an absence).
+
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

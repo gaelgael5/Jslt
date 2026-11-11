@@ -29,6 +29,10 @@ round(token, digits)
 | `token` | optional |  |
 | `digits` | optional |  |
 
+**Good to know**
+
+- **Banker's** rounding (to the nearest even): `2.5` gives `2` and `3.5` gives `4`. To cut towards zero use `truncate`; upwards, `ceil`.
+
 **Chapter**: [Numbers and maths](../nombres.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---
