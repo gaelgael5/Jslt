@@ -39,6 +39,10 @@ to_json(indented, ignore_null_and_empty_value)
 
 Fonction de **sortie** : elle ne s'appelle pas dans le corps du template, mais se déclare dans `"$directives": {"output": {"mode": …}}`.
 
+**À savoir**
+
+- `ignore_null_and_empty_value` transforme les chaînes vides en `null` **puis** retire les propriétés nulles des objets ; les tableaux gardent leurs éléments.
+
 **Chapitre** : [Sortie texte](../sortie.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

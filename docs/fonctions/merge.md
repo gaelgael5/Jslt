@@ -31,6 +31,11 @@ merge(left, right, deep, arrays)
 | `deep` | optionnel |  |
 | `arrays` | optionnel |  |
 
+**À savoir**
+
+- Fusion **plate** par défaut : la droite remplace la clé entière. `deep` fusionne les sous-objets, `arrays` concatène les tableaux au lieu de les remplacer.
+- Les sources ne sont **pas** modifiées : le résultat est un nouvel objet.
+
 **Chapitre** : [Objets et structures profondes](../objets.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

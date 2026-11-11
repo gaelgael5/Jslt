@@ -28,6 +28,10 @@ avg(token)
 |---|---|---|
 | `token` | optionnel |  |
 
+**À savoir**
+
+- Un tableau vide rend `null`, pas `0` : la moyenne de rien n'est pas zéro. Un élément non numérique lève.
+
 **Chapitre** : [Données et collections](../collections.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

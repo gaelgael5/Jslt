@@ -31,6 +31,10 @@ setpath(token, path, value, separator)
 | `value` | optionnel |  |
 | `separator` | optionnel |  |
 
+**À savoir**
+
+- Rend une **copie** : la source n'est pas modifiée. Les niveaux manquants sont créés, et le séparateur est réglable (4e argument).
+
 **Chapitre** : [Objets et structures profondes](../objets.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

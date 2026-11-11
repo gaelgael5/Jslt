@@ -29,6 +29,10 @@ trace(value, label)
 | `value` | optional |  |
 | `label` | optional |  |
 
+**Good to know**
+
+- The journal lives on the **execution context**: two concurrent runs never mix, and an integrator reads it afterwards (`context.traces`) without the template having to copy it into its output.
+
 **Chapter**: [Quality: refuse, observe, validate](../qualite.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

@@ -29,6 +29,11 @@ trydefault(expression, fallback)
 | `expression` | optional | **unevaluated** expression, computed by the function |
 | `fallback` | optional | **unevaluated** expression, computed by the function |
 
+**Good to know**
+
+- The fallback is evaluated **only** when the first expression raises: it can therefore be expensive without slowing the nominal case.
+- It only catches engine errors (`JsltError`), not a `null` value: for a fallback on absence, use the `??` operator.
+
 **Chapter**: [Types, error fallback and validation](../types.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

@@ -29,6 +29,10 @@ omit(token, keys)
 | `token` | optional |  |
 | `keys` | optional |  |
 
+**Good to know**
+
+- Accepts a single key or an array of keys; removing a missing key does not raise.
+
 **Chapter**: [Objects and deep structures](../objets.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

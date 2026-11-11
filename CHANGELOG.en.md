@@ -12,6 +12,22 @@ in [Embedding the engine](docs/integration.en.md).
 Versions follow [SemVer](https://semver.org/); a PyPI version is immutable, so a
 documentation fix aimed at the index is worth a patch release.
 
+## Plugins — 2026-11-11
+
+Versions ready to be published alongside the 0.6.0 core.
+
+- **urban-json-csv 0.2.0** and **urban-json-xml 0.2.0**: `parsecsv` and
+  `parsexml` (reading from a **string**, with no file), which came with the 0.4.0
+  core and have never been published since. Both READMEs are also cleaned of
+  their pointers to the .NET engine.
+- **urban-json-db 0.1.2**, **urban-json-html 0.1.2**, **urban-json-random
+  0.1.2**: documentation only. The passages that explained a behaviour by
+  comparison with .NET now state the behaviour; in `random`, "Deliberate
+  deviations from .NET" becomes "Drawing rules". A PyPI version being immutable,
+  a corrected description only reaches the index through a patch.
+- Unchanged, hence not republished: `urban-json-files`, `urban-json-excel`,
+  `urban-json-phone`, `urban-json-elastic`, `urban-json-http`.
+
 ## urban-json-editor 0.4.0 — 2026-11-11
 
 ### Added
@@ -75,7 +91,14 @@ Four categories filled (162 → 182) and one output defect fixed.
   first renamed heading. **Every page carries an executed example**: the
   signature alone says neither what goes in nor what comes out. The 185 examples
   are replayed by the guide suite, hence by both engines; the chapters keep the
-  prose and the *usage* examples, which mix several functions.
+  prose and the *usage* examples, which mix several functions. The pages also
+  carry a **comment per example**, a **"Good to know"** section (69 functions:
+  refusals, defaults, traps) and the **role of each argument** where it cannot be
+  guessed (13 functions). `parsedate` is the showcase: seven commented cases,
+  including reading an **English** date, and the rule that was missing — with no
+  mask, only numeric forms and ISO are recognised, so "November 11, 2026" raises
+  even in `en-US`. The [Dates and times](docs/dates.en.md) chapter gains the
+  matching section.
 - **The guide no longer explains itself through .NET.** ".NET mask", "as in
   .NET", ".NET quirk preserved": some thirty pointers replaced the explanation
   with a reference to an engine the reader of the Python library does not have

@@ -29,6 +29,10 @@ selectany(source, path)
 | `source` | optional |  |
 | `path` | optional | **unevaluated** JSONPath path |
 
+**Good to know**
+
+- Counts the **nodes** selected, not their truth: a `0` or `""` value found returns `true`.
+
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

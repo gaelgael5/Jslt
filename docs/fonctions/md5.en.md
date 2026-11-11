@@ -28,6 +28,10 @@ md5(token)
 |---|---|---|
 | `token` | optional |  |
 
+**Good to know**
+
+- For **identity** only: MD5 is broken for any security use.
+
 **Chapter**: [Encoding, digests and escaping](../encodage.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

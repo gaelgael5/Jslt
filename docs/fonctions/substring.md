@@ -30,6 +30,11 @@ substring(token, start, length)
 | `start` | optionnel |  |
 | `length` | optionnel |  |
 
+**À savoir**
+
+- Des bornes trop larges ne **lèvent pas** : un début hors du texte rend une chaîne vide, une longueur trop grande s'arrête à la fin. Un template transforme des données qu'il ne choisit pas.
+- Une longueur **négative** lève, elle : c'est une faute d'écriture.
+
 **Chapitre** : [Texte, expressions régulières et formatage](../texte.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

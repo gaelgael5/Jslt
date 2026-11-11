@@ -29,6 +29,11 @@ distinct(source, path)
 | `source` | optional |  |
 | `path` | optional | **unevaluated** JSONPath path |
 
+**Good to know**
+
+- The path applies to the **whole array** (`$.*.v`), not to each element — the opposite convention to `sort` and `distinctby`, whose key is evaluated per element.
+- To deduplicate **objects** on a key, use `distinctby`.
+
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

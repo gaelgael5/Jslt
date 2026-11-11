@@ -29,6 +29,10 @@ convert(token, target_type)
 | `token` | optionnel |  |
 | `target_type` | optionnel |  |
 
+**À savoir**
+
+- Types : `integer`, `decimal`, `string`, `boolean` — complets ; `uri`, `uuid`, `datetime`, `time` sont rendus **en texte** (le portage n'a pas ces types). La forme `$.x #integer` fait la même chose.
+
 **Chapitre** : [Données et collections](../collections.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

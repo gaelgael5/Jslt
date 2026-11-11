@@ -29,6 +29,10 @@ renamekeys(token, mapping)
 | `token` | optionnel |  |
 | `mapping` | optionnel |  |
 
+**À savoir**
+
+- Une clé non mentionnée dans le mapping est **gardée telle quelle**. En cas de collision, le dernier écrit gagne : lever casserait une migration en cours.
+
 **Chapitre** : [Objets et structures profondes](../objets.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

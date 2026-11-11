@@ -30,6 +30,10 @@ createindex(source, object_path, key)
 | `object_path` | optionnel |  |
 | `key` | optionnel |  |
 
+**À savoir**
+
+- Se range dans une variable (`"i:": createindex(…)`) que `index(i:, clé)` interroge ensuite. Le 2e argument est le chemin de **découpe** (vide = la source entière).
+
 **Chapitre** : [Données et collections](../collections.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

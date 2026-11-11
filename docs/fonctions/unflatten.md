@@ -30,6 +30,11 @@ unflatten(token, separator, arrays)
 | `separator` | optionnel |  |
 | `arrays` | optionnel |  |
 
+**À savoir**
+
+- Les segments numériques ne redeviennent des **tableaux** que si `arrays` vaut `true` : une clé « 2026 » est un nom d'année dans la moitié des documents, et en faire un indice créerait un tableau de deux mille trous.
+- Un conflit de chemin (`a` valant 1 et `a.b` valant 2) **lève**.
+
 **Chapitre** : [Objets et structures profondes](../objets.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

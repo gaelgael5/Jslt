@@ -38,9 +38,13 @@ groupby(source, key, nested)
 
 | Parameter | Expected | Note |
 |---|---|---|
-| `source` | optional |  |
-| `key` | optional | **unevaluated** expression, computed by the function |
-| `nested` | optional |  |
+| `source` | optional | the array to group |
+| `key` | optional | expression evaluated **per element**; an array for a composite key · **unevaluated** expression, computed by the function |
+| `nested` | optional | `true` to nest one object level per key |
+
+**Good to know**
+
+- The key is converted to **text**, since a JSON object key is a string: a composite key gives `["FR","Lyon"]` as compact JSON. `nested` saves you from parsing it back.
 
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 

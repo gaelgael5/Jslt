@@ -29,6 +29,10 @@ requirethat(condition, message)
 | `condition` | optionnel |  |
 | `message` | optionnel |  |
 
+**À savoir**
+
+- Exige `true` **strict** : une condition qui vaut `0` ou `""` est refusée, parce que c'est presque toujours une expression qu'on croyait booléenne.
+
 **Chapitre** : [Qualité : refuser, observer, valider](../qualite.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

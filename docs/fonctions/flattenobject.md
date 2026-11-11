@@ -29,6 +29,10 @@ flattenobject(token, separator)
 | `token` | optionnel |  |
 | `separator` | optionnel |  |
 
+**À savoir**
+
+- Les tableaux sont indexés par leur **position** (`l.0`, `l.1`) : c'est le pont vers un CSV, qui n'a pas de profondeur.
+
 **Chapitre** : [Objets et structures profondes](../objets.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

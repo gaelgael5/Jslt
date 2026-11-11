@@ -29,6 +29,10 @@ has(token, key)
 | `token` | optional |  |
 | `key` | optional |  |
 
+**Good to know**
+
+- `has` exists because `isnull` does not tell an **absent key** from a key present **with `null`**: both give `true`, and in a feed those are not the same thing.
+
 **Chapter**: [Objects and deep structures](../objets.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

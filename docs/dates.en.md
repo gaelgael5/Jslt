@@ -123,6 +123,50 @@ Day clamping, and chaining with `format` for display:
 { "clamped": "2026-02-28T00:00:00", "readable": "February 28, 2026" }
 ```
 
+### Reading an English date
+
+With no mask, detection only reads **numeric** forms (and ISO 8601): the culture
+only changes the **order** of the components. The same text therefore gives two
+different dates, and that is intended:
+
+```jslt
+{ "us": parsedate($.t, "en-US"), "gb": parsedate($.t, "en-GB") }
+```
+```json
+{ "t": "03/04/2026" }
+```
+```json
+{ "us": "2026-03-04T00:00:00", "gb": "2026-04-03T00:00:00" }
+```
+
+As soon as a month or a day is **spelled out**, a **mask** is needed —
+"November 11, 2026" without one raises `date illisible`, even in `en-US`. The
+culture then says in which language to read `MMMM`, `MMM`, `dddd`, `ddd` and the
+`tt` of AM/PM:
+
+```jslt
+{
+  "long": parsedate($.a, "en-US", "MMMM d, yyyy"),
+  "abrege": parsedate($.b, "en-GB", "ddd, d MMM yyyy"),
+  "apres_midi": parsedate($.c, "en-US", "MM/dd/yyyy h:mm tt")
+}
+```
+```json
+{ "a": "November 11, 2026", "b": "Wed, 11 Nov 2026", "c": "11/11/2026 2:05 PM" }
+```
+```json
+{ "long": "2026-11-11T00:00:00", "abrege": "2026-11-11T00:00:00", "apres_midi": "2026-11-11T14:05:00" }
+```
+
+Three details that make an otherwise correct mask fail:
+
+- `h` (12-hour clock) **requires** `t` or `tt` in the same mask: without the
+  designator, nothing tells 2 a.m. from 2 p.m., and the mask is refused.
+- `ddd` / `dddd` are **read then ignored**: they are there to make the mask
+  match, not to decide the date — a wrong "Wed" will not be reported.
+- The commas, dots and spaces of the mask must appear **identically** in the
+  text; only `/` is replaced by the culture's date separator.
+
 ---
 
 ## Extra parts and period bounds

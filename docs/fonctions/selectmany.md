@@ -29,6 +29,10 @@ selectmany(source, path)
 | `source` | optionnel |  |
 | `path` | optionnel | chemin JSONPath **non évalué** |
 
+**À savoir**
+
+- Argument-chemin appliqué à `source`, comme `select`, mais il rend **toutes** les valeurs sélectionnées, dans l'ordre du document.
+
 **Chapitre** : [Données et collections](../collections.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

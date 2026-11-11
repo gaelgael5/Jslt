@@ -12,8 +12,10 @@ dateendof(token, period)
 
 **Exemple**
 
+*Borne **inclusive** : la dernière microseconde de la période, pour qu'un filtre `<=` attrape toute la journée (ou tout le mois).*
+
 ```jslt
-{ "r": dateendof($.d, "month") }
+{ "mois": dateendof($.d, "month"), "jour": dateendof($.d, "day") }
 ```
 
 ```json
@@ -21,13 +23,17 @@ dateendof(token, period)
 ```
 
 ```json
-{ "r": "2026-02-28T23:59:59.999999" }
+{ "mois": "2026-02-28T23:59:59.999999", "jour": "2026-02-10T23:59:59.999999" }
 ```
 
 | Paramètre | Attendu | Note |
 |---|---|---|
-| `token` | optionnel |  |
-| `period` | optionnel |  |
+| `token` | optionnel | la date ISO 8601 à porter à la fin de sa période |
+| `period` | optionnel | `year`, `quarter`, `month`, `week`, `day`, `hour` ou `minute` |
+
+**À savoir**
+
+- La borne est **inclusive**, à la microseconde près : la fin d'un jour est `23:59:59.999999`, et non le début du lendemain. Un filtre `<=` attrape donc toute la journée.
 
 **Chapitre** : [Dates et heures](../dates.md) · **Index** : [toutes les fonctions](sommaire.md)
 

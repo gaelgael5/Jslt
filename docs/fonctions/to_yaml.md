@@ -37,6 +37,10 @@ ville: Lyon
 
 Fonction de **sortie** : elle ne s'appelle pas dans le corps du template, mais se déclare dans `"$directives": {"output": {"mode": …}}`.
 
+**À savoir**
+
+- Sous-ensemble assumé : ni ancres, ni tags, ni littéral multi-ligne. Tout scalaire relisible comme un autre type est **cité** — un texte `"true"` ou `"12"` reste un texte.
+
 **Chapitre** : [Sortie texte](../sortie.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

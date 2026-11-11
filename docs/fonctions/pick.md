@@ -29,6 +29,10 @@ pick(token, keys)
 | `token` | optionnel |  |
 | `keys` | optionnel |  |
 
+**À savoir**
+
+- Accepte une clé seule (`"nom"`) ou un tableau de clés. Une clé absente est ignorée, elle n'apparaît pas à `null` dans le résultat.
+
 **Chapitre** : [Objets et structures profondes](../objets.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

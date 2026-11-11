@@ -29,6 +29,10 @@ percentile(token, p)
 | `token` | optionnel |  |
 | `p` | optionnel |  |
 
+**À savoir**
+
+- Interpolation **linéaire** entre les deux rangs encadrants (méthode par défaut de NumPy) : `percentile(v, 50)` coïncide donc avec `median`.
+
 **Chapitre** : [Données et collections](../collections.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

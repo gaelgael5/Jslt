@@ -28,6 +28,10 @@ isiban(token)
 |---|---|---|
 | `token` | optionnel |  |
 
+**À savoir**
+
+- Vérifie la structure et la **clé modulo 97**, mais pas la longueur par pays : ce serait une table de soixante entrées dont la péremption ferait refuser un IBAN valide.
+
 **Chapitre** : [Qualité : refuser, observer, valider](../qualite.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

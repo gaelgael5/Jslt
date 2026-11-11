@@ -30,6 +30,10 @@ unsetpath(token, path, separator)
 | `path` | optionnel |  |
 | `separator` | optionnel |  |
 
+**À savoir**
+
+- Rend une copie ; un chemin absent n'est **pas** une erreur.
+
 **Chapitre** : [Objets et structures profondes](../objets.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

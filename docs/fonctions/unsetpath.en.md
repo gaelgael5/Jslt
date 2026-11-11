@@ -30,6 +30,10 @@ unsetpath(token, path, separator)
 | `path` | optional |  |
 | `separator` | optional |  |
 
+**Good to know**
+
+- Returns a copy; a missing path is **not** an error.
+
 **Chapter**: [Objects and deep structures](../objets.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

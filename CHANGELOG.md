@@ -12,6 +12,23 @@ décrits dans [Intégrer le moteur](docs/integration.md).
 Versions selon [SemVer](https://semver.org/lang/fr/) ; une version PyPI est
 immuable, une correction de documentation destinée à l'index vaut donc un patch.
 
+## Plugins — 2026-11-11
+
+Versions prêtes à publier en même temps que le cœur 0.6.0.
+
+- **urban-json-csv 0.2.0** et **urban-json-xml 0.2.0** : `parsecsv` et `parsexml`
+  (lecture depuis une **chaîne**, sans fichier), entrés avec le cœur 0.4.0 et
+  jamais publiés depuis. Les deux READMEs sont aussi nettoyés de leurs renvois au
+  moteur .NET.
+- **urban-json-db 0.1.2**, **urban-json-html 0.1.2**, **urban-json-random
+  0.1.2** : documentation seule. Les passages qui expliquaient un comportement
+  par comparaison au .NET disent maintenant le comportement ; chez `random`,
+  « Écarts volontaires avec le .NET » devient « Règles de tirage ». Une version
+  PyPI étant immuable, une description corrigée n'atteint l'index que par un
+  patch.
+- Inchangés, donc non republiés : `urban-json-files`, `urban-json-excel`,
+  `urban-json-phone`, `urban-json-elastic`, `urban-json-http`.
+
 ## urban-json-editor 0.4.0 — 2026-11-11
 
 ### Ajouté
@@ -78,7 +95,14 @@ Quatre catégories comblées (162 → 182) et un défaut de sortie corrigé.
   la signature seule ne dit ni ce qu'on met dedans ni ce qui en sort. Les 185
   exemples sont rejoués par la suite du guide, donc par les deux moteurs ; les
   chapitres gardent la prose et les exemples d'*usage*, qui mêlent plusieurs
-  fonctions.
+  fonctions. Les pages portent en outre un **commentaire par exemple**, une
+  section **« À savoir »** (69 fonctions : refus, valeurs par défaut, pièges) et
+  le **rôle de chaque argument** là où il ne se devine pas (13 fonctions).
+  `parsedate` en est l'exemple : sept cas commentés, dont la lecture d'une date
+  **anglaise**, et la règle qui manquait — sans masque, seules les formes
+  numériques et l'ISO sont reconnues, donc « November 11, 2026 » lève même en
+  `en-US`. Le chapitre [Dates et heures](docs/dates.md) gagne la section
+  correspondante.
 - **Le guide ne s'explique plus par le .NET.** « masque .NET », « comme en .NET »,
   « quirk .NET conservé » : une trentaine de renvois remplaçaient l'explication
   par une référence à un moteur que le lecteur de la bibliothèque Python n'a pas

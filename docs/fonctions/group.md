@@ -29,6 +29,10 @@ group(source, group_paths)
 | `source` | optionnel |  |
 | `group_paths` | optionnel |  |
 
+**À savoir**
+
+- Rend des groupes `{Label, Items}`, imbriqués quand plusieurs chemins sont donnés. `groupby` rend un **objet**, réductible par `entries`.
+
 **Chapitre** : [Données et collections](../collections.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

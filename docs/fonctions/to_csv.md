@@ -38,6 +38,11 @@ id;ville
 
 Fonction de **sortie** : elle ne s'appelle pas dans le corps du template, mais se déclare dans `"$directives": {"output": {"mode": …}}`.
 
+**À savoir**
+
+- Les colonnes sont l'**union des clés** rencontrées, dans l'ordre d'apparition : s'arrêter au premier objet perdrait des données sur un flux hétérogène.
+- Les valeurs imbriquées sont aplaties en clés pointées (`flattenobject`), les guillemets doublés et les lignes finies en CRLF, comme l'exige la RFC 4180.
+
 **Chapitre** : [Sortie texte](../sortie.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

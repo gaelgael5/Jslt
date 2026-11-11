@@ -29,6 +29,10 @@ split(token, charset)
 | `token` | optional |  |
 | `charset` | optional |  |
 
+**Good to know**
+
+- Only the **first character** of the separator is kept: `split($.t, ", ")` cuts on the comma and leaves the spaces. For a whole separator, use `splitstring`.
+
 **Chapter**: [Text, regular expressions and formatting](../texte.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

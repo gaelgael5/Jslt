@@ -28,6 +28,10 @@ parsejson(token)
 |---|---|---|
 | `token` | optionnel |  |
 
+**À savoir**
+
+- Un texte illisible **lève** plutôt que de rendre `null` : la faute se voit là où elle est.
+
 **Chapitre** : [Types, repli sur erreur et validation](../types.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

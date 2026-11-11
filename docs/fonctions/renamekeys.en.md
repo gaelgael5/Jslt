@@ -29,6 +29,10 @@ renamekeys(token, mapping)
 | `token` | optional |  |
 | `mapping` | optional |  |
 
+**Good to know**
+
+- A key not mentioned in the mapping is **kept as is**. On a collision the last write wins: raising would break a migration in progress.
+
 **Chapter**: [Objects and deep structures](../objets.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

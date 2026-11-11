@@ -28,6 +28,10 @@ isemail(token)
 |---|---|---|
 | `token` | optionnel |  |
 
+**À savoir**
+
+- Volontairement **pragmatique** : la RFC 5322 complète accepte des formes que personne n'utilise, et les accepter laisserait passer ce qu'un système en aval refusera.
+
 **Chapitre** : [Qualité : refuser, observer, valider](../qualite.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

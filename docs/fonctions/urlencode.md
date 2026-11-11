@@ -29,6 +29,10 @@ urlencode(token, mode)
 | `token` | optionnel |  |
 | `mode` | optionnel |  |
 
+**À savoir**
+
+- Le mode `"path"` **conserve les barres obliques** : c'est celui d'un chemin d'URL. Par défaut, elles sont encodées (`%2F`), ce qu'exige un paramètre.
+
 **Chapitre** : [Encodage, empreintes et échappement](../encodage.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

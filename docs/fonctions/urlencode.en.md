@@ -29,6 +29,10 @@ urlencode(token, mode)
 | `token` | optional |  |
 | `mode` | optional |  |
 
+**Good to know**
+
+- The `"path"` mode **keeps the slashes**: that is the mode for a URL path. By default they are encoded (`%2F`), which is what a query parameter requires.
+
 **Chapter**: [Encoding, digests and escaping](../encodage.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

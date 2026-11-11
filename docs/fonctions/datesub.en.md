@@ -26,9 +26,9 @@ datesub(token, unit, amount)
 
 | Parameter | Expected | Note |
 |---|---|---|
-| `token` | optional |  |
-| `unit` | optional |  |
-| `amount` | optional |  |
+| `token` | optional | the ISO 8601 date to start from |
+| `unit` | optional | `second`, `minute`, `hour`, `day`, `week`, `month` or `year` (plural tolerated) |
+| `amount` | optional | whole number |
 
 **Chapter**: [Dates and times](../dates.en.md) · **Index**: [all functions](sommaire.en.md)
 

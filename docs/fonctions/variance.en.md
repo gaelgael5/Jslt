@@ -29,6 +29,10 @@ variance(token, sample)
 | `token` | optional |  |
 | `sample` | optional |  |
 
+**Good to know**
+
+- Of the **population** by default: a template's data is the whole set, not a sample. `sample` set to `true` applies Bessel's correction (n−1).
+
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

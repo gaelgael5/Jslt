@@ -38,9 +38,13 @@ groupby(source, key, nested)
 
 | Paramètre | Attendu | Note |
 |---|---|---|
-| `source` | optionnel |  |
-| `key` | optionnel | expression **non évaluée**, calculée par la fonction |
-| `nested` | optionnel |  |
+| `source` | optionnel | le tableau à regrouper |
+| `key` | optionnel | expression évaluée **par élément** ; un tableau pour une clef composite · expression **non évaluée**, calculée par la fonction |
+| `nested` | optionnel | `true` pour imbriquer un niveau d'objet par clef |
+
+**À savoir**
+
+- La clef est convertie en **texte**, puisqu'une clé d'objet JSON est une chaîne : une clef composite donne `["FR","Lyon"]` en JSON compact. `nested` évite d'avoir à la re-analyser.
 
 **Chapitre** : [Données et collections](../collections.md) · **Index** : [toutes les fonctions](sommaire.md)
 

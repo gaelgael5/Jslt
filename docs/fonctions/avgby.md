@@ -26,9 +26,9 @@ avgby(source, key, value)
 
 | Paramètre | Attendu | Note |
 |---|---|---|
-| `source` | optionnel |  |
-| `key` | optionnel | expression **non évaluée**, calculée par la fonction |
-| `value` | optionnel | expression **non évaluée**, calculée par la fonction |
+| `source` | optionnel | le tableau à agréger |
+| `key` | optionnel | expression de la clef de groupe, évaluée par élément · expression **non évaluée**, calculée par la fonction |
+| `value` | optionnel | expression de la valeur à moyenner ; omise, c'est l'élément · expression **non évaluée**, calculée par la fonction |
 
 **Chapitre** : [Données et collections](../collections.md) · **Index** : [toutes les fonctions](sommaire.md)
 

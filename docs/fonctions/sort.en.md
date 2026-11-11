@@ -38,9 +38,14 @@ sort(source, key, descending)
 
 | Parameter | Expected | Note |
 |---|---|---|
-| `source` | optional |  |
-| `key` | optional | **unevaluated** expression, computed by the function |
-| `descending` | optional |  |
+| `source` | optional | the array to sort |
+| `key` | optional | expression evaluated **per element** (`$.price`), an array to sort on several criteria, or nothing to sort the elements themselves · **unevaluated** expression, computed by the function |
+| `descending` | optional | `true` for the reverse order, or an **array of booleans**: one direction per key |
+
+**Good to know**
+
+- The order is **total** and never raises: `null` < booleans < numbers < strings < arrays < objects. Strings compare by **code point** — for a human order, sort on `foldtext($)`.
+- The sort is **stable** both ways: at equal keys, the original order survives.
 
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 

@@ -31,6 +31,10 @@ join(source_left, key_left, clean_source, rights)
 | `clean_source` | optionnel |  |
 | `rights` | optionnel |  |
 
+**À savoir**
+
+- Jointure **gauche** : chaque objet de gauche reçoit, sous `Name`, les éléments de `Source` dont `Key` est égale (comparée en texte). La source n'est pas modifiée.
+
 **Chapitre** : [Données et collections](../collections.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

@@ -29,6 +29,11 @@ regexmatches(token, pattern)
 | `token` | optionnel |  |
 | `pattern` | optionnel |  |
 
+**À savoir**
+
+- Dans une chaîne jslt, l'antislash se **double** : `"\\d+"`. Les groupes nommés s'écrivent `(?<nom>…)` ou `(?P<nom>…)`.
+- `null`, un objet ou un tableau donnent `null` ; un motif invalide lève.
+
 **Chapitre** : [Texte, expressions régulières et formatage](../texte.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

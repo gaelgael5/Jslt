@@ -29,6 +29,10 @@ zip(left, right)
 | `left` | optionnel |  |
 | `right` | optionnel |  |
 
+**À savoir**
+
+- S'arrête au plus court plutôt que de compléter par `null` : un appariement inventé serait indiscernable d'une vraie valeur nulle.
+
 **Chapitre** : [Données et collections](../collections.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

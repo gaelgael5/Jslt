@@ -29,6 +29,10 @@ omit(token, keys)
 | `token` | optionnel |  |
 | `keys` | optionnel |  |
 
+**À savoir**
+
+- Accepte une clé seule ou un tableau de clés ; retirer une clé absente ne lève pas.
+
 **Chapitre** : [Objets et structures profondes](../objets.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

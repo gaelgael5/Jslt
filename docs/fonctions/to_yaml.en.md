@@ -37,6 +37,10 @@ ville: Lyon
 
 An **output** function: it is not called in the template body, it is declared in `"$directives": {"output": {"mode": …}}`.
 
+**Good to know**
+
+- An acknowledged subset: no anchors, no tags, no multi-line literal. Any scalar that would read back as another type is **quoted** — a `"true"` or `"12"` text stays text.
+
 **Chapter**: [Text output](../sortie.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

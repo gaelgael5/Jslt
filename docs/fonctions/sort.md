@@ -38,9 +38,14 @@ sort(source, key, descending)
 
 | Paramètre | Attendu | Note |
 |---|---|---|
-| `source` | optionnel |  |
-| `key` | optionnel | expression **non évaluée**, calculée par la fonction |
-| `descending` | optionnel |  |
+| `source` | optionnel | le tableau à trier |
+| `key` | optionnel | expression évaluée **par élément** (`$.prix`), un tableau pour trier sur plusieurs critères, ou rien pour trier les éléments eux-mêmes · expression **non évaluée**, calculée par la fonction |
+| `descending` | optionnel | `true` pour l'ordre inverse, ou un **tableau de booléens** : un sens par clef |
+
+**À savoir**
+
+- L'ordre est **total** et ne lève jamais : `null` < booléens < nombres < chaînes < tableaux < objets. Les chaînes se comparent par **points de code** — pour un ordre humain, trier sur `foldtext($)`.
+- Le tri est **stable** dans les deux sens : à clefs égales, l'ordre d'origine survit.
 
 **Chapitre** : [Données et collections](../collections.md) · **Index** : [toutes les fonctions](sommaire.md)
 

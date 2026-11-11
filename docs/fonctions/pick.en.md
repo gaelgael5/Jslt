@@ -29,6 +29,10 @@ pick(token, keys)
 | `token` | optional |  |
 | `keys` | optional |  |
 
+**Good to know**
+
+- Accepts a single key (`"name"`) or an array of keys. A missing key is ignored: it does not appear as `null` in the result.
+
 **Chapter**: [Objects and deep structures](../objets.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

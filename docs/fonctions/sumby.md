@@ -26,9 +26,13 @@ sumby(source, key, value)
 
 | Paramètre | Attendu | Note |
 |---|---|---|
-| `source` | optionnel |  |
-| `key` | optionnel | expression **non évaluée**, calculée par la fonction |
-| `value` | optionnel | expression **non évaluée**, calculée par la fonction |
+| `source` | optionnel | le tableau à agréger |
+| `key` | optionnel | expression de la clef de groupe, évaluée par élément · expression **non évaluée**, calculée par la fonction |
+| `value` | optionnel | expression de la valeur à sommer ; omise, c'est l'élément · expression **non évaluée**, calculée par la fonction |
+
+**À savoir**
+
+- Une valeur non numérique **lève**, comme pour `sum` : un total qui saute les intrus est plausible et faux.
 
 **Chapitre** : [Données et collections](../collections.md) · **Index** : [toutes les fonctions](sommaire.md)
 

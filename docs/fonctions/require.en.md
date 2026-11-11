@@ -29,6 +29,11 @@ require(value, message)
 | `value` | optional |  |
 | `message` | optional |  |
 
+**Good to know**
+
+- Only refuses **absence**: `0`, `false` and `""` are values and pass. For a condition, use `requirethat`.
+- The error is a `JsltError` carrying the message: it can therefore be caught by `trydefault`.
+
 **Chapter**: [Quality: refuse, observe, validate](../qualite.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---

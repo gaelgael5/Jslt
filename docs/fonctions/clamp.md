@@ -30,6 +30,10 @@ clamp(token, lower, upper)
 | `lower` | optionnel |  |
 | `upper` | optionnel |  |
 
+**À savoir**
+
+- Une valeur qui n'est pas un nombre rend `null` plutôt que d'être ramenée à une borne.
+
 **Chapitre** : [Nombres et maths](../nombres.md) · **Index** : [toutes les fonctions](sommaire.md)
 
 ---

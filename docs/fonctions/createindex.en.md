@@ -30,6 +30,10 @@ createindex(source, object_path, key)
 | `object_path` | optional |  |
 | `key` | optional |  |
 
+**Good to know**
+
+- Goes into a variable (`"i:": createindex(…)`) that `index(i:, key)` then queries. The 2nd argument is the **splitting** path (empty = the whole source).
+
 **Chapter**: [Data and collections](../collections.en.md) · **Index**: [all functions](sommaire.en.md)
 
 ---
