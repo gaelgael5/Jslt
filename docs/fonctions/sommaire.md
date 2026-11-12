@@ -6,6 +6,12 @@
 
 Une page par fonction, engendrée depuis le registre : signature, arguments et description. La prose et les exemples vivent dans les chapitres du guide.
 
+## [Conditions et boucles](../conditions-et-boucles.md)
+
+| Fonction | Description |
+|---|---|
+| [`ifelse`](ifelse.md) | Valeur de la 2e expression si la condition est vraie, sinon celle de la 3e (seule la branche retenue est évaluée) |
+
 ## [Dates et heures](../dates.md)
 
 | Fonction | Description |
@@ -26,38 +32,53 @@ Une page par fonction, engendrée depuis le registre : signature, arguments et d
 
 | Fonction | Description |
 |---|---|
-| [`any`](any.md) | Vrai si la source est un tableau non vide |
+| [`any`](any.md) | Vrai si la source est un tableau non vide (avec un prédicat, c'est some) |
+| [`append`](append.md) | Copie du tableau avec une valeur ajoutée à la fin |
 | [`avg`](avg.md) | Moyenne des nombres d'un tableau (null pour un tableau vide) |
 | [`avgby`](avgby.md) | Moyenne par clef calculée, en un objet { clef: moyenne } (la valeur par défaut est l'élément) |
 | [`chunk`](chunk.md) | Découpe un tableau en tranches consécutives de size éléments |
-| [`concat`](concat.md) | Joint les éléments d'un tableau en un texte, séparés par split_char suivi de delimit_char |
+| [`concat`](concat.md) | Joint les éléments d'un tableau en un texte, séparés par split_char suivi de delimit_char (c'est le « join » des textes ; join, lui, est la jointure) |
 | [`contains`](contains.md) | Vrai si le tableau contient un élément égal à la valeur |
 | [`convert`](convert.md) | Convertit une valeur vers un type : integer, decimal, string, boolean (uri, uuid, datetime, time en texte) |
 | [`count`](count.md) | Nombre d'éléments : éléments d'un tableau, clés d'un objet, caractères d'un texte, 0 pour null |
 | [`countby`](countby.md) | Compte les éléments d'un tableau par clef calculée, en un objet { clef: nombre } |
 | [`createindex`](createindex.md) | Construit un index {clé: élément} à partir d'une source, d'un chemin de découpe et d'un chemin de clé |
+| [`cumsum`](cumsum.md) | Totaux courants d'un tableau de nombres ([1,2,3] -> [1,3,6]) |
 | [`difference`](difference.md) | Éléments du tableau de gauche absents du tableau de droite, dédupliqués |
 | [`distinct`](distinct.md) | Valeurs uniques sélectionnées par un chemin JSONPath dans un tableau, dans l'ordre d'apparition |
 | [`distinctby`](distinctby.md) | Déduplique un tableau sur une clef calculée par élément, en gardant le premier |
+| [`every`](every.md) | Vrai si le prédicat est vrai pour tous les éléments (vrai pour un tableau vide) |
+| [`filter`](filter.md) | Garde les éléments d'un tableau pour lesquels le prédicat est vrai |
+| [`find`](find.md) | Premier élément d'un tableau pour lequel le prédicat est vrai, sinon null |
+| [`findindex`](findindex.md) | Position du premier élément qui satisfait le prédicat, -1 si aucun |
 | [`first`](first.md) | Premier élément d'un tableau, ou null s'il est vide |
 | [`flatten`](flatten.md) | Aplatit un tableau de tableaux, à fond par défaut ou sur depth niveaux |
 | [`group`](group.md) | Regroupe un tableau par chemins JSONPath successifs en {Label, Items} imbriqués |
 | [`groupby`](groupby.md) | Regroupe un tableau en un objet { clef: éléments }, clef calculée par élément ; nested imbrique un niveau par clef d'un tableau de clefs |
-| [`index`](index.md) | Élément d'un index (créé par createindex) pour une clé, ou null |
+| [`index`](index.md) | Élément d'un index (créé par createindex) pour une clé, ou null (pour une clef calculée dans un objet quelconque, c'est get) |
+| [`insert`](insert.md) | Copie du tableau avec une valeur insérée à l'indice donné (négatif depuis la fin) |
 | [`intersect`](intersect.md) | Éléments du tableau de gauche présents aussi à droite, dédupliqués |
-| [`join`](join.md) | Jointure gauche : rattache aux objets de gauche les éléments de droite de même clé |
+| [`join`](join.md) | Jointure gauche entre deux tableaux : rattache aux objets de gauche les éléments de droite de même clé (joindre des textes, c'est concat) |
 | [`last`](last.md) | Dernier élément d'un tableau, ou null s'il est vide |
 | [`limit`](limit.md) | Les max_items premiers éléments d'un tableau |
+| [`map`](map.md) | Applique une expression à chaque élément d'un tableau et rend les résultats |
+| [`maxby`](maxby.md) | Élément d'un tableau dont la clef calculée est la plus grande (null si vide) |
 | [`median`](median.md) | Valeur médiane des nombres d'un tableau (null pour un tableau vide) |
+| [`minby`](minby.md) | Élément d'un tableau dont la clef calculée est la plus petite (null si vide) |
 | [`mode`](mode.md) | Valeur la plus fréquente d'un tableau (la première apparue en cas d'égalité) |
 | [`partition`](partition.md) | Sépare un tableau en { true, false } selon un prédicat évalué par élément |
 | [`percentile`](percentile.md) | Centile p (0 à 100) des nombres d'un tableau, par interpolation linéaire |
 | [`product`](product.md) | Produit des nombres d'un tableau (1 pour un tableau vide) |
+| [`range`](range.md) | Série d'entiers : range(fin), range(début, fin) ou range(début, fin, pas) ; la fin est exclue |
+| [`reduce`](reduce.md) | Replie un tableau en une seule valeur ; l'expression voit { acc, value, index } et rend le nouvel accumulateur |
+| [`removeat`](removeat.md) | Copie du tableau privée de l'élément à l'indice donné (négatif depuis la fin) |
 | [`reverse`](reverse.md) | Inverse l'ordre d'un tableau ou d'un texte, sans modifier la source |
 | [`select`](select.md) | Première valeur sélectionnée par un chemin JSONPath dans la source, ou null |
 | [`selectany`](selectany.md) | Vrai si le chemin JSONPath sélectionne au moins une valeur dans la source |
 | [`selectmany`](selectmany.md) | Toutes les valeurs sélectionnées par un chemin JSONPath dans la source |
 | [`skip`](skip.md) | Ignore les n premiers éléments d'un tableau (complément de limit) |
+| [`slice`](slice.md) | Tranche d'un tableau de start à end exclu (indices négatifs depuis la fin) |
+| [`some`](some.md) | Vrai si le prédicat est vrai pour au moins un élément (faux pour un tableau vide) |
 | [`sort`](sort.md) | Trie un tableau : sur les éléments, ou sur une clef calculée par élément, du plus petit au plus grand (descending à true, ou un sens par clef, pour l'inverse) |
 | [`stddev`](stddev.md) | Écart-type des nombres d'un tableau : de population par défaut, d'échantillon si sample vaut true |
 | [`sum`](sum.md) | Somme des nombres d'un tableau (0 pour un tableau vide ou null) |
@@ -128,7 +149,9 @@ Une page par fonction, engendrée depuis le registre : signature, arguments et d
 | [`parsenumber`](parsenumber.md) | Lit un nombre écrit en texte selon une culture (1 234,56 en fr-FR) |
 | [`pi`](pi.md) | Constante pi (3.14159…) |
 | [`pow`](pow.md) | Puissance : base élevée à l'exposant, rendue en décimal |
-| [`round`](round.md) | Arrondi à l'entier le plus proche, demi vers le pair (2.5 -> 2.0, 3.5 -> 4.0), rendu en décimal |
+| [`round`](round.md) | Arrondi à l'entier le plus proche, demi vers le pair (2.5 -> 2.0, 3.5 -> 4.0), rendu en décimal (arrondi commercial : roundhalfup) |
+| [`roundhalfup`](roundhalfup.md) | Arrondi commercial : les demis s'éloignent de zéro (0.125 -> 0.13), à l'entier ou à digits décimales |
+| [`roundto`](roundto.md) | Arrondi au multiple le plus proche (roundto(2.34, 0.05) -> 2.35), demi en s'éloignant de zéro |
 | [`shiftleft`](shiftleft.md) | Décale les bits d'un entier vers la gauche (multiplie par 2^bits) |
 | [`shiftright`](shiftright.md) | Décale les bits d'un entier vers la droite (divise par 2^bits) |
 | [`sign`](sign.md) | Signe d'un nombre : -1, 0 ou 1 |
@@ -139,6 +162,7 @@ Une page par fonction, engendrée depuis le registre : signature, arguments et d
 | [`tanh`](tanh.md) | Tangente hyperbolique |
 | [`tobase`](tobase.md) | Écrit un entier dans une base de 2 à 36, complété à width chiffres |
 | [`tohex`](tohex.md) | Écrit un entier en hexadécimal minuscule, complété à width chiffres |
+| [`toprecision`](toprecision.md) | Arrondi à un nombre de chiffres significatifs (toprecision(1234.5, 3) -> 1230) |
 | [`truncate`](truncate.md) | Coupe vers zéro (-2.7 -> -2.0), à l'entier ou à digits décimales |
 
 ## [Objets et structures profondes](../objets.md)
@@ -148,6 +172,8 @@ Une page par fonction, engendrée depuis le registre : signature, arguments et d
 | [`entries`](entries.md) | Paires d'un objet en tableau de { key, value }, dans l'ordre du document |
 | [`flattenobject`](flattenobject.md) | Aplatit un objet en clés pointées (a.b.c), tableaux indexés par leur position |
 | [`fromentries`](fromentries.md) | Reconstruit un objet depuis un tableau de { key, value } ou de paires [clé, valeur] |
+| [`get`](get.md) | Valeur d'une clef d'objet ou d'un indice de tableau calculés (null si absente) |
+| [`getpath`](getpath.md) | Valeur au bout d'un chemin pointé calculé (null si une étape manque) |
 | [`has`](has.md) | Vrai si l'objet porte cette clé, même avec une valeur nulle |
 | [`keys`](keys.md) | Clés d'un objet, dans l'ordre du document (null si ce n'est pas un objet) |
 | [`merge`](merge.md) | Fusionne deux objets, la droite gagnant les clés communes (deep pour les sous-objets, arrays pour concaténer les tableaux) |
@@ -188,13 +214,16 @@ Une page par fonction, engendrée depuis le registre : signature, arguments et d
 
 | Fonction | Description |
 |---|---|
+| [`capitalize`](capitalize.md) | Met en majuscule la première lettre seulement, sans toucher au reste |
+| [`chars`](chars.md) | Découpe un texte en tableau de caractères (par graphème) |
 | [`deaccent`](deaccent.md) | Retire les diacritiques (accents, cédilles) sans toucher à la casse |
 | [`endswith`](endswith.md) | Vrai si le texte se termine par txt |
 | [`foldtext`](foldtext.md) | Clef de comparaison d'un texte : minuscules sans accents par défaut, ou seulement case / accents |
 | [`format`](format.md) | Formate un nombre ou une date ISO selon un masque (N2, #,##0.00, dd/MM/yyyy…) et une culture |
-| [`indexof`](indexof.md) | Position (à partir de 0) de la première occurrence dans un texte ou un tableau, -1 si absent |
+| [`indexof`](indexof.md) | Position (à partir de 0) de la première occurrence dans un texte ou un tableau, -1 si absent ; start cherche à partir de cette position |
 | [`lastindexof`](lastindexof.md) | Position (à partir de 0) de la dernière occurrence dans un texte ou un tableau, -1 si absent |
 | [`levenshtein`](levenshtein.md) | Nombre de caractères à insérer, supprimer ou remplacer pour passer d'un texte à l'autre |
+| [`lines`](lines.md) | Découpe un texte en lignes (\n, \r\n ou \r), lignes vides comprises |
 | [`lower`](lower.md) | Texte en minuscules (null reste null, une non-chaîne donne false) |
 | [`normalize`](normalize.md) | Normalise une chaîne Unicode : forme C (défaut), D, KC ou KD |
 | [`padleft`](padleft.md) | Complète le texte à gauche jusqu'à length avec le 1er caractère de charset (espace par défaut) |
@@ -202,23 +231,27 @@ Une page par fonction, engendrée depuis le registre : signature, arguments et d
 | [`regexismatch`](regexismatch.md) | Vrai si le texte contient une correspondance du motif regex |
 | [`regexmatches`](regexmatches.md) | Liste des correspondances du motif regex dans le texte |
 | [`regexreplace`](regexreplace.md) | Remplace les correspondances d'un motif regex ($1, ${nom}, $& pour les groupes) |
+| [`removeprefix`](removeprefix.md) | Retire un préfixe **entier** s'il est présent, sinon rend le texte inchangé |
+| [`removesuffix`](removesuffix.md) | Retire un suffixe **entier** s'il est présent, sinon rend le texte inchangé |
 | [`repeat`](repeat.md) | Répète le texte count fois (0 ou négatif : chaîne vide) |
 | [`replace`](replace.md) | Remplace toutes les occurrences de search par replacement |
 | [`shorten`](shorten.md) | Raccourcit un texte à length caractères au plus, suffixe compris (… par défaut) |
 | [`similarity`](similarity.md) | Proximité de deux textes entre 0 (tout diffère) et 1 (identiques) |
 | [`slugify`](slugify.md) | Transforme un texte en identifiant d'URL : sans accent, en minuscules, mots joints par un tiret |
-| [`split`](split.md) | Découpe un texte en tableau sur le premier caractère de charset |
+| [`split`](split.md) | Découpe un texte en tableau sur le premier caractère de charset (séparateur entier : splitstring) |
 | [`splitregex`](splitregex.md) | Découpe un texte sur les correspondances d'un motif regex |
 | [`splitstring`](splitstring.md) | Découpe un texte sur un séparateur complet (plusieurs caractères), au plus limit fois |
 | [`startswith`](startswith.md) | Vrai si le texte commence par txt |
 | [`stringcontains`](stringcontains.md) | Vrai si le texte contient contain_str |
-| [`stringlenght`](stringlenght.md) | Nombre de caractères d'un texte (0 pour null ou une non-chaîne) — orthographe d'origine conservée |
+| [`stringlenght`](stringlenght.md) | Nombre de caractères d'un texte — orthographe d'origine, fautive, conservée : voir stringlength |
+| [`stringlength`](stringlength.md) | Nombre de caractères d'un texte (0 pour null ou une non-chaîne) |
 | [`substring`](substring.md) | Extrait length caractères à partir de start (start négatif = depuis la fin, length absente = jusqu'au bout) |
 | [`titlecase`](titlecase.md) | Met en majuscule la première lettre de chaque mot, sans toucher au reste |
 | [`trim`](trim.md) | Retire les espaces en début et fin, ou les caractères de txt s'il est donné |
 | [`trimend`](trimend.md) | Retire les espaces en fin, ou les caractères de txt |
 | [`trimstart`](trimstart.md) | Retire les espaces en début, ou les caractères de txt |
 | [`upper`](upper.md) | Texte en majuscules (null reste null, une non-chaîne donne false) |
+| [`words`](words.md) | Découpe un texte en mots sur les espaces (les vides sont ignorés) |
 
 ## [Types, repli sur erreur et validation](../types.md)
 

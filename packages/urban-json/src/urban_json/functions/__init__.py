@@ -13,16 +13,19 @@ extensible pour les ajouter ou en enregistrer de nouvelles.
 
 # Chaque module importé enregistre ses fonctions dans le registre par défaut.
 from . import (  # noqa: F401
+    access,
     aggregate,
     builtins,
     bykey,
     collection,
+    conditions,
     dates,
     deep,
     encoding,
     folding,
     formatting,
     grouping,
+    iteration,
     maths,
     misc,
     numbers,
@@ -31,9 +34,12 @@ from . import (  # noqa: F401
     outputs,
     quality,
     regexes,
+    rounding,
     schema,
+    sequences,
     similarity,
     text,
+    textparts,
     types,
 )
 from .registry import (

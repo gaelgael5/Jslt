@@ -123,6 +123,50 @@ renommage impraticable sur un flux qui porte les deux noms pendant une migration
 
 ---
 
+## Accès par clef calculée : `get`, `getpath`
+
+Un chemin est **littéral** : `$.tarifs.petit` s'écrit dans le template. Quand la
+clef vient des **données**, `$.tarifs[$.formule]` n'est pas un chemin pris en
+charge, et il fallait ce détour — quatre fonctions et une variable pour un accès
+par clef.
+
+| Fonction | Rôle |
+|---|---|
+| `get(v, clef)` | une clef d'objet **ou** un indice de tableau, tous deux calculés ; `-1` = dernier |
+| `getpath(v, chemin, séparateur)` | un chemin pointé calculé (`"client.ville"`), réciproque de `setpath` |
+
+```jslt
+{ "f:": $.formule, "detour": first(map(filter(entries($.tarifs), $.key == f:), $.value)), "direct": get($.tarifs, $.formule) }
+```
+```json
+{ "tarifs": { "petit": 10, "grand": 20 }, "formule": "grand" }
+```
+```json
+{ "detour": 20, "direct": 20 }
+```
+
+Clef absente, indice hors bornes, source qui n'est ni objet ni tableau : `null`,
+la convention de la famille. Il n'y a donc **pas** d'argument de repli : `??` le
+dit déjà, et un repli en argument serait évalué même quand la clef existe. Pour
+*exiger* la valeur, [`require`](qualite.md#refuser--require-requirethat) refuse
+et nomme la cause (`require(get($.tarifs, $.formule), "tarif inconnu")`). Pour
+distinguer une clef absente d'une clef présente valant `null`, c'est `has`.
+
+```jslt
+{ "ville": getpath($.doc, $.champ), "dernier": get($.l, -1), "repli": get($.tarifs, "moyen") ?? 0 }
+```
+```json
+{ "doc": { "client": { "ville": "Lyon" } }, "champ": "client.ville", "l": [1, 2, 3], "tarifs": { "petit": 10 } }
+```
+```json
+{ "ville": "Lyon", "dernier": 3, "repli": 0 }
+```
+
+Les étapes de `getpath` se lisent comme celles de `setpath`, indices de tableau
+compris (`"lignes.0.ref"`), et le séparateur se règle par le 3e argument.
+
+---
+
 ## Structures profondes
 
 Lire profond se faisait déjà (`$..k`) ; **transformer** profond manquait.

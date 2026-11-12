@@ -4,7 +4,7 @@
 
 *Français · [English](join.en.md)*
 
-Jointure gauche : rattache aux objets de gauche les éléments de droite de même clé
+Jointure gauche entre deux tableaux : rattache aux objets de gauche les éléments de droite de même clé (joindre des textes, c'est concat)
 
 ```
 join(source_left, key_left, clean_source, rights)

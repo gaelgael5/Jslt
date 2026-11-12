@@ -182,3 +182,23 @@ def test_exemple_complet_code_postal():
     template = json.dumps({"cp": "substring($.adresse, -5, 5)"})[1:-1]
     template = '{ "cp": substring($.adresse, -5, 5) }'
     assert run(template, {"adresse": "12 rue des Lilas 75011"}) == {"cp": "75011"}
+
+
+# --- sujet 8 : deux noms, une seule implémentation -------------------------------
+
+
+def test_stringlength_et_stringlenght_sont_la_meme_fonction() -> None:
+    """La faute d'origine reste appelable ; l'orthographe juste aussi."""
+    assert run('{ "a": stringlength($.t), "b": stringlenght($.t) }', {"t": "abcé"}) == {"a": 4, "b": 4}
+
+
+def test_les_deux_noms_pointent_la_meme_callable() -> None:
+    """Deux enregistrements, une implémentation : s'ils cessaient de pointer la
+    même fonction, les deux noms pourraient diverger en silence."""
+    from urban_json.functions import default_registry
+
+    assert (
+        default_registry.describe("stringlength").function
+        is default_registry.describe("stringlenght").function
+    )
+

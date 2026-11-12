@@ -29,7 +29,7 @@ JsltTemplate.parse(TEMPLATE).transform(INPUT)   # == OUTPUT
   `length()` / `value()`
 - [Expressions](expressions.en.md) — variables, operators, coalescing `??`,
   casts `#type`, chaining `->`
-- [Conditionals and loops](conditions-et-boucles.en.md) — `when` / `switch`,
+- [Conditionals and loops](conditions-et-boucles.en.md) — `ifelse`, `when` / `switch`,
   `$source` / `$where`
 
 **Built-in functions** — how they are called:
@@ -37,23 +37,25 @@ JsltTemplate.parse(TEMPLATE).transform(INPUT)   # == OUTPUT
 
 - [Data and collections](collections.en.md) — `sum`, `distinct`, `limit`, `skip`,
   `union`, `flatten`, `select`, `selectmany`, `zip`, `unzip`, `chunk`, `window`,
+  `map`, `filter`, `find`, `every`, `some`, `reduce`, `range`, `slice`,
+  `append`, `minby`, `maxby`, `cumsum`,
   `partition`, `distinctby`, `intersect`, `difference`, `group`, `groupby`,
   `countby`, `sumby`, `avgby`, `join`, `index`, `sort`, `reverse`, `first`,
   `last`, `count`, `avg`, `median`, `product`, `variance`, `stddev`,
   `percentile`, `mode`
 - [Objects and deep structures](objets.en.md) — `keys`, `values`, `entries`,
-  `fromentries`, `merge`, `pick`, `omit`, `has`, `renamekeys`,
+  `fromentries`, `merge`, `pick`, `omit`, `has`, `renamekeys`, `get`, `getpath`,
   `flattenobject`, `unflatten`, `walk`, `prune`, `setpath`, `unsetpath`
 - [Types, error fallback and validation](types.en.md) — `typeof`, `isarray`,
   `isobject`, `isstring`, `isnumber`, `isboolean`, `trydefault`, `parsejson`,
   `schema`, `schemaerrors`, `schemaisvalid`
 - [Numbers and math](nombres.en.md) — `min`, `max`, `abs`, `floor`, `ceil`,
-  `round`, `sqrt`, `log`, `parsenumber`, `sign`, `clamp`, `gcd`, `tobase`,
-  `isfinite`…
+  `round`, `roundhalfup`, `roundto`, `toprecision`, `sqrt`, `log`,
+  `parsenumber`, `sign`, `clamp`, `gcd`, `tobase`, `isfinite`…
 - [Text, regular expressions and formatting](texte.en.md) — `upper`, `split`,
   `splitstring`, `splitregex`, `substring`, `replace`, `regexreplace`, `shorten`,
   `slugify`, `levenshtein`, `similarity`, `foldtext`, `deaccent`, `normalize`,
-  `format`
+  `chars`, `lines`, `words`, `removeprefix`, `capitalize`, `format`
 - [Encoding, digests and escaping](encodage.en.md) — `tobase64`, `sha256`,
   `hmacsha256`, `urlencode`, `htmlescape`, `hexencode`…
 - [Dates and times](dates.en.md) — `parsedate` (culture, mask, timezone), `dateadd`,
@@ -73,7 +75,7 @@ JsltTemplate.parse(TEMPLATE).transform(INPUT)   # == OUTPUT
 
 - [Extensibility, debugging and re-serialization](extensibilite.en.md) — function
   registry, entry-point plugins, step-by-step, `to_source()`
-- [Errors](#errors) · [Cheat sheet](#cheat-sheet)
+- [Errors](#errors) · [Cheat sheet](#cheat-sheet) · [Misleading names](#misleading-names)
 
 ---
 
@@ -188,7 +190,8 @@ JsltTemplate.parse('{ "r": $.a[?(@.x contains 1)] }')   # -> NotImplementedError
 | Function | `f(a, b)` | [Functions](#built-in-functions) |
 | Cast | `expr #integer` | [Expressions](expressions.en.md#casts-type) |
 | Chaining | `expr -> f()` | [Expressions](expressions.en.md#chaining--) |
-| Conditional | `when(e) { "c": v, "default": d }` | [Loops](conditions-et-boucles.en.md#when--switch) |
+| Conditional on a value | `when(e) { "c": v, "default": d }` | [Loops](conditions-et-boucles.en.md#when--switch) |
+| Conditional in an expression | `ifelse(c, a, b)` | [Loops](conditions-et-boucles.en.md#choosing-a-value-ifelse) |
 | Loop | `[ { "$source": $.l, "$where": c, ... } ]` | [Loops](conditions-et-boucles.en.md#loops-source--where) |
 | Filter | `$.l[?(@.x > 1 & @.y in [..])]` | [Paths](chemins.en.md#jsonpath-filters-) |
 | Path function | `$.x.length()`, `$.x.value()` | [Paths](chemins.en.md#path-functions-length--value) |
@@ -198,6 +201,28 @@ JsltTemplate.parse('{ "r": $.a[?(@.x contains 1)] }')   # -> NotImplementedError
 | Observation | `trace($.x, "label")` | [Quality](qualite.en.md#observing-trace-traces) |
 | Sorting | `sort($.l, $.k, true)` | [Collections](collections.en.md#sorting-and-ordering-sort-reverse-first-last) |
 | Total per group | `sumby($.l, $.k, $.v)` | [Collections](collections.en.md#aggregating-per-group-groupby-countby-sumby-avgby) |
+| Computed key | `get($.o, $.k)`, `getpath($.o, "a.b")` | [Objects](objets.en.md#access-by-computed-key-get-getpath) |
+| Commercial rounding | `roundhalfup($.n, 2)`, `roundto($.n, 0.05)` | [Numbers](nombres.en.md#commercial-rounding-to-a-multiple-to-significant-digits) |
+
+---
+
+## Misleading names
+
+A few names in the registry do not mean what they look like, and the function
+you were after does exist. This table is for that — the editor's descriptions
+carry the same pointer.
+
+| You want | It is not | It is |
+|---|---|---|
+| to join **strings** | `join`, which is the **join** of two arrays on a key | `concat($.l, "-")` |
+| "at least one element satisfies…" | `any`, which only says "non-empty array" | `some($.l, $.x > 1)` |
+| to cut on a **whole** separator | `split`, which cuts on the **first character** of the set | `splitstring($.t, " - ")` |
+| an invoice's rounding | `round`, which is **banker's** rounding (halves to even) | `roundhalfup($.n, 2)` |
+| the position of the 1st element satisfying a condition | `indexof`, which looks for a **value** | `findindex($.l, $.x > 1)` |
+| to read a **computed** object key | `index`, which reads back an index built by `createindex` | `get($.o, $.k)` |
+| the length of a text | — | `stringlength`, or `stringlenght` (the original, misspelled name, still callable) |
+
+---
 
 For the internal architecture and the porting choices, see
 [`CLAUDE.md`](../CLAUDE.md) (in French).

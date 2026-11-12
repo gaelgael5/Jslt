@@ -8,6 +8,46 @@ suite de tests** (`tests/test_guide_examples.py`), sous la forme de triplets
 
 ---
 
+## Choisir une valeur : `ifelse`
+
+`ifelse(condition, si_vrai, si_faux)` est la conditionnelle en position
+d'**expression**. C'est ce que `when` ne fait pas : `when` aiguille sur une
+**valeur** (il compare `==` au nom de chaque cas), donc une condition composée
+devait d'abord être calculée, puis aiguillée sur son texte `"true"` / `"false"`.
+
+```jslt
+{ "mention": ifelse($.note >= 10 && $.present, "admis", "ajourné") }
+```
+```json
+{ "note": 12, "present": true }
+```
+```json
+{ "mention": "admis" }
+```
+
+Seule la branche **retenue** est évaluée, et c'est tout l'intérêt : la branche
+écartée peut lever sans conséquence, donc `ifelse($.d == 0, 0, 100 / $.d)` est
+sûr même quand le diviseur est nul. Pour plus de deux cas, `ifelse` s'imbrique ;
+dès que les cas sont des **valeurs** d'un même champ, `when` reprend la main et
+se lit mieux.
+
+```jslt
+{ "palier": ifelse($.n < 0, "négatif", ifelse($.n == 0, "nul", "positif")), "ratio": ifelse($.d == 0, 0, 100 / $.d) }
+```
+```json
+{ "n": 0, "d": 0 }
+```
+```json
+{ "palier": "nul", "ratio": 0 }
+```
+
+La condition se lit comme celle de [`filter`](collections.md#parcourir-par-expression-map-filter-find-every-some-reduce)
+et non comme une assertion : `null`, `0`, `""`, un tableau ou un objet vide sont
+**faux**, et le texte `"false"` aussi. Une troisième branche absente rend `null`,
+comme un `when` sans `default`.
+
+---
+
 ## `when` / `switch`
 
 `when(expr) { "cas": bloc, ..., "default": bloc }` compare `expr` (`==`) au nom de

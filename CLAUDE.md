@@ -107,12 +107,41 @@ Patterns repris du .NET :
   `z` sur une date sans décalage écrit zéro, là où le .NET prendrait celui de la
   machine — la sortie ne doit pas dépendre du serveur. Un spécificateur seul
   (`"z"`, `"K"`) reste refusé, comme en .NET (masque d'une lettre = masque standard).
-- **Une seule mise en texte** : `to_text` rend le **JSON compact** d'un tableau
-  ou d'un objet (comme `token.ToString()` côté Newtonsoft). Jusqu'en 0.6.0 elle
-  rendait `str(valeur)`, donc du `repr` Python avec guillemets simples, qui
-  ressortait dans le JSON produit (`concat` d'un tableau imbriqué, clef composite
-  de `groupby`) alors que le cast `#string` passait déjà par le JSON. `stringify`
-  reste comme nom explicite du contrat, sans comportement propre.
+- **Une seule mise en texte**, et désormais un seul **module** : `_text.to_text`
+  rend le **JSON compact** d'un tableau ou d'un objet (comme `token.ToString()`
+  côté Newtonsoft). Elle rendait `str(valeur)`, donc du `repr` Python avec
+  guillemets simples, qui ressortait dans le JSON produit. Corrigé en 0.6.0 côté
+  fonctions… mais les opérateurs en avaient une **copie privée** (`_to_str`), qui
+  a gardé le défaut jusqu'en 0.7.0 (`"a" + $.liste`). D'où le module feuille
+  `urban_json/_text.py` (il n'importe que la stdlib, donc pas de cycle) dont
+  `functions/_helpers.to_text` et `runtime/operators` sont de simples appelants.
+  Leçon à ne pas réapprendre : la duplication a produit deux fois le même bug.
+  `stringify` reste comme nom explicite du contrat, sans comportement propre.
+- **`reduce` présente `{acc, value, index}` comme source courante** : une
+  expression jslt n'a qu'**une** source, et le langage n'a pas de second
+  paramètre. Inventer une variable implicite (`$acc`) aurait demandé la
+  grammaire ANTLR, donc `java`, absent du conteneur. Sans valeur initiale, le
+  repli part du premier élément (`reduce($.l, …, null)` équivaut donc à l'omettre
+  — accumuler depuis `null` n'ayant aucun sens).
+- **`some` / `every` plutôt que `any` / `all`** : `any` existe déjà avec le sens
+  .NET « tableau non vide ». Lui donner un prédicat aurait été une rupture
+  silencieuse pour les templates portés, d'où un second nom.
+- **`range` est plafonné** (un million d'éléments) et refuse un pas nul. C'est la
+  seule fonction qui **crée** de la donnée au lieu d'en transformer, donc le seul
+  endroit où un template — exécuté en bac à sable dans le playground — peut
+  réclamer un tableau démesuré.
+- **Opérateurs sur un conteneur : la bonne réponse ou une erreur, jamais
+  `false`** (0.7.0). `==` descend structurellement dans les tableaux et les
+  objets **avec la règle du langage** (`[2] == ["2"]` vrai, comme `2 == "2"`) —
+  et non avec la clef d'ordre, pour ne pas introduire une troisième notion
+  d'égalité à côté de `contains` (`==`) et `indexof` (structure). `+` concatène
+  deux tableaux ; il lève entre deux objets (en nommant `merge`, qui porte les
+  options qu'un `+` muet cacherait) et entre un tableau et une valeur (en nommant
+  `union`, « ajouter » et « concaténer » se défendant autant). Les autres
+  opérateurs arithmétiques, bit-à-bit et d'ordre lèvent : pour les comparaisons,
+  `false` était contradictoire (`a < b` et `a >= b` faux ensemble). `null` n'est
+  pas un conteneur et garde son repli `false`, sur lequel des templates
+  s'appuient.
 - **Refus et observation depuis le template** : `require` / `requirethat` lèvent
   une `JsltError` porteuse d'un message métier (donc rattrapable par
   `trydefault`) ; `trace` / `traces` écrivent dans `RuntimeContext.traces`, pas
@@ -158,6 +187,44 @@ Patterns repris du .NET :
   compact jusqu'en 0.5.0 : un tri **multi-clefs** (`sort($.l, [$.a, $.b])`, usage
   naturel puisque la clef est une expression) ordonnait alors `[10]` avant `[2]`.
   Comparer récursivement coûte un peu plus et c'est le prix de la justesse.
+- **`ifelse`, seule conditionnelle en position d'expression** : `when` aiguille
+  sur une **valeur** (`==` contre chaque nom de cas), donc une condition composée
+  devait être calculée puis aiguillée sur son texte. Une syntaxe `if … else`
+  demanderait la grammaire ANTLR, donc `java`, absent du conteneur ; les
+  arguments **paresseux** donnent la même sémantique sous forme de fonction —
+  seule la branche retenue est évaluée, sans quoi `ifelse($.d == 0, 0, 100 / $.d)`
+  diviserait par zéro et la fonction serait inutile là où on l'attend le plus. La
+  condition se lit comme celle de `filter` (`coerce_bool`) et non comme
+  l'assertion de `requirethat` : le résultat est une valeur, pas une vérification.
+  Pas de `cond` multi-branches : `lazy_args` repère les arguments **par indice**,
+  donc une forme variadique demanderait de marquer d'avance un nombre arbitraire
+  de positions, alors que `ifelse` s'imbrique.
+- **`get` / `getpath` : la clef calculée que le chemin ne porte pas** —
+  `$.o[$.k]` lève et `select` n'accepte qu'un chemin littéral, d'où un détour par
+  `entries` + `filter` + une variable pour un simple accès par clef. Clef absente,
+  indice hors bornes, source qui n'est ni objet ni tableau : `null`, la convention
+  de la famille des objets ; **aucun argument de repli**, parce que `??` le dit
+  déjà et qu'un repli en argument serait évalué même quand la clef existe (pour
+  exiger la valeur, `require`). `getpath` est la réciproque de `setpath`, et lui
+  **importe** sa lecture d'étape (`_child`, `_separator`) au lieu de la recopier :
+  deux copies de cette convention finiraient par diverger.
+- **Trois arrondis que `round` ne fait pas** (`rounding.py`) : `round` est
+  bancaire (quirk conservé), donc le commerce n'était pas servi. Les demis
+  **s'éloignent de zéro** (et non vers +∞), pour qu'un avoir s'arrondisse comme la
+  facture qu'il annule. Les trois construisent leur `Decimal` sur le **texte** du
+  nombre : `Decimal(2.675)` vaut 2,674999… et rendrait 2,67 — c'est aussi ce que
+  rendait le contournement `round($.n * 20) / 20`. Un pas nul ou négatif **lève**
+  plutôt que de rendre une valeur qui n'a été arrondie à rien. Comme `round`,
+  `floor` et `ceil`, les trois rendent un **décimal**.
+- **Deux noms pour une longueur de texte** : `stringlenght` porte une faute
+  d'origine ; la retirer casserait les templates écrits avec, la garder seule
+  obligeait à écrire une faute. `stringlength` est un second **enregistrement de
+  la même callable**, donc les deux ne peuvent pas diverger. Même esprit, sans
+  nouveau nom, pour les voisins qui égarent : sept descriptions du registre
+  renvoient explicitement à la fonction cherchée (`join` → `concat`, `any` →
+  `some`, `split` → `splitstring`, `round` → `roundhalfup`, `index` → `get`),
+  parce que l'infobulle de l'éditeur est l'endroit où le doute naît ; le tableau
+  complet est dans le guide (« Noms qui égarent »).
 - **Familles de fonctions ajoutées au-delà du .NET** (sujets 1 à 11 comblés en
   0.4.0, catégories collections / statistiques / texte / nombres en 0.5.0, cf.
   `CHANGELOG.md`). Décisions de 0.5.0 : `split` garde son 1er caractère (fidélité
@@ -398,10 +465,14 @@ Fonctions portées (modules dans `packages/urban-json/src/urban_json/functions/`
 - nombres (`numbers.py`) : `parsenumber` (cultures de `format`), `sign`, `clamp`,
   `gcd`, `log` (base libre), `shiftleft`/`shiftright`, `tohex`/`fromhex`,
   `tobase`/`frombase` (2 à 36), `isfinite`, `isnan`.
+- arrondis non bancaires (`rounding.py`) : `roundhalfup` (demi **en s'éloignant
+  de zéro**), `roundto` (au multiple), `toprecision` (chiffres significatifs).
+  Tous trois passent par `Decimal` construit sur le **texte** du nombre.
 - texte (`text.py`) : `upper`, `lower`, `trim`, `trimstart`, `trimend`, `split`
   (1er caractère seulement, fidélité .NET), `splitstring` (séparateur entier),
   `startswith`, `endswith`, `stringcontains`, `indexof`, `lastindexof` (texte
-  **ou tableau**), `padleft`, `padright`, `stringlenght`, `substring`, `replace`,
+  **ou tableau**), `padleft`, `padright`, `stringlenght` (+ `stringlength`, même
+  implémentation sous l'orthographe juste), `substring`, `replace`,
   `repeat`, `titlecase`, `shorten`.
 - pliage Unicode (`folding.py`, extrait de `text.py`) : `normalize` (formes
   C/D/KC/KD), `deaccent`, `foldtext`, `slugify`.
@@ -416,6 +487,19 @@ Fonctions portées (modules dans `packages/urban-json/src/urban_json/functions/`
   `selectmany`, `any`, `contains`, `selectany` (`select`/`selectmany`/`selectany`
   prennent un argument-chemin), `zip`, `unzip`, `chunk`, `window`, `partition`,
   `distinctby`, `intersect`, `difference`.
+- parcours par expression (`iteration.py`) : `map`, `filter`, `find`,
+  `findindex`, `every`, `some`, `reduce` (l'expression voit `{acc, value,
+  index}`), `minby`, `maxby`, `cumsum`. Famille entièrement bâtie sur les
+  **arguments paresseux** : la boucle `{"$source": …}` fait l'office de `map`
+  mais n'existe qu'en position de valeur, jamais en argument.
+- construire et retoucher un tableau (`sequences.py`) : `range` (fin exclue,
+  série plafonnée à un million — c'est le seul endroit où un template peut
+  demander un tableau démesuré), `slice`, `append`, `insert`, `removeat` (tous
+  rendent une **copie**, bornes tolérantes comme `substring`).
+- découper un texte (`textparts.py`) : `chars` (par graphème), `lines`, `words`,
+  `removeprefix` / `removesuffix` (affixe **entier**, à ne pas confondre avec
+  `trimstart`/`trimend` qui retirent un jeu de caractères), `capitalize`
+  (première lettre seule, là où `titlecase` les met toutes).
 - tri et ordre (`ordering.py`) : `sort` (clef **paresseuse** évaluée par élément,
   ordre total documenté, tri stable, **un sens par clef** possible),
   `reverse`, `first`, `last`.
@@ -427,6 +511,10 @@ Fonctions portées (modules dans `packages/urban-json/src/urban_json/functions/`
   (plat, ou **imbriqué** d'un niveau par clef), `countby`, `sumby`, `avgby`.
 - objets (`objects.py`) : `keys`, `values`, `entries`, `fromentries`, `merge`
   (4e argument : concaténer les tableaux), `pick`, `omit`, `has`, `renamekeys`.
+- accès calculé (`access.py`) : `get` (clef d'objet ou indice de tableau, négatif
+  depuis la fin), `getpath` (chemin pointé, réciproque de `setpath`). Les étapes
+  et le séparateur sont **importés** de `deep.py` plutôt que recopiés.
+- conditionnelle (`conditions.py`) : `ifelse` (branches **paresseuses**).
 - structures profondes (`deep.py`) : `flattenobject`, `unflatten`, `walk`,
   `prune`, `setpath`, `unsetpath`.
 - qualité et diagnostic (`quality.py`) : `require`, `requirethat`, `trace`,
@@ -446,7 +534,7 @@ Fonctions portées (modules dans `packages/urban-json/src/urban_json/functions/`
   `to_block`, `to_csv`, `to_xml`, `to_yaml` (émetteurs sans dépendance dans
   `_writers.py`).
 
-Soit **182 fonctions** dans le registre par défaut (`default_registry.names()` fait
+Soit **210 fonctions** dans le registre par défaut (`default_registry.names()` fait
 foi ; cette liste est un index, pas la source de vérité). Le `CHANGELOG.md`
 détaille ce qui est entré à quelle version.
 

@@ -38,7 +38,7 @@ def execute_sum(ctx: Any, token: Any = None) -> Any:
     raise JsltError("sum attend un tableau")
 
 
-@jslt_function("concat", description="Joint les éléments d'un tableau en un texte, séparés par split_char suivi de delimit_char", description_en="Joins the elements of an array into text, separated by split_char then delimit_char")
+@jslt_function("concat", description="Joint les éléments d'un tableau en un texte, séparés par split_char suivi de delimit_char (c'est le « join » des textes ; join, lui, est la jointure)", description_en="Joins the elements of an array into text, separated by split_char then delimit_char (this is the string \"join\"; join itself is the SQL-style join)")
 def execute_concat(
     ctx: Any, token: Any = None, split_char: str | None = None, delimit_char: str | None = None
 ) -> str:

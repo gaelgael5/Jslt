@@ -12,6 +12,155 @@ décrits dans [Intégrer le moteur](docs/integration.md).
 Versions selon [SemVer](https://semver.org/lang/fr/) ; une version PyPI est
 immuable, une correction de documentation destinée à l'index vaut donc un patch.
 
+## urban-json 0.8.0 — 2026-11-11
+
+Les manques élémentaires du langage, comblés (182 → 210) : parcourir un tableau
+par expression, en créer un, découper un texte, **choisir** une valeur selon une
+condition, lire une clef **calculée** et arrondir comme une facture.
+
+### Ajouté — parcours par expression
+
+`map`, `filter`, `find`, `findindex`, `every`, `some`, `reduce`, `minby`,
+`maxby`, `cumsum`. La boucle `{"$source": …}` faisait déjà l'office de `map`,
+mais **en position de valeur seulement** : impossible de la passer en argument
+d'une fonction. `reduce`, lui, n'avait aucun équivalent — c'est pourtant le repli
+général dont `sum`, `product` et `sumby` ne sont que des cas particuliers.
+
+- `reduce` présente `{acc, value, index}` comme **source courante** : une
+  expression jslt n'a qu'une source, et le langage n'a pas de second paramètre.
+  Sans valeur initiale, le repli part du premier élément.
+- `some` et `every` plutôt que `any` et `all` : `any` existe déjà avec le sens
+  .NET « tableau non vide », et lui donner un prédicat aurait silencieusement
+  changé le résultat des templates portés.
+- `every` d'un tableau vide est **vrai** (aucun contre-exemple), `some` est faux.
+- `minby` / `maxby` rendent l'**élément**, là où `min` / `max` rendent la valeur
+  extrême sans dire qui la porte.
+
+### Ajouté — construire et retoucher un tableau
+
+`range`, `slice`, `append`, `insert`, `removeat`. `range` est la **seule**
+fonction du moteur qui crée une série : tout le reste transforme ce qui entre, et
+« les douze mois » était inexprimable si la donnée ne les portait pas. Fin
+**exclue** et un seul argument compte depuis zéro, pour s'aligner sur les indices
+de `skip` et `slice` ; pas nul et séries de plus d'un million d'éléments
+**refusés**, parce que c'est le seul endroit où un template peut réclamer un
+tableau démesuré. Les quatre retouches rendent une **copie**.
+
+### Ajouté — découper un texte
+
+`chars` (par graphème), `lines` (les trois fins de ligne, vides comprises),
+`words`, `removeprefix` / `removesuffix`, `capitalize`. Trois de ces besoins
+avaient une réponse qui **semblait** fonctionner : `splitstring($.t, "")` rend le
+texte entier, `trimstart` retire un **jeu de caractères** et non un préfixe (sur
+« bacab », `trimstart($.t, "ab")` rend « cab » alors que le préfixe n'y est pas),
+et `titlecase` met **toutes** les initiales.
+
+### Ajouté — une conditionnelle en position d'expression
+
+`ifelse(condition, si_vrai, si_faux)`. Le langage n'en avait **aucune** : `when`
+aiguille sur une **valeur** (il compare `==` au nom de chaque cas), donc une
+condition composée — `$.n > 10 && $.actif` — devait d'abord être calculée, puis
+aiguillée sur son texte `"true"` / `"false"`. C'était le manque le plus
+élémentaire du moteur, et le seul sans contournement lisible.
+
+Seule la branche **retenue** est évaluée (arguments paresseux), donc
+`ifelse($.d == 0, 0, 100 / $.d)` est sûr : avec des arguments évalués, la
+fonction aurait été inutilisable là où on l'attend le plus. La condition se lit
+comme celle de `filter` et non comme l'assertion de `requirethat`. Une vraie
+syntaxe `if … else` demanderait de modifier la grammaire ANTLR, donc `java`,
+absent du conteneur — la fonction obtient la même sémantique sans y toucher.
+
+### Ajouté — accès par clef calculée
+
+`get(valeur, clef)` et `getpath(valeur, chemin, séparateur)`. Un chemin est
+**littéral** : `$.o[$.k]` n'est pas un sélecteur pris en charge, et `select`
+n'accepte lui aussi qu'un chemin écrit dans le template. Lire une configuration
+dont les clefs *sont* des données demandait un détour par
+`entries` + `filter` + une variable — quatre fonctions pour un accès par clef.
+
+- Clef absente, indice hors bornes, source qui n'est ni objet ni tableau :
+  `null`, la convention de la famille des objets. Pas d'argument de repli : `??`
+  le dit déjà, et un repli en argument serait évalué même quand la clef existe ;
+  pour exiger la valeur, `require(get(…), "message")`.
+- `get` accepte un indice **négatif** (depuis la fin), comme `slice`.
+- `getpath` est la réciproque de `setpath`, qui n'en avait pas : mêmes étapes,
+  indices de tableau compris, même séparateur réglable.
+
+### Ajouté — les arrondis que `round` ne sait pas faire
+
+`roundhalfup`, `roundto`, `toprecision`. `round` est l'arrondi **bancaire**
+(quirk conservé) : `round(0.125, 2)` rend `0.12` là où une facture attend `0.13`.
+Le moteur ne savait donc pas écrire l'arrondi le plus courant du commerce, ni
+arrondir à un multiple (le pas de 0,05 d'une caisse), ni à un nombre de chiffres
+**significatifs**.
+
+- Les demis **s'éloignent de zéro** : `-0.5` rend `-1`, pour qu'un avoir
+  s'arrondisse comme la facture qu'il annule.
+- Les trois lisent le nombre tel qu'il est **écrit** : `2.675` se stocke en
+  `2.67499999…`, et c'est ce que rendait le contournement
+  `round($.n * 20) / 20`.
+- Un pas nul ou négatif **lève**, plutôt que de rendre une valeur qui n'a été
+  arrondie à rien.
+
+### Modifié — signature élargie, compatible
+
+- `indexof(texte_ou_tableau, valeur, start)` : 3e argument, la position de
+  départ. Parcourir toutes les occurrences imposait jusque-là de redécouper le
+  texte à chaque tour.
+- `stringlength` **nomme correctement** `stringlenght`, dont l'orthographe
+  d'origine est fautive. Les deux noms enregistrent la **même** implémentation,
+  donc ils ne peuvent pas diverger ; retirer l'ancien casserait les templates
+  écrits avec.
+- Sept descriptions du registre lèvent le doute sur un nom voisin là où le
+  lecteur le rencontre — dans l'infobulle de l'éditeur : `join` renvoie à
+  `concat` (joindre des textes), `any` à `some`, `split` à `splitstring`,
+  `round` à `roundhalfup`, `index` à `get`. Le guide porte le tableau complet
+  (« Noms qui égarent »).
+
+### Internes documentés
+
+- Nouveaux modules : `functions/iteration.py`, `functions/sequences.py`,
+  `functions/textparts.py`, `functions/conditions.py`, `functions/access.py`,
+  `functions/rounding.py`.
+
+## urban-json 0.7.0 — 2026-11-11
+
+Trois opérateurs rendaient une **réponse fausse** là où ils ne pouvaient pas en
+donner une juste. Une réponse ne se voit pas ; une erreur, si.
+
+### Corrigé
+
+- **`==` sur deux conteneurs disait toujours `false`.** Deux objets identiques,
+  deux tableaux identiques : `false`, et `!=` disait `true`. Il n'existait aucune
+  égalité structurelle dans le langage, et rien ne le signalait. L'égalité
+  descend maintenant dans les tableaux (même longueur, élément par élément) et
+  les objets (mêmes clés, mêmes valeurs), **avec la règle du langage** —
+  `[2] == ["2"]` est vrai, comme `2 == "2"` au premier niveau. Pour distinguer
+  le nombre de son texte, `indexof([$.a], $.b) == 0`.
+- **`+` sur deux tableaux disait `false`.** Il **concatène**, comme pour deux
+  chaînes. Entre deux objets il **lève** en nommant `merge`, qui porte les
+  options (profond, tableaux) qu'un `+` muet cacherait ; entre un tableau et une
+  valeur il lève en nommant `union`, parce qu'« ajouter un élément » et
+  « concaténer » se défendent autant l'un que l'autre.
+- **`"texte" + $.liste` laissait fuir le `repr` Python** (`a[1, 'x']`). C'est le
+  défaut corrigé en 0.6.0 dans `to_text`… que la copie privée des opérateurs
+  avait conservé. Les deux copies sont remplacées par un module feuille,
+  `urban_json._text` : il n'existe plus qu'**une** mise en texte dans le moteur,
+  et c'est le JSON compact.
+- **`- * / % & | ^` et `< <= > >=` sur un conteneur** rendaient `false`. Ils
+  lèvent. Pour les comparaisons, `false` était en plus contradictoire : `a < b`
+  et `a >= b` ne peuvent pas être faux ensemble. L'ordre entre conteneurs existe,
+  mais c'est celui de `sort`, pas celui des opérateurs.
+
+`null` n'est pas un conteneur : il garde son repli historique à `false`
+(`$.absent + 1` rend `false`), sur lequel des templates s'appuient.
+
+### Pourquoi une mineure et non un patch
+
+Un template existant peut changer de sortie : une comparaison qui valait `false`
+peut valoir `true`, et une opération qui rendait `false` peut désormais lever.
+C'est l'objet même de la correction, mais ça se voit depuis l'extérieur.
+
 ## Plugins — 2026-11-11
 
 Versions prêtes à publier en même temps que le cœur 0.6.0.

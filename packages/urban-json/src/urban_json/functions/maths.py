@@ -54,7 +54,7 @@ def _directed(token: Any, operation: Any, digits: Any) -> Any:
     return number_result(token, lambda n: operation(n * factor) / factor)
 
 
-@jslt_function("round", description="Arrondi à l'entier le plus proche, demi vers le pair (2.5 -> 2.0, 3.5 -> 4.0), rendu en décimal", description_en="Rounds to the nearest integer, halves to even (2.5 -> 2.0, 3.5 -> 4.0), returned as a decimal")
+@jslt_function("round", description="Arrondi à l'entier le plus proche, demi vers le pair (2.5 -> 2.0, 3.5 -> 4.0), rendu en décimal (arrondi commercial : roundhalfup)", description_en="Rounds to the nearest integer, halves to even (2.5 -> 2.0, 3.5 -> 4.0), returned as a decimal (commercial rounding: roundhalfup)")
 def execute_round(ctx: Any, token: Any = None, digits: Any = None) -> Any:
     """Arrondi bancaire, à l'entier par défaut ou à ``digits`` décimales.
 

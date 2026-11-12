@@ -4,10 +4,10 @@
 
 *[Français](indexof.md) · English*
 
-Position (from 0) of the first occurrence in a text or an array, -1 when absent
+Position (from 0) of the first occurrence in a text or an array, -1 when absent; start searches from that position
 
 ```
-indexof(token, txt)
+indexof(token, txt, start)
 ```
 
 **Example**
@@ -28,6 +28,7 @@ indexof(token, txt)
 |---|---|---|
 | `token` | optional |  |
 | `txt` | optional |  |
+| `start` | optional |  |
 
 **Chapter**: [Text, regular expressions and formatting](../texte.en.md) · **Index**: [all functions](sommaire.en.md)
 

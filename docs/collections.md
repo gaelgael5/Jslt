@@ -388,6 +388,79 @@ gagne.
 { "ecart": 2.0, "p90": 7.6, "frequent": "b" }
 ```
 
+## Parcourir par expression (`map`, `filter`, `find`, `every`, `some`, `reduce`)
+
+La boucle `{"$source": …}` fait l'office de `map`, mais seulement en **position
+de valeur** : impossible de la passer en argument. Cette famille prend une
+**expression évaluée par élément**, comme la clef de `sort`, et s'utilise donc
+partout.
+
+| Fonction | Rend |
+|---|---|
+| `map(l, expr)` | un tableau de la même longueur |
+| `filter(l, pred)` | les éléments dont le prédicat est vrai |
+| `find(l, pred)` / `findindex(l, pred)` | le premier élément / sa position, `null` / `-1` sinon |
+| `some(l, pred)` / `every(l, pred)` | au moins un / tous (vrai sur un tableau vide) |
+| `reduce(l, expr, initiale)` | **une** valeur, l'expression voyant `{acc, value, index}` |
+| `minby(l, clef)` / `maxby(l, clef)` | l'**élément** qui porte l'extremum |
+| `cumsum(l)` | les totaux courants |
+
+`some` ne remplace pas `any`, qui dit « tableau non vide » ; et `filter` ne
+remplace pas le filtre JSONPath `$.l[?(…)]`, plus court — mais un filtre ne sait
+pas appeler une fonction.
+
+```jslt
+{
+  "noms": map($.l, $.n),
+  "majeurs": map(filter($.l, $.age >= 18), $.n),
+  "total": reduce($.l, $.acc + $.value.age, 0),
+  "plus_jeune": map([minby($.l, $.age)], $.n)
+}
+```
+
+```json
+{ "l": [{ "n": "Ana", "age": 30 }, { "n": "Bo", "age": 15 }] }
+```
+
+```json
+{ "noms": ["Ana", "Bo"], "majeurs": ["Ana"], "total": 45, "plus_jeune": ["Bo"] }
+```
+
+`reduce` est le seul **repli général** du moteur : `sum`, `product` et `sumby`
+n'en sont que des cas particuliers. L'accumulateur et l'élément sont présentés
+ensemble comme source courante (`$.acc`, `$.value`, `$.index`), parce qu'une
+expression n'a qu'une source et que le langage n'a pas de second paramètre.
+
+## Construire et retoucher (`range`, `slice`, `append`, `insert`, `removeat`)
+
+`range` est la seule fonction qui **crée** une série : tout le reste du moteur
+transforme ce qui entre. La fin est **exclue**, et un seul argument compte depuis
+zéro — la série s'aligne donc sur les indices de `skip` et de `slice`.
+
+```jslt
+{
+  "douze_mois": count(range(1, 13)),
+  "page": slice($.l, 1, 3),
+  "avec_un_de_plus": append($.l, 9),
+  "sans_le_premier": removeat($.l, 0)
+}
+```
+
+```json
+{ "l": [1, 2, 3, 4] }
+```
+
+```json
+{ "douze_mois": 12, "page": [2, 3], "avec_un_de_plus": [1, 2, 3, 4, 9], "sans_le_premier": [2, 3, 4] }
+```
+
+Les quatre retouches rendent une **copie** : une fonction qui modifierait le
+tableau d'entrée casserait les autres lectures du même document. Les bornes sont
+tolérantes comme celles de `substring` (un indice trop grand ne lève pas), et
+`range` refuse en revanche un pas nul ou une série de plus d'un million
+d'éléments — c'est le seul endroit où un template peut demander un tableau
+démesuré.
+
 ## Agréger par groupe (`groupby`, `countby`, `sumby`, `avgby`)
 
 `group` rend des groupes `{ "Label", "Items" }`. `groupby(l, clef)` rend un

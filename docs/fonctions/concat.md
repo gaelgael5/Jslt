@@ -4,7 +4,7 @@
 
 *Français · [English](concat.en.md)*
 
-Joint les éléments d'un tableau en un texte, séparés par split_char suivi de delimit_char
+Joint les éléments d'un tableau en un texte, séparés par split_char suivi de delimit_char (c'est le « join » des textes ; join, lui, est la jointure)
 
 ```
 concat(token, split_char, delimit_char)

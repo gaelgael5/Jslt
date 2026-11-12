@@ -4,7 +4,7 @@
 
 *Français · [English](stringlenght.en.md)*
 
-Nombre de caractères d'un texte (0 pour null ou une non-chaîne) — orthographe d'origine conservée
+Nombre de caractères d'un texte — orthographe d'origine, fautive, conservée : voir stringlength
 
 ```
 stringlenght(token)

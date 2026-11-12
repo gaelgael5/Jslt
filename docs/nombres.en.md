@@ -127,6 +127,39 @@ directed roundings accept a precision.
 differ, which is the whole point of having both. `round` remains **banker's**
 rounding (see above).
 
+### Commercial rounding, to a multiple, to significant digits
+
+`round` is the **banker's** rounding: halves go to the even digit, so
+`round(0.125, 2)` gives `0.12` where an invoice expects `0.13`. Three functions
+cover what that choice leaves out.
+
+| Function | Role |
+|---|---|
+| `roundhalfup(v, decimals)` | commercial rounding: halves go **away from zero** (`-0.5` → `-1`) |
+| `roundto(v, step)` | rounds to the nearest multiple: a till's 0.05 step, the quarter hour |
+| `toprecision(v, digits)` | rounds to a number of **significant** digits, not decimals |
+
+All three read the number as it is **written**: `2.675` is stored as
+`2.67499999…`, and a rounding working on that value would give `2.67`. That is
+the "wrong" rounding everyone meets once, and it is also what the workaround
+`round($.n * 20) / 20` returns. A zero or negative step **raises** rather than
+returning a value that was rounded to nothing; `toprecision` requires at least
+one digit. Like `round`, `floor` and `ceil`, all three return a **decimal**.
+
+```jslt
+{ "facture": roundhalfup($.n, 2), "caisse": roundto($.n, 0.05), "mesure": toprecision($.n, 3), "bancaire": round($.n, 2) }
+```
+```json
+{ "n": 2.675 }
+```
+```json
+{ "facture": 2.68, "caisse": 2.7, "mesure": 2.68, "bancaire": 2.67 }
+```
+
+`toprecision` is for data whose order of magnitude **varies**: `round($.n, 2)`
+fixes where the decimal point falls, which makes no sense in a column where
+`0.00241` sits next to `24100`.
+
 ## Logarithm, bases and non-finite values
 
 | Function | Purpose |

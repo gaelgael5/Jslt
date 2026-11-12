@@ -4,7 +4,7 @@
 
 *Français · [English](any.en.md)*
 
-Vrai si la source est un tableau non vide
+Vrai si la source est un tableau non vide (avec un prédicat, c'est some)
 
 ```
 any(source)

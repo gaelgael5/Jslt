@@ -56,7 +56,7 @@ découpé par thème — on va droit à celui qu'on cherche :
 | [Chemins JSONPath](docs/chemins.md) | accès, sémantique 0 / 1 / N, filtres `?(...)`, `length()` / `value()` |
 | [Expressions](docs/expressions.md) | variables, opérateurs, coalescence `??`, casts `#type`, chaînage `->` |
 | [Conditions et boucles](docs/conditions-et-boucles.md) | `when` / `switch`, `$source` / `$where` |
-| [Données et collections](docs/collections.md) | `sum`, `distinct`, `select`, `skip`, `flatten`, `partition`, `group`, `groupby`, `sumby`, `sort`, `unzip`, agrégats et statistiques |
+| [Données et collections](docs/collections.md) | `sum`, `distinct`, `select`, `skip`, `flatten`, `partition`, `map`, `filter`, `reduce`, `range`, `group`, `groupby`, `sumby`, `sort`, agrégats |
 | [Nombres et maths](docs/nombres.md) | `min`, `max`, `round`, `sqrt`… |
 | [Texte, regex et formatage](docs/texte.md) | `upper`, `split`, `regexmatches`, `normalize`, `format` |
 | [Dates et heures](docs/dates.md) | `parsedate` (culture, masque, fuseau), `dateadd`, `datesub`, `datediff`, `datepart`, bornes de période, jours ouvrés |
@@ -165,11 +165,12 @@ sont la source de vérité du langage, reprise du dépôt .NET.
 
 ## Périmètre
 
-Le cœur porte **182 fonctions** : maths et nombres (dont `parsenumber`,
-`clamp`, `round` à précision), texte (découpe, remplacement, regex, pliage
+Le cœur porte **210 fonctions** : maths et nombres (dont `parsenumber`,
+`clamp`, `round` à précision, arrondi commercial et au multiple), texte (découpe, remplacement, regex, pliage
 Unicode), encodage et empreintes (base64, hexadécimal, URL, HTML, `sha256`,
 `hmacsha256`), collections (tri, agrégats, regroupement et jointure), objets
-(`keys`, `entries`, `merge`, `pick`…), types et validation (`typeof`,
+(`keys`, `entries`, `merge`, `pick`, `get` par clef calculée…), conditionnelle
+en expression (`ifelse`), types et validation (`typeof`,
 `schemaisvalid`, `trydefault`), dates (`parsedate` avec masque et fuseau,
 calcul, écart, bornes de période, jours ouvrés), formatage, schéma, paramètres
 externes (`param`) et les fonctions de sortie texte. La liste qui fait foi est

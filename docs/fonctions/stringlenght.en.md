@@ -4,7 +4,7 @@
 
 *[Français](stringlenght.md) · English*
 
-Number of characters of a text (0 for null or a non-string) — original spelling kept
+Number of characters of a text — original, misspelled name kept: see stringlength
 
 ```
 stringlenght(token)

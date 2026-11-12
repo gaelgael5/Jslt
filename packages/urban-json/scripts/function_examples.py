@@ -173,6 +173,72 @@ PARAMS: dict[str, dict[str, tuple[str, str]]] = {
             "the expression of the value to average; omitted, it is the element",
         ),
     },
+    "ifelse": {
+        "condition": (
+            ("l'expression à tester ; lue comme celle de `filter` (`null`, `0`, `\"\"`, vide "
+            "= faux), pas comme une assertion"),
+            ("the expression to test; read like `filter`'s (`null`, `0`, `\"\"`, empty = "
+            "false), not like an assertion"),
+        ),
+        "when_true": (
+            "valeur rendue si la condition est vraie ; **non évaluée** sinon",
+            "value returned when the condition is true; **not evaluated** otherwise",
+        ),
+        "when_false": (
+            "valeur rendue sinon ; absente, le résultat est `null`",
+            "value returned otherwise; absent, the result is `null`",
+        ),
+    },
+    "get": {
+        "token": (
+            "l'objet ou le tableau à lire ; autre chose rend `null`",
+            "the object or array to read; anything else gives `null`",
+        ),
+        "key": (
+            ("la clef, **calculée** : nom pour un objet, indice pour un tableau "
+            "(négatif depuis la fin)"),
+            ("the key, **computed**: a name for an object, an index for an array "
+            "(negative from the end)"),
+        ),
+    },
+    "getpath": {
+        "token": (
+            "l'objet ou le tableau de départ ; autre chose rend `null`",
+            "the starting object or array; anything else gives `null`",
+        ),
+        "path": (
+            ("le chemin pointé, **calculable** (`\"client.ville\"`, `\"lignes.0.ref\"`) ; "
+            "mêmes étapes que `setpath`"),
+            ("the dotted path, **computable** (`\"client.ville\"`, `\"lignes.0.ref\"`); same "
+            "steps as `setpath`"),
+        ),
+        "separator": (
+            "séparateur des étapes, `.` par défaut ; vide, il lève",
+            "step separator, `.` by default; empty, it raises",
+        ),
+    },
+    "roundhalfup": {
+        "digits": (
+            ("nombre de décimales ; absent, arrondi à l'entier ; négatif, aux dizaines "
+            "(`-2` = à la centaine)"),
+            ("number of decimals; absent, rounds to the integer; negative, to tens "
+            "(`-2` = to the hundred)"),
+        ),
+    },
+    "roundto": {
+        "step": (
+            ("le pas d'arrondi, strictement positif (`0.05`, `15`, `0.25`) ; nul ou "
+            "négatif, il lève"),
+            ("the rounding step, strictly positive (`0.05`, `15`, `0.25`); zero or "
+            "negative, it raises"),
+        ),
+    },
+    "toprecision": {
+        "digits": (
+            "nombre de chiffres **significatifs**, au moins 1 (et non un nombre de décimales)",
+            "number of **significant** digits, at least 1 (not a number of decimals)",
+        ),
+    },
 }
 
 #: Ce qu'un exemple ne montre pas, par fonction : couples (français, anglais).
@@ -897,6 +963,113 @@ NOTES: dict[str, list[tuple[str, str]]] = {
             "reproducible."),
         ),
     ],
+    "ifelse": [
+        (
+            ("Seule la branche **retenue** est évaluée : `ifelse($.d == 0, 0, 100 / $.d)` ne "
+             "divise pas par zéro. C'est tout l'intérêt de la fonction, et ce qu'un opérateur "
+             "à arguments évalués ne pourrait pas offrir."),
+            ("Only the **chosen** branch is evaluated: `ifelse($.d == 0, 0, 100 / $.d)` does "
+             "not divide by zero. That is the whole point of the function, and what an "
+             "operator with evaluated arguments could not offer."),
+        ),
+        (
+            ("`when` aiguille sur une **valeur** (`==` contre chaque nom de cas) ; `ifelse` "
+             "teste une **condition**, donc une expression composée. Pour plus de deux cas, "
+             "`ifelse` s'imbrique."),
+            ("`when` switches on a **value** (`==` against each case name); `ifelse` tests a "
+             "**condition**, hence a composed expression. For more than two cases, `ifelse` "
+             "nests."),
+        ),
+    ],
+    "get": [
+        (
+            ("Clef absente, indice hors bornes, source qui n'est ni objet ni tableau : `null`. "
+             "Il n'y a donc pas d'argument de repli — `get($.o, $.k) ?? 0` le dit, et un repli "
+             "en argument serait évalué même quand la clef existe."),
+            ("Missing key, out-of-bounds index, source that is neither object nor array: "
+             "`null`. There is therefore no fallback argument — `get($.o, $.k) ?? 0` says it, "
+             "and a fallback as an argument would be evaluated even when the key exists."),
+        ),
+        (
+            ("Pour **exiger** la valeur : `require(get($.o, $.k), \"tarif inconnu\")`. Pour "
+             "distinguer une clef absente d'une clef présente valant `null` : `has`."),
+            ("To **require** the value: `require(get($.o, $.k), \"unknown price\")`. To tell a "
+             "missing key from a key present but null: `has`."),
+        ),
+    ],
+    "getpath": [
+        (
+            ("Réciproque de `setpath`, qui n'en avait pas : les étapes se lisent de la même "
+             "façon, indices de tableau compris (`\"lignes.0.ref\"`)."),
+            ("The reciprocal of `setpath`, which had none: the steps read the same way, array "
+             "indices included (`\"lignes.0.ref\"`)."),
+        ),
+        (
+            ("Une étape manquante — ou un scalaire rencontré en cours de route — rend `null` "
+             "sans lever : c'est la sémantique d'un chemin, et `??` fournit le repli."),
+            ("A missing step — or a scalar met along the way — gives `null` without raising: "
+             "that is a path's semantics, and `??` provides the fallback."),
+        ),
+    ],
+    "roundhalfup": [
+        (
+            ("L'arrondi **commercial**, là où `round` est bancaire : `round(0.125, 2)` rend "
+             "`0.12`. Les demis **s'éloignent de zéro**, donc `-0.5` rend `-1` — un avoir "
+             "s'arrondit comme la facture qu'il annule."),
+            ("**Commercial** rounding, where `round` is banker's: `round(0.125, 2)` gives "
+             "`0.12`. Halves go **away from zero**, so `-0.5` gives `-1` — a credit note "
+             "rounds like the invoice it cancels."),
+        ),
+        (
+            ("Le nombre est lu tel qu'il est **écrit** : `2.675` se stocke en `2.67499999…`, "
+             "et un arrondi conduit sur cette valeur rendrait `2.67`."),
+            ("The number is read as it is **written**: `2.675` is stored as `2.67499999…`, and "
+             "a rounding run on that value would give `2.67`."),
+        ),
+    ],
+    "roundto": [
+        (
+            ("Un pas nul ou négatif **lève**, plutôt que de rendre une valeur qui n'a été "
+             "arrondie à rien — ce qu'un `roundto($.n, $.pas)` au pas absent produirait."),
+            ("A zero or negative step **raises**, rather than returning a value that was "
+             "rounded to nothing — which a `roundto($.n, $.step)` with a missing step would "
+             "produce."),
+        ),
+        (
+            ("Les demis s'éloignent de zéro, comme `roundhalfup`, et le calcul ne passe pas "
+             "par un flottant intermédiaire : le contournement `round($.n * 20) / 20` le "
+             "faisait, avec l'erreur de représentation qui va avec."),
+            ("Halves go away from zero, like `roundhalfup`, and the computation goes through "
+             "no intermediate float: the workaround `round($.n * 20) / 20` did, with the "
+             "representation error that comes with it."),
+        ),
+    ],
+    "toprecision": [
+        (
+            ("Chiffres **significatifs**, pas décimales : `round($.n, 2)` fixe le rang de la "
+             "virgule, ce qui n'a pas de sens sur une colonne où voisinent `0.00241` et "
+             "`24100`."),
+            ("**Significant** digits, not decimals: `round($.n, 2)` fixes where the decimal "
+             "point falls, which makes no sense in a column where `0.00241` sits next to "
+             "`24100`."),
+        ),
+        (
+            ("Moins d'un chiffre **lève** ; `0` est rendu tel quel, un zéro ayant autant de "
+             "chiffres significatifs qu'on veut."),
+            ("Fewer than one digit **raises**; `0` is returned as is, since zero has as many "
+             "significant digits as one likes."),
+        ),
+    ],
+    "stringlength": [
+        (
+            ("Même fonction que `stringlenght`, dont l'orthographe d'origine est fautive : "
+             "les deux noms enregistrent la **même** implémentation, donc ils ne peuvent pas "
+             "diverger. Retirer l'ancien casserait les templates écrits avec."),
+            ("The same function as `stringlenght`, whose original spelling is a typo: both "
+             "names register the **same** implementation, so they cannot diverge. Removing "
+             "the old one would break the templates written with it."),
+        ),
+    ],
 }
 
 #: name -> liste d'exemples (un seul, sauf quand deux usages se répondent).
@@ -1022,6 +1195,204 @@ EXAMPLES: dict[str, list[dict[str, str]]] = {
             "template": '{ "r": tohex($.n), "sur_quatre": tohex($.n, 4) }',
             "source": '{ "n": 255 }',
             "output": '{ "r": "ff", "sur_quatre": "00ff" }',
+        }
+    ],
+    # --- parcours par expression -------------------------------------------------------
+    "map": [
+        {
+            "note": "Ce que la boucle fait déjà — mais utilisable **en argument**.",
+            "note_en": "What the loop already does — but usable **as an argument**.",
+            "template": '{ "noms": map($.l, $.n), "total": sum(map($.l, $.age)) }',
+            "source": '{ "l": [{ "n": "Ana", "age": 30 }, { "n": "Bo", "age": 25 }] }',
+            "output": '{ "noms": ["Ana", "Bo"], "total": 55 }',
+        }
+    ],
+    "filter": [
+        {
+            "note": "L'expression est quelconque : un filtre JSONPath ne sait pas appeler une fonction.",
+            "note_en": "The expression is arbitrary: a JSONPath filter cannot call a function.",
+            "template": '{ "r": filter($.l, stringcontains($.n, "a")) }',
+            "source": '{ "l": [{ "n": "Ana" }, { "n": "Bo" }] }',
+            "output": '{ "r": [{ "n": "Ana" }] }',
+        }
+    ],
+    "find": [
+        {
+            "template": '{ "trouve": find($.l, $ > 2), "aucun": find($.l, $ > 9) }',
+            "source": '{ "l": [1, 2, 3, 4] }',
+            "output": '{ "trouve": 3, "aucun": null }',
+        }
+    ],
+    "findindex": [
+        {
+            "template": '{ "position": findindex($.l, $ > 2), "aucune": findindex($.l, $ > 9) }',
+            "source": '{ "l": [1, 2, 3, 4] }',
+            "output": '{ "position": 2, "aucune": -1 }',
+        }
+    ],
+    "every": [
+        {
+            "note": "Vrai sur un tableau **vide** : il n'y a aucun contre-exemple.",
+            "note_en": "True on an **empty** array: there is no counter-example.",
+            "template": '{ "tous": every($.l, $ > 0), "vide": every($.v, $ > 0) }',
+            "source": '{ "l": [1, 2], "v": [] }',
+            "output": '{ "tous": true, "vide": true }',
+        }
+    ],
+    "some": [
+        {
+            "note": "`any` dit « tableau non vide » ; `some` teste un prédicat.",
+            "note_en": "`any` says \"non-empty array\"; `some` tests a predicate.",
+            "template": '{ "some": some($.l, $ > 3), "any": any($.l) }',
+            "source": '{ "l": [1, 2] }',
+            "output": '{ "some": false, "any": true }',
+        }
+    ],
+    "reduce": [
+        {
+            "note": "L'expression voit `{acc, value, index}` et rend le nouvel accumulateur.",
+            "note_en": "The expression sees `{acc, value, index}` and returns the new accumulator.",
+            "template": '{ "somme": reduce($.l, $.acc + $.value, 0), "colle": reduce($.t, $.acc + $.value, "") }',
+            "source": '{ "l": [1, 2, 3, 4], "t": ["a", "b", "c"] }',
+            "output": '{ "somme": 10, "colle": "abc" }',
+        },
+        {
+            "note": "Sans valeur initiale, le repli part du **premier élément**.",
+            "note_en": "With no initial value, the fold starts from the **first element**.",
+            "template": '{ "r": reduce($.l, max($.acc, $.value)) }',
+            "source": '{ "l": [3, 9, 2] }',
+            "output": '{ "r": 9.0 }',
+        },
+    ],
+    "minby": [
+        {
+            "note": "Rend l'**élément**, là où `min` rend la valeur extrême sans dire qui la porte.",
+            "note_en": "Returns the **element**, where `min` returns the extreme value without saying who carries it.",
+            "template": '{ "r": map([minby($.l, $.prix)], $.ref) }',
+            "source": '{ "l": [{ "ref": "A", "prix": 30 }, { "ref": "B", "prix": 10 }] }',
+            "output": '{ "r": ["B"] }',
+        }
+    ],
+    "maxby": [
+        {
+            "template": '{ "r": map([maxby($.l, $.prix)], $.ref) }',
+            "source": '{ "l": [{ "ref": "A", "prix": 30 }, { "ref": "B", "prix": 10 }] }',
+            "output": '{ "r": ["A"] }',
+        }
+    ],
+    "cumsum": [
+        {
+            "template": '{ "r": cumsum($.l) }',
+            "source": '{ "l": [1, 2, 3, 4] }',
+            "output": '{ "r": [1, 3, 6, 10] }',
+        }
+    ],
+    # --- construire et retoucher un tableau ---------------------------------------------
+    "range": [
+        {
+            "note": "La **fin est exclue**, et un seul argument compte depuis zéro.",
+            "note_en": "The **end is excluded**, and a single argument counts from zero.",
+            "template": '{ "depuis_zero": range(5), "bornes": range(2, 5), "pas": range(0, 10, 3), "descendant": range(3, 0, -1) }',
+            "source": "{}",
+            "output": '{ "depuis_zero": [0, 1, 2, 3, 4], "bornes": [2, 3, 4], "pas": [0, 3, 6, 9], "descendant": [3, 2, 1] }',
+        },
+        {
+            "note": "Seule fonction qui **crée** une série : tout le reste transforme ce qui entre.",
+            "note_en": "The only function that **creates** a series: everything else transforms what comes in.",
+            "template": '{ "carres": map(range(1, 5), $ * $) }',
+            "source": "{}",
+            "output": '{ "carres": [1, 4, 9, 16] }',
+        },
+    ],
+    "slice": [
+        {
+            "note": "Fin exclue, indices négatifs depuis la fin, bornes trop larges tolérées.",
+            "note_en": "End excluded, negative indices from the end, over-wide bounds tolerated.",
+            "template": '{ "milieu": slice($.l, 1, 3), "fin": slice($.l, -2), "trop_loin": slice($.l, 9) }',
+            "source": '{ "l": [1, 2, 3, 4, 5] }',
+            "output": '{ "milieu": [2, 3], "fin": [4, 5], "trop_loin": [] }',
+        }
+    ],
+    "append": [
+        {
+            "note": "Ajoute **une** valeur ; un tableau ajouté devient un élément imbriqué.",
+            "note_en": "Adds **one** value; an array added becomes a nested element.",
+            "template": '{ "valeur": append($.l, 3), "tableau": append($.l, [3, 4]), "source": $.l }',
+            "source": '{ "l": [1, 2] }',
+            "output": '{ "valeur": [1, 2, 3], "tableau": [1, 2, [3, 4]], "source": [1, 2] }',
+        }
+    ],
+    "insert": [
+        {
+            "template": '{ "debut": insert($.l, 0, 9), "avant_dernier": insert($.l, -1, 9) }',
+            "source": '{ "l": [1, 2] }',
+            "output": '{ "debut": [9, 1, 2], "avant_dernier": [1, 9, 2] }',
+        }
+    ],
+    "removeat": [
+        {
+            "note": "Un indice hors bornes rend la copie **inchangée**, il ne lève pas.",
+            "note_en": "An out-of-range index returns the copy **unchanged**, it does not raise.",
+            "template": '{ "sans_le_second": removeat($.l, 1), "dernier": removeat($.l, -1), "hors_bornes": removeat($.l, 9) }',
+            "source": '{ "l": [1, 2, 3] }',
+            "output": '{ "sans_le_second": [1, 3], "dernier": [1, 2], "hors_bornes": [1, 2, 3] }',
+        }
+    ],
+    # --- découper un texte ---------------------------------------------------------------
+    "chars": [
+        {
+            "note": "Par **graphème** : un « e » suivi d'un accent combinant reste un caractère.",
+            "note_en": "By **grapheme**: an \"e\" followed by a combining accent stays one character.",
+            "template": '{ "r": chars($.t) }',
+            "source": '{ "t": "été" }',
+            "output": '{ "r": ["é", "t", "é"] }',
+        }
+    ],
+    "lines": [
+        {
+            "note": "Les trois fins de ligne, et les lignes **vides** sont gardées.",
+            "note_en": "All three line endings, and **empty** lines are kept.",
+            "template": '{ "r": lines($.t) }',
+            "source": '{ "t": "a\\nb\\n\\nc" }',
+            "output": '{ "r": ["a", "b", "", "c"] }',
+        }
+    ],
+    "words": [
+        {
+            "template": '{ "r": words($.t) }',
+            "source": '{ "t": "  le   petit chat " }',
+            "output": '{ "r": ["le", "petit", "chat"] }',
+        }
+    ],
+    "removeprefix": [
+        {
+            "note": (
+                "Un **affixe entier**, là où `trimstart` retire un jeu de caractères : sur "
+                "« bacab », `trimstart($.t, \"ab\")` rend « cab » alors que le préfixe n'y est pas."
+            ),
+            "note_en": (
+                "A **whole affix**, where `trimstart` removes a set of characters: on "
+                "\"bacab\", `trimstart($.t, \"ab\")` returns \"cab\" although the prefix is not there."
+            ),
+            "template": '{ "present": removeprefix($.t, "ba"), "absent": removeprefix($.t, "ab"), "jeu": trimstart($.t, "ab") }',
+            "source": '{ "t": "bacab" }',
+            "output": '{ "present": "cab", "absent": "bacab", "jeu": "cab" }',
+        }
+    ],
+    "removesuffix": [
+        {
+            "template": '{ "present": removesuffix($.t, ".json"), "absent": removesuffix($.t, ".xml") }',
+            "source": '{ "t": "contrat.json" }',
+            "output": '{ "present": "contrat", "absent": "contrat.json" }',
+        }
+    ],
+    "capitalize": [
+        {
+            "note": "La première lettre **seulement** ; `titlecase` met toutes les initiales.",
+            "note_en": "The first letter **only**; `titlecase` upper-cases every initial.",
+            "template": '{ "cap": capitalize($.t), "titre": titlecase($.t) }',
+            "source": '{ "t": "bonjour le MONDE" }',
+            "output": '{ "cap": "Bonjour le MONDE", "titre": "Bonjour Le MONDE" }',
         }
     ],
     # --- texte -----------------------------------------------------------------
@@ -2143,6 +2514,66 @@ EXAMPLES: dict[str, list[dict[str, str]]] = {
             "source": '{ "id": 1, "v": "Lyon" }',
             "output": '{ "client": { "id": 1, "ville": "Lyon" } }',
             "render": "id: 1\nville: Lyon\n",
+        }
+    ],
+    # --- conditionnelle, accès calculé, arrondis ---------------------------------------
+    "ifelse": [
+        {
+            "note": "La branche écartée n'est **pas** évaluée : la division par zéro ne part pas.",
+            "note_en": "The branch left aside is **not** evaluated: the division by zero does not run.",
+            "template": '{ "taille": ifelse($.n > 10, "grand", "petit"), "ratio": ifelse($.d == 0, 0, 100 / $.d) }',
+            "source": '{ "n": 42, "d": 0 }',
+            "output": '{ "taille": "grand", "ratio": 0 }',
+        }
+    ],
+    "get": [
+        {
+            "note": "La clef vient des **données** : un chemin, lui, est écrit dans le template.",
+            "note_en": "The key comes from the **data**: a path, by contrast, is written in the template.",
+            "template": '{ "r": get($.o, $.k), "dernier": get($.l, -1) }',
+            "source": '{ "o": { "a": 1, "b": 2 }, "k": "b", "l": [7, 8, 9] }',
+            "output": '{ "r": 2, "dernier": 9 }',
+        }
+    ],
+    "getpath": [
+        {
+            "template": '{ "r": getpath($.o, $.champ) }',
+            "source": '{ "o": { "client": { "ville": "Lyon" } }, "champ": "client.ville" }',
+            "output": '{ "r": "Lyon" }',
+        }
+    ],
+    "roundhalfup": [
+        {
+            "note": "`round($.n, 2)` rendrait `0.12` : il arrondit le demi vers le **pair**.",
+            "note_en": "`round($.n, 2)` would give `0.12`: it rounds the half to the **even** digit.",
+            "template": '{ "commercial": roundhalfup($.n, 2), "bancaire": round($.n, 2) }',
+            "source": '{ "n": 0.125 }',
+            "output": '{ "commercial": 0.13, "bancaire": 0.12 }',
+        }
+    ],
+    "roundto": [
+        {
+            "template": '{ "caisse": roundto($.n, 0.05), "quart_heure": roundto($.m, 15) }',
+            "source": '{ "n": 2.34, "m": 38 }',
+            "output": '{ "caisse": 2.35, "quart_heure": 45.0 }',
+        }
+    ],
+    "toprecision": [
+        {
+            "note": "Trois chiffres significatifs, quel que soit l'ordre de grandeur.",
+            "note_en": "Three significant digits, whatever the order of magnitude.",
+            "template": '{ "grand": toprecision($.a, 3), "petit": toprecision($.b, 3) }',
+            "source": '{ "a": 1234.5, "b": 0.00241348 }',
+            "output": '{ "grand": 1230.0, "petit": 0.00241 }',
+        }
+    ],
+    "stringlength": [
+        {
+            "note": "Même fonction que `stringlenght`, dont l'orthographe d'origine est fautive.",
+            "note_en": "The same function as `stringlenght`, whose original spelling is a typo.",
+            "template": '{ "r": stringlength($.t) }',
+            "source": '{ "t": "Ana" }',
+            "output": '{ "r": 3 }',
         }
     ],
 }

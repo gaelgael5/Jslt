@@ -4,7 +4,7 @@
 
 *[Français](index.md) · English*
 
-Element of an index (built by createindex) for a key, or null
+Element of an index (built by createindex) for a key, or null (for a computed key in any object, that is get)
 
 ```
 index(index, key)

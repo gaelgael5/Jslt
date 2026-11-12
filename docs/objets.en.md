@@ -121,6 +121,50 @@ feed that carries both names during a migration.
 
 ---
 
+## Access by computed key: `get`, `getpath`
+
+A path is **literal**: `$.tarifs.petit` is written in the template. When the key
+comes from the **data**, `$.tarifs[$.formule]` is not a supported path, and this
+detour was needed — four functions and a variable for one key lookup.
+
+| Function | Role |
+|---|---|
+| `get(v, key)` | an object key **or** an array index, both computed; `-1` = last |
+| `getpath(v, path, separator)` | a computed dotted path (`"client.ville"`), the reciprocal of `setpath` |
+
+```jslt
+{ "f:": $.formule, "detour": first(map(filter(entries($.tarifs), $.key == f:), $.value)), "direct": get($.tarifs, $.formule) }
+```
+```json
+{ "tarifs": { "petit": 10, "grand": 20 }, "formule": "grand" }
+```
+```json
+{ "detour": 20, "direct": 20 }
+```
+
+Missing key, out-of-bounds index, source that is neither object nor array:
+`null`, the family's convention. There is therefore **no** fallback argument:
+`??` already says it, and a fallback as an argument would be evaluated even when
+the key exists. To *require* the value,
+[`require`](qualite.en.md#refusing-require-requirethat) refuses and names the
+cause (`require(get($.tarifs, $.formule), "tarif inconnu")`). To tell a missing
+key from a key present but null, that is `has`.
+
+```jslt
+{ "ville": getpath($.doc, $.champ), "dernier": get($.l, -1), "repli": get($.tarifs, "moyen") ?? 0 }
+```
+```json
+{ "doc": { "client": { "ville": "Lyon" } }, "champ": "client.ville", "l": [1, 2, 3], "tarifs": { "petit": 10 } }
+```
+```json
+{ "ville": "Lyon", "dernier": 3, "repli": 0 }
+```
+
+`getpath` reads its steps like `setpath`, array indices included
+(`"lignes.0.ref"`), and the separator is set by the 3rd argument.
+
+---
+
 ## Deep structures
 
 Reading deep was already possible (`$..k`); **transforming** deep was missing.

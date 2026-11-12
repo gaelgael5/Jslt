@@ -163,11 +163,12 @@ The grammar is authoritative: `packages/urban-json/grammar/JsltLexer.g4` and
 
 ## Scope
 
-The core ships **182 functions**: maths and numbers (including `parsenumber`,
-`clamp`, `round` with precision), text (slicing, replacement, regex, Unicode
+The core ships **210 functions**: maths and numbers (including `parsenumber`,
+`clamp`, `round` with precision, commercial and multiple rounding), text (slicing, replacement, regex, Unicode
 folding), encoding and digests (base64, hexadecimal, URL, HTML, `sha256`,
 `hmacsha256`), collections (sorting, aggregates, grouping and joins), objects
-(`keys`, `entries`, `merge`, `pick`…), types and validation (`typeof`,
+(`keys`, `entries`, `merge`, `pick`, `get` by computed key…), a conditional in
+expression position (`ifelse`), types and validation (`typeof`,
 `schemaisvalid`, `trydefault`), dates (`parsedate` with mask and timezone,
 arithmetic, difference, period bounds, business days), formatting, schema
 inference, external parameters (`param`) and the text-output functions. The

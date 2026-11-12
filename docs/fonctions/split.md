@@ -4,7 +4,7 @@
 
 *Français · [English](split.en.md)*
 
-Découpe un texte en tableau sur le premier caractère de charset
+Découpe un texte en tableau sur le premier caractère de charset (séparateur entier : splitstring)
 
 ```
 split(token, charset)

@@ -4,10 +4,10 @@
 
 *Français · [English](indexof.en.md)*
 
-Position (à partir de 0) de la première occurrence dans un texte ou un tableau, -1 si absent
+Position (à partir de 0) de la première occurrence dans un texte ou un tableau, -1 si absent ; start cherche à partir de cette position
 
 ```
-indexof(token, txt)
+indexof(token, txt, start)
 ```
 
 **Exemple**
@@ -28,6 +28,7 @@ indexof(token, txt)
 |---|---|---|
 | `token` | optionnel |  |
 | `txt` | optionnel |  |
+| `start` | optionnel |  |
 
 **Chapitre** : [Texte, expressions régulières et formatage](../texte.md) · **Index** : [toutes les fonctions](sommaire.md)
 

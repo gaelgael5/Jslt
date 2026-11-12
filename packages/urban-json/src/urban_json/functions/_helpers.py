@@ -2,31 +2,20 @@
 
 from __future__ import annotations
 
-import json
 from typing import Any
 
+from urban_json._text import to_text as _to_text
 from urban_json.errors import JsltError
 
 
 def to_text(value: Any) -> str:
     """Représentation chaîne façon .NET (``True``/``False`` capitalisés).
 
-    Un tableau ou un objet passe par son **JSON compact**, comme
-    ``token.ToString()`` côté Newtonsoft. ``str()`` rendait la représentation
-    *Python* — guillemets simples compris — et elle ressortait telle quelle dans
-    le JSON produit (``concat`` d'un tableau imbriqué, clef composite de
-    ``groupby``). Deux chemins de mise en texte coexistaient, l'un correct et
-    l'autre non ; il n'en reste qu'un.
+    Ré-export de :func:`urban_json._text.to_text` : les opérateurs en ont besoin
+    aussi (``"a" + $.liste``), et deux copies ont déjà produit deux fois le même
+    défaut — le ``repr``Ython d'un conteneur qui ressort dans le JSON.
     """
-    if value is None:
-        return ""
-    if value is True:
-        return "True"
-    if value is False:
-        return "False"
-    if isinstance(value, (dict, list)):
-        return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
-    return str(value)
+    return _to_text(value)
 
 
 def stringify(value: Any) -> str:

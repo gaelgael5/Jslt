@@ -4,7 +4,7 @@
 
 *[Français](join.md) · English*
 
-Left join: attaches to the left objects the right elements sharing the key
+Left join between two arrays: attaches to the left objects the right elements sharing the key (joining text is concat)
 
 ```
 join(source_left, key_left, clean_source, rights)

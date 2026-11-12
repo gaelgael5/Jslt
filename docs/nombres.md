@@ -129,6 +129,40 @@ dirigés acceptent une précision.
 diffèrent, et c'est tout l'intérêt d'avoir les deux. `round` reste l'arrondi
 **bancaire** (cf. ci-dessus).
 
+### Arrondi commercial, au multiple, aux chiffres significatifs
+
+`round` est l'arrondi **bancaire** : les demis vont vers le pair, donc
+`round(0.125, 2)` rend `0.12` là où une facture attend `0.13`. Trois fonctions
+couvrent ce que ce choix laisse dehors.
+
+| Fonction | Rôle |
+|---|---|
+| `roundhalfup(v, décimales)` | arrondi commercial : les demis **s'éloignent de zéro** (`-0.5` → `-1`) |
+| `roundto(v, pas)` | arrondi au multiple le plus proche : le pas de 0,05 d'une caisse, le quart d'heure |
+| `toprecision(v, chiffres)` | arrondi à un nombre de chiffres **significatifs**, pas de décimales |
+
+Les trois lisent le nombre tel qu'il est **écrit** : `2.675` se stocke en
+`2.67499999…`, et un arrondi qui travaillerait sur cette valeur rendrait `2.67`.
+C'est l'arrondi « faux » que tout le monde rencontre une fois, et c'est aussi ce
+que rend le contournement `round($.n * 20) / 20`. Un pas nul ou négatif **lève**,
+plutôt que de rendre une valeur qui n'a été arrondie à rien ; `toprecision`
+exige au moins un chiffre. Comme `round`, `floor` et `ceil`, les trois rendent un
+**décimal**.
+
+```jslt
+{ "facture": roundhalfup($.n, 2), "caisse": roundto($.n, 0.05), "mesure": toprecision($.n, 3), "bancaire": round($.n, 2) }
+```
+```json
+{ "n": 2.675 }
+```
+```json
+{ "facture": 2.68, "caisse": 2.7, "mesure": 2.68, "bancaire": 2.67 }
+```
+
+`toprecision` sert là où l'ordre de grandeur **varie** : `round($.n, 2)` fixe le
+rang de la virgule, ce qui n'a pas de sens sur une colonne où voisinent
+`0.00241` et `24100`.
+
 ## Logarithme, bases et valeurs non finies
 
 | Fonction | Rôle |
