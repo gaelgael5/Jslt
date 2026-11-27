@@ -12,7 +12,7 @@ décrits dans [Intégrer le moteur](docs/integration.md).
 Versions selon [SemVer](https://semver.org/lang/fr/) ; une version PyPI est
 immuable, une correction de documentation destinée à l'index vaut donc un patch.
 
-## urban-json — non publié
+## urban-json 0.9.0 — 2026-11-27
 
 ### Corrigé — `slugify` ne perd plus de lettres
 
