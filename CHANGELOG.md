@@ -14,6 +14,13 @@ immuable, une correction de documentation destinée à l'index vaut donc un patc
 
 ## urban-json — non publié
 
+### Corrigé — `slugify` ne perd plus de lettres
+
+Les lettres que la décomposition Unicode ne ramène pas à l'ASCII — ligatures et
+lettres barrées — étaient **effacées** : `œuvre` donnait `uvre`, `Straße`
+`stra-e`. Elles sont désormais translittérées (`œ` → `oe`, `æ` → `ae`, `ß` → `ss`,
+`ø` → `o`, `ł` → `l`, `đ`/`ð` → `d`, `þ` → `th`…).
+
 ### Changé — les parenthèses regroupent une opération
 
 Les parenthèses n'acceptaient qu'**un seul opérande** : `($.a)` passait, mais

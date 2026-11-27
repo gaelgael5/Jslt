@@ -484,7 +484,8 @@ Fonctions portées (modules dans `packages/urban-json/src/urban_json/functions/`
   implémentation sous l'orthographe juste), `substring`, `replace`,
   `repeat`, `titlecase`, `shorten`.
 - pliage Unicode (`folding.py`, extrait de `text.py`) : `normalize` (formes
-  C/D/KC/KD), `deaccent`, `foldtext`, `slugify`.
+  C/D/KC/KD), `deaccent`, `foldtext`, `slugify` (ligatures et lettres
+  barrées translittérées — `œ`→`oe`, `ß`→`ss` — elles étaient effacées).
 - proximité (`similarity.py`) : `levenshtein`, `similarity`.
 - expressions régulières (`regexes.py`, extrait de `text.py`) : `regexismatch`,
   `regexmatches`, `regexreplace` (substitution .NET `$1`/`${nom}`/`$&` traduite),

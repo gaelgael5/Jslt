@@ -14,6 +14,13 @@ documentation fix aimed at the index is worth a patch release.
 
 ## urban-json — unreleased
 
+### Fixed — `slugify` no longer drops letters
+
+Letters that Unicode decomposition does not bring back to ASCII — ligatures and
+barred letters — were **erased**: `œuvre` gave `uvre`, `Straße` `stra-e`. They
+are now transliterated (`œ` → `oe`, `æ` → `ae`, `ß` → `ss`, `ø` → `o`, `ł` → `l`,
+`đ`/`ð` → `d`, `þ` → `th`…).
+
 ### Changed — parentheses group an operation
 
 Parentheses accepted **a single operand** only: `($.a)` parsed, but `(1 + 2) * 3`

@@ -133,6 +133,22 @@ def test_slugify_rend_une_chaine_vide_si_rien_ne_survit():
     assert run('{ "r": slugify($.t) }', {"t": "!!!"}) == {"r": ""}
 
 
+@pytest.mark.parametrize(
+    "text, expected",
+    [
+        ("Œuvre", "oeuvre"),
+        ("Straße", "strasse"),
+        ("Ærø", "aero"),
+        ("Łódź", "lodz"),
+        ("Þór", "thor"),
+    ],
+)
+def test_slugify_translittere_les_lettres_sans_decomposition(text, expected):
+    # Ligatures et lettres barrées ne se décomposent pas en « lettre + accent » :
+    # elles étaient effacées (« œuvre » → « uvre »).
+    assert run('{ "r": slugify($.t) }', {"t": text}) == {"r": expected}
+
+
 # --- conventions --------------------------------------------------------------
 
 
