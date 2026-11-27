@@ -30,6 +30,7 @@ from .ast import (
     JsltVariable,
     OperationEnum,
 )
+from .parsing.script_builder_visitor import _PRECEDENCE
 
 # Symbole textuel de chaque opérateur (inverse du mapping du builder).
 _OPERATOR_SYMBOLS = {
@@ -95,10 +96,26 @@ class SourceWriterVisitor(JsltJsonVisitor):
 
     def visit_binary_operator(self, node: JsltBinaryOperator) -> str:
         symbol = _OPERATOR_SYMBOLS[node.operator]
-        return f"{node.left.accept(self)} {symbol} {node.right.accept(self)}"
+        precedence = _PRECEDENCE[node.operator]
+        # Associativité gauche : à droite, une précédence égale exige aussi les
+        # parenthèses (`10 - (3 - 2)` n'est pas `10 - 3 - 2`).
+        left = self._operand(node.left, lambda p: p < precedence)
+        right = self._operand(node.right, lambda p: p <= precedence)
+        # Une négation opérande se parenthèse : en tête, `!a == b` nierait le tout.
+        if isinstance(node.left, JsltOperator):
+            left = f"({left})"
+        return f"{left} {symbol} {right}"
 
     def visit_unary_operator(self, node: JsltOperator) -> str:
-        return f"!{node.left.accept(self)}"
+        # `!` en tête d'une opération nie toute l'opération : `!a == b` se relit
+        # `!(a == b)`, donc la négation d'un opérande binaire doit être parenthésée.
+        return f"!{self._operand(node.left, lambda p: True)}"
+
+    def _operand(self, node: Any, needs_parens) -> str:
+        text = node.accept(self)
+        if isinstance(node, JsltBinaryOperator) and needs_parens(_PRECEDENCE[node.operator]):
+            return f"({text})"
+        return text
 
     def visit_function(self, node: JsltFunctionCall) -> str:
         args = ", ".join(argument.accept(self) for argument in node.arguments)

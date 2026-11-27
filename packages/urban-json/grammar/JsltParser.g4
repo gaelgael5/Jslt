@@ -76,13 +76,15 @@ jsonType
 
 jsonLtOperations :
      NT? jsonLtOperation (operation jsonLtOperation)*
-   | PAREN_LEFT jsonLtOperation PAREN_RIGHT jsonType? 
    ;
 
+// Les parenthèses enveloppent une opération complète (jsonLtOperations), pas
+// un seul opérande : sinon `($.a ?? "x") == "y"` était refusé et aucune
+// précédence ne pouvait être contournée (le .NET avait la même restriction).
 jsonLtOperation :
      jsonLtItem
    | NT jsonLtOperation
-   | PAREN_LEFT jsonLtOperation PAREN_RIGHT jsonType? 
+   | PAREN_LEFT jsonLtOperations PAREN_RIGHT jsonType?
    ;
 
 jsonLtItem : 

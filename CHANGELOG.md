@@ -12,6 +12,38 @@ décrits dans [Intégrer le moteur](docs/integration.md).
 Versions selon [SemVer](https://semver.org/lang/fr/) ; une version PyPI est
 immuable, une correction de documentation destinée à l'index vaut donc un patch.
 
+## urban-json — non publié
+
+### Changé — les parenthèses regroupent une opération
+
+Les parenthèses n'acceptaient qu'**un seul opérande** : `($.a)` passait, mais
+`(1 + 2) * 3` ou `($.x ?? "false") == "true"` levaient une erreur de syntaxe. Aucune
+priorité d'opérateur ne pouvait donc être contournée, et `??`, le plus faible,
+piégeait toute comparaison écrite après lui. La grammaire accepte désormais une
+opération entière entre parenthèses (cast `#type` compris : `(2 + 3) #string`).
+
+- `to_source()` réécrit les parenthèses **là où la priorité les exige**, et
+  seulement là : `(a + b) * c` les garde, `(a - b) - c` les perd.
+- Internes documentés : la règle `jsonLtOperations` n'a plus d'alternative
+  parenthésée (le contexte n'a plus de `jsonType()`), et l'alternative
+  parenthésée de `jsonLtOperation` porte un `jsonLtOperations()`.
+- Le guide documente enfin la table des priorités (« Priorité et parenthèses »
+  dans *Expressions*).
+
+### Changé — `??` passe avant les comparaisons (rupture silencieuse)
+
+`??` était l'opérateur **le plus faible** : `$.x ?? "false" == "true"` se lisait
+`$.x ?? ("false" == "true")` et rendait `$.x` brut dès qu'il existait (la chaîne
+`"true"`), `false` sinon — un type de résultat qui dépendait de la donnée, et
+jamais l'intention. Il se place désormais **sous l'arithmétique et au-dessus des
+comparaisons et de la logique** : la même écriture compare la valeur complétée.
+
+- `a ?? b + 1` ne change pas (`a ?? (b + 1)`).
+- **Changent de sens** : `a ?? b` suivi de `==`, `!=`, `<`, `<=`, `>`, `>=`,
+  `&`, `|`, `&&` ou `||`. L'ancienne lecture s'obtient avec des parenthèses,
+  `a ?? (b == c)`. Aucune erreur ne signale le changement : chercher `??` dans
+  les templates avant de monter de version.
+
 ## urban-json 0.8.0 — 2026-11-11
 
 Les manques élémentaires du langage, comblés (182 → 210) : parcourir un tableau

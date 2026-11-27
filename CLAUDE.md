@@ -64,7 +64,16 @@ Patterns repris du .NET :
   récupération d'erreur ANTLR) — équivalent, mais parsing strict.
 - Bug `VisitJsonValueInteger` (renvoyait 0) **non** reproduit.
 - Précédence des opérateurs **standard** (le .NET regroupait par parité, non
-  testé).
+  testé). `??` est placé **sous l'arithmétique, au-dessus des comparaisons**
+  (Swift/Kotlin, pas C#/JS) : en dernier, `$.x ?? "d" == "v"` rendait `$.x` brut
+  dès qu'il existait. Rupture silencieuse assumée, annoncée au `CHANGELOG`.
+- **Parenthèses autour d'une opération entière** : la grammaire .NET n'y acceptait
+  qu'un opérande (`jsonLtOperation`), donc aucune précédence ne se contournait et
+  `($.x ?? "d") == "v"` était refusé — piège réel, `??` étant le plus faible.
+  `SourceWriterVisitor` remet les parenthèses là où la précédence l'exige (droite
+  à précédence égale comprise, et une négation opérande : `!a == b` nierait le
+  tout). Java n'est pas dans le conteneur : un JRE portable (Adoptium) dans le
+  scratchpad suffit à `generate_parser.sh` (`PATH=…/bin:$PATH`, `ANTLR_JAR=…`).
 - `^` = XOR entier, `&`/`|` = ET/OU bit-à-bit, `&&` = ET booléen (fidèles) ;
   `||` = OU booléen (corrige un copier-coller fautif .NET qui faisait un ET).
 - Regex (`regexismatch`/`regexmatches`) : dialecte du module `re` ; seuls les groupes

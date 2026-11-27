@@ -53,7 +53,29 @@ ROUND_TRIP_CASES = [
         id="filtre-ou",
     ),
     pytest.param('{ "casted": $.n #integer }', {"n": "42"}, id="cast"),
+    pytest.param('{ "p": ($.a + $.b) * 2 }', {"a": 1, "b": 2}, id="parentheses"),
+    pytest.param('{ "p": 10 - ($.a - $.b) }', {"a": 1, "b": 2}, id="parentheses-droite"),
+    pytest.param('{ "p": ($.a ?? "x") == "x" }', {}, id="parentheses-coalesce"),
+    pytest.param('{ "p": (!$.a) == false }', {"a": True}, id="negation-operande"),
+    pytest.param('{ "p": !($.a == 1) }', {"a": 1}, id="negation-parenthesee"),
 ]
+
+
+@pytest.mark.parametrize(
+    "template, expected",
+    [
+        ('{ "p": ($.a + $.b) * 2 }', '{ "p": ($.a + $.b) * 2 }'),
+        ('{ "p": $.a + $.b * 2 }', '{ "p": $.a + $.b * 2 }'),
+        ('{ "p": ($.a - $.b) - 2 }', '{ "p": $.a - $.b - 2 }'),
+        ('{ "p": $.a - ($.b - 2) }', '{ "p": $.a - ($.b - 2) }'),
+        ('{ "p": ($.a ?? "x") == "x" }', '{ "p": $.a ?? "x" == "x" }'),
+        ('{ "p": $.a ?? ("x" == "x") }', '{ "p": $.a ?? ("x" == "x") }'),
+        ('{ "p": ($.a ?? 1) + 2 }', '{ "p": ($.a ?? 1) + 2 }'),
+    ],
+)
+def test_to_source_keeps_only_needed_parentheses(template: str, expected: str) -> None:
+    # Les parenthèses ne se ré-écrivent que là où la précédence les exige.
+    assert JsltTemplate.parse(template).to_source() == expected
 
 
 @pytest.mark.parametrize("template, source", ROUND_TRIP_CASES)

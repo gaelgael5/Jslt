@@ -140,6 +140,46 @@ boolean — those are `&&`/`||`), and `^` is **integer XOR**.
 { "bitand": 2, "bitor": 7, "xor": 5 }
 ```
 
+### Precedence and parentheses
+
+Without parentheses, operators group from strongest to weakest, and left to
+right at equal precedence (`10 - 2 - 3` is 5):
+
+| Precedence | Operators |
+|---|---|
+| 1 (strongest) | `->` |
+| 2 | `*` `/` `%` `^` |
+| 3 | `+` `-` |
+| 4 | `??` |
+| 5 | `<` `<=` `>` `>=` |
+| 6 | `==` `!=` |
+| 7 | `&` `\|` |
+| 8 | `&&` |
+| 9 (weakest) | `\|\|` |
+
+`??` applies **before** comparisons: `$.x ?? "false" == "true"` compares the
+defaulted value, `($.x ?? "false") == "true"`. It applies **after** arithmetic,
+though: `$.x ?? 1 + 2` reads as `$.x ?? (1 + 2)`. Parentheses group a whole
+operation and override this table:
+
+```jslt
+{
+  "sans": $.prix + $.port * 2,
+  "avec": ($.prix + $.port) * 2,
+  "phare": $["Application Phare"] ?? "false" == "true",
+  "repli": ($.remise ?? 0) + $.port
+}
+```
+```json
+{ "prix": 10, "port": 5, "Application Phare": "true" }
+```
+```json
+{ "sans": 20, "avec": 30, "phare": true, "repli": 5 }
+```
+
+A leading `!` negates the whole operation that follows: `!$.a == 1` reads as
+`!($.a == 1)`. To negate only the operand, write `(!$.a) == 1`.
+
 ---
 
 ## Coalescing `??` and missing values
