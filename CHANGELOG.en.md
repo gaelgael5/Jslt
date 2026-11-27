@@ -12,6 +12,45 @@ in [Embedding the engine](docs/integration.en.md).
 Versions follow [SemVer](https://semver.org/); a PyPI version is immutable, so a
 documentation fix aimed at the index is worth a patch release.
 
+## urban-json — unreleased
+
+### Fixed — `slugify` no longer drops letters
+
+Letters that Unicode decomposition does not bring back to ASCII — ligatures and
+barred letters — were **erased**: `œuvre` gave `uvre`, `Straße` `stra-e`. They
+are now transliterated (`œ` → `oe`, `æ` → `ae`, `ß` → `ss`, `ø` → `o`, `ł` → `l`,
+`đ`/`ð` → `d`, `þ` → `th`…).
+
+### Changed — parentheses group an operation
+
+Parentheses accepted **a single operand** only: `($.a)` parsed, but `(1 + 2) * 3`
+or `($.x ?? "false") == "true"` raised a syntax error. No operator precedence
+could be overridden, and `??`, the weakest, trapped any comparison written after
+it. The grammar now accepts a whole operation in parentheses (`#type` cast
+included: `(2 + 3) #string`).
+
+- `to_source()` writes parentheses back **where precedence requires them**, and
+  only there: `(a + b) * c` keeps them, `(a - b) - c` drops them.
+- Documented internals: the `jsonLtOperations` rule no longer has a
+  parenthesised alternative (its context has no `jsonType()` any more), and the
+  parenthesised alternative of `jsonLtOperation` carries a `jsonLtOperations()`.
+- The guide finally documents the precedence table ("Precedence and
+  parentheses" in *Expressions*).
+
+### Changed — `??` applies before comparisons (silent break)
+
+`??` was the **weakest** operator: `$.x ?? "false" == "true"` read as
+`$.x ?? ("false" == "true")` and returned the raw `$.x` whenever it existed (the
+string `"true"`), `false` otherwise — a result type that depended on the data,
+and never the intent. It now sits **below arithmetic and above comparisons and
+logic**: the same expression compares the defaulted value.
+
+- `a ?? b + 1` is unchanged (`a ?? (b + 1)`).
+- **Meaning changes** for `a ?? b` followed by `==`, `!=`, `<`, `<=`, `>`, `>=`,
+  `&`, `|`, `&&` or `||`. The old reading is written with parentheses,
+  `a ?? (b == c)`. No error flags the change: search templates for `??` before
+  upgrading.
+
 ## urban-json 0.8.0 — 2026-11-11
 
 The language's elementary gaps, filled (182 → 210): walking an array with an

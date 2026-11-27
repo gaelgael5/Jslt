@@ -94,6 +94,15 @@ def execute_foldtext(ctx: Any, token: Any = None, options: Any = None) -> Any:
 
 _SLUG_DROP = re.compile(r"[^a-z0-9]+")
 
+# Lettres que la décomposition Unicode ne ramène pas à l'ASCII : ce ne sont pas
+# « une lettre + un accent » mais des lettres à part entière (ligatures, barrées).
+# Sans cette table, `_SLUG_DROP` les effaçait — « œuvre » donnait « uvre » et
+# « Straße » « stra-e ». Clefs en minuscules : la table s'applique après `lower`.
+_SLUG_TRANSLITERATION = str.maketrans({
+    "œ": "oe", "æ": "ae", "ß": "ss", "ø": "o", "ł": "l", "đ": "d", "ð": "d",
+    "þ": "th", "ħ": "h", "ŧ": "t", "ŋ": "n", "ı": "i", "ĸ": "k",
+})
+
 
 @jslt_function(
     "slugify",
@@ -110,6 +119,7 @@ def execute_slugify(ctx: Any, token: Any = None, separator: Any = None) -> Any:
     joiner = "-" if separator is None else to_text(separator)
 
     def slug(value: str) -> str:
-        return _SLUG_DROP.sub(joiner, _deaccent(value).lower()).strip(joiner or None)
+        folded = _deaccent(value).lower().translate(_SLUG_TRANSLITERATION)
+        return _SLUG_DROP.sub(joiner, folded).strip(joiner or None)
 
     return string_result(token, slug)

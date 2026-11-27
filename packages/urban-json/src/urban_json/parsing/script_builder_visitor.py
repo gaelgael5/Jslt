@@ -80,14 +80,19 @@ _OPERATION_TOKENS = {
 # Précédence standard (valeur haute = lie plus fort), associativité gauche.
 # L'algorithme .NET regroupait par parité (non testé) ; on retient une
 # précédence classique — choix propre documenté.
+# `??` passe sous l'arithmétique mais AVANT comparaisons et logique (comme Swift
+# et Kotlin, pas comme C#/JS) : en dernier, `$.x ?? "d" == "v"` se lisait
+# `$.x ?? ("d" == "v")` et rendait `$.x` brut dès qu'il existait — jamais
+# l'intention, et un type de résultat qui dépendait de la donnée.
 _PRECEDENCE = {
-    OperationEnum.CHAIN: 8,
-    OperationEnum.MULTIPLY: 7,
-    OperationEnum.DIVIDE: 7,
-    OperationEnum.MODULO: 7,
-    OperationEnum.POWER: 7,
-    OperationEnum.ADD: 6,
-    OperationEnum.SUBTRACT: 6,
+    OperationEnum.CHAIN: 9,
+    OperationEnum.MULTIPLY: 8,
+    OperationEnum.DIVIDE: 8,
+    OperationEnum.MODULO: 8,
+    OperationEnum.POWER: 8,
+    OperationEnum.ADD: 7,
+    OperationEnum.SUBTRACT: 7,
+    OperationEnum.COALESCE: 6,
     OperationEnum.LESS_THAN: 5,
     OperationEnum.LESS_THAN_OR_EQUAL: 5,
     OperationEnum.GREATER_THAN: 5,
@@ -98,7 +103,6 @@ _PRECEDENCE = {
     OperationEnum.OR: 3,
     OperationEnum.AND_EXCLUSIVE: 2,
     OperationEnum.OR_EXCLUSIVE: 1,
-    OperationEnum.COALESCE: 0,
 }
 
 # Précédence des opérateurs dans un filtre JSONPath ?(...) : comparaison/in > & > |.
@@ -256,11 +260,17 @@ class ScriptBuilderVisitor(JsltParserVisitor):
         # Négation éventuelle portant sur toute l'expression (NT en tête).
         if ctx.NT() is not None:
             node = self._negate(node, ctx)
-        return self._with_optional_cast(node, ctx.jsonType())
+        return node
 
     def visitJsonLtOperation(self, ctx: JsltParser.JsonLtOperationContext) -> Any:
         item = ctx.jsonLtItem()
-        node = self.visit(item) if item is not None else self.visit(ctx.jsonLtOperation())
+        if item is not None:
+            node = self.visit(item)
+        elif ctx.jsonLtOperations() is not None:
+            # Parenthèses : l'opération entière devient un seul opérande.
+            node = self.visit(ctx.jsonLtOperations())
+        else:
+            node = self.visit(ctx.jsonLtOperation())
 
         if ctx.NT() is not None:
             node = self._negate(node, ctx)

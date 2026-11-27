@@ -141,6 +141,46 @@ Attention : `&`/`|` sont les opérateurs **bit-à-bit entiers**
 { "bitand": 2, "bitor": 7, "xor": 5 }
 ```
 
+### Priorité et parenthèses
+
+Sans parenthèses, les opérateurs se regroupent du plus fort au plus faible, et de
+gauche à droite à priorité égale (`10 - 2 - 3` vaut 5) :
+
+| Priorité | Opérateurs |
+|---|---|
+| 1 (la plus forte) | `->` |
+| 2 | `*` `/` `%` `^` |
+| 3 | `+` `-` |
+| 4 | `??` |
+| 5 | `<` `<=` `>` `>=` |
+| 6 | `==` `!=` |
+| 7 | `&` `\|` |
+| 8 | `&&` |
+| 9 (la plus faible) | `\|\|` |
+
+`??` passe **avant** les comparaisons : `$.x ?? "false" == "true"` compare la
+valeur complétée, `($.x ?? "false") == "true"`. Il passe en revanche **après**
+l'arithmétique : `$.x ?? 1 + 2` se lit `$.x ?? (1 + 2)`. Les parenthèses
+regroupent une opération entière et l'emportent sur ce tableau :
+
+```jslt
+{
+  "sans": $.prix + $.port * 2,
+  "avec": ($.prix + $.port) * 2,
+  "phare": $["Application Phare"] ?? "false" == "true",
+  "repli": ($.remise ?? 0) + $.port
+}
+```
+```json
+{ "prix": 10, "port": 5, "Application Phare": "true" }
+```
+```json
+{ "sans": 20, "avec": 30, "phare": true, "repli": 5 }
+```
+
+Un `!` placé en tête nie toute l'opération qui suit : `!$.a == 1` se lit
+`!($.a == 1)`. Pour ne nier que l'opérande, écrire `(!$.a) == 1`.
+
 ---
 
 ## Coalescence `??` et valeurs manquantes
